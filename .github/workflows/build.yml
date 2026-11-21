@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -63,6 +63,20 @@ jobs:
         with:
           name: zakkerni-android
           path: out/
+
+      - name: Publish release (direct download links)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: ذَكِّرني ${{ github.run_number }}
+          make_latest: true
+          body: |
+            ذَكِّرني — Zakkerni
+            - Zakkerni.apk: للتثبيت المباشر على أندرويد
+            - Zakkerni.aab: للرفع على Google Play
+          files: |
+            out/Zakkerni.apk
+            out/Zakkerni.aab
 
   web:
     runs-on: ubuntu-latest
