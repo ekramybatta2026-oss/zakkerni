@@ -132,7 +132,8 @@ main{padding:16px}
 .sp-t{font-size:12.5px;font-weight:800;color:var(--purple);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 [data-theme="dark"] .sp-t{color:#D9B8F5}
 .sp-row{display:flex;align-items:center;gap:8px}
-.sp-row input{flex:1;height:20px;margin:0}
+.sp-track{flex:1;height:5px;border-radius:5px;background:var(--surface-2);overflow:hidden}
+.sp-track i{display:block;height:100%;width:0;background:var(--grad-or);transition:width .25s linear;margin-inline-start:0}
 .sp-row span{font-size:11.5px;font-weight:700;color:var(--muted);white-space:nowrap}
 /* Section bar (same look as bottom nav) */
 .shbar{position:sticky;top:calc(8px + env(safe-area-inset-top));z-index:15;display:flex;align-items:center;gap:10px;margin:0 -6px 14px;padding:7px 8px 10px;background:var(--surface);border-radius:24px;box-shadow:0 2px 30px rgba(90,38,144,.16);border:1px solid var(--line);overflow:hidden;white-space:nowrap}
@@ -190,6 +191,8 @@ body.sec .shbar{flex:none;position:relative;top:0}
 .zbtns button{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;color:var(--muted)}
 .zbtns button:active{background:var(--surface-2)}
 .zbtns .fav.on{color:var(--orange)}
+.zbtns .say{color:var(--orange);background:var(--soft-or)}
+.zbtns .say.on{background:var(--orange);color:#fff}
 .zbtns .fav.on svg{fill:var(--orange)}
 .zinfo{display:none;padding:0 18px 16px;font-size:13.5px;line-height:1.9;color:var(--muted)}
 .zinfo.open{display:block;animation:fade .25s;max-height:38%;overflow-y:auto;flex:none}
@@ -615,11 +618,31 @@ const REVIEW_NOTES = [
 ];
 
 /* تسجيلات الأذكار الصوتية: معرّف الذكر -> اسم الملف (مثال: 'm_kursi': 'audio/m_kursi.mp3') */
-const ZIKR_AUDIO = {};
+const ZIKR_AUDIO = {
+ "e_kursi": "audio/evening/01-kursi.mp3",
+ "e_muawwidhat": "audio/evening/02-muawwidhat.mp3",
+ "e_mulk": "audio/evening/03-mulk.mp3",
+ "e_bika": "audio/evening/04-bika.mp3",
+ "e_sayyid": "audio/evening/05-sayyid.mp3",
+ "e_ushhiduk": "audio/evening/06-ushhiduk.mp3",
+ "e_nima": "audio/evening/07-nima.mp3",
+ "e_afini": "audio/evening/08-afini.mp3",
+ "e_hasbi": "audio/evening/09-hasbi.mp3",
+ "e_afw": "audio/evening/10-afw.mp3",
+ "e_alim": "audio/evening/11-alim.mp3",
+ "e_bismillah": "audio/evening/12-bismillah.mp3",
+ "e_radit": "audio/evening/13-radit.mp3",
+ "e_hayy": "audio/evening/14-hayy.mp3",
+ "e_fitra": "audio/evening/15-fitra.mp3",
+ "e_khayr": "audio/evening/16-khayr.mp3",
+ "e_kalimat": "audio/evening/17-kalimat.mp3",
+ "e_salat": "audio/evening/19-salat.mp3",
+ "e_tahlil10": "audio/evening/20-tahlil10.mp3"
+};
 
 /* التسجيل الكامل لكل قسم */
 const SECTION_AUDIO = {
-  evening: { file: 'audio/evening.mp3', by: 'إكرامي فاروق' },
+  evening: { by: 'إكرامي فاروق' },
 };
 
 </script>
@@ -721,6 +744,7 @@ function go(view, push = true) {
   rollDay();
   current = view;
   document.body.classList.remove('sec');
+  if (chain || zPlaying) { chain = null; zAudio.pause(); zPlaying = null; }
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.go === view));
   if (view === 'home') { renderHome(); $('#v-home').classList.add('active'); }
@@ -870,36 +894,58 @@ function refreshCard(card, keepInfo = true) {
 function wrapOne(el) { return { querySelectorAll: () => [el] }; }
 let currentOnChange = null;
 
-/* ---------- Full-section recording ---------- */
-const secAudio = new Audio(); secAudio.preload = 'metadata'; let secKey = null;
-const mmss = (s) => { s = Math.max(0, Math.floor(s || 0)); return ar(Math.floor(s / 60)) + ':' + String(s % 60).padStart(2, '0').replace(/\d/g, x => '٠١٢٣٤٥٦٧٨٩'[x]); };
+/* ---------- Play-all: zikr recordings in order, turning the pages ---------- */
+let chain = null; // { key }
 function bindSectionPlayer(key) {
-  const info = SECTION_AUDIO[key];
-  if (secKey !== key) { secAudio.pause(); secAudio.src = info.file; secKey = key; S.trackPos = S.trackPos || {}; secAudio.currentTime = S.trackPos[key] || 0; }
-  const btn = $('#spPlay'), seek = $('#spSeek'), tm = $('#spTime');
+  const btn = $('#spPlay'), tm = $('#spTime'), bar = $('#spBar');
   const sync = () => {
     if (!btn || !document.body.contains(btn)) return;
-    btn.innerHTML = ico(secAudio.paused ? 'play' : 'stop');
-    const d = secAudio.duration || 0;
-    if (!seek.matches(':active')) seek.value = d ? Math.round(secAudio.currentTime / d * 1000) : 0;
-    tm.textContent = `${mmss(secAudio.currentTime)} / ${mmss(d)}`;
+    const on = chain && chain.key === key && !zAudio.paused;
+    btn.innerHTML = ico(on ? 'stop' : 'play');
+    const d = zAudio.duration || 0;
+    bar.style.width = on && d ? (zAudio.currentTime / d * 100) + '%' : '0%';
+    tm.textContent = on ? `${mmss(zAudio.currentTime)} / ${mmss(d)}` : 'تشغيل متتابع مع تقليب الصفحات';
   };
-  btn.onclick = () => { if (secAudio.paused) { zAudio.pause(); secAudio.play().catch(() => toast('تعذّر تشغيل التسجيل')); } else secAudio.pause(); };
-  seek.oninput = () => { const d = secAudio.duration || 0; if (d) secAudio.currentTime = seek.value / 1000 * d; sync(); };
-  secAudio.ontimeupdate = () => { sync(); if (Math.floor(secAudio.currentTime) % 5 === 0) { S.trackPos = S.trackPos || {}; S.trackPos[key] = secAudio.currentTime; save(); } };
-  secAudio.onplay = secAudio.onpause = secAudio.onloadedmetadata = sync;
-  secAudio.onended = () => { S.trackPos[key] = 0; save(); sync(); };
+  btn.onclick = () => {
+    if (chain && chain.key === key && !zAudio.paused) { chain = null; zAudio.pause(); syncSay(); sync(); return; }
+    chain = { key };
+    const cur = curPage() || document.querySelector('#v-section .zpage');
+    playPage(cur);
+  };
+  zAudio.ontimeupdate = sync; zAudio.onplay = zAudio.onpause = sync;
   sync();
 }
+function playPage(page) {
+  while (page && !ZIKR_AUDIO[page.querySelector('.zcard').dataset.id]) page = page.nextElementSibling;
+  if (!page) { chain = null; syncSay(); toast('انتهى التسجيل، تقبّل الله'); return; }
+  goPage(page);
+  const id = page.querySelector('.zcard').dataset.id;
+  playZikr(id);
+}
+const mmss = (s) => { s = Math.max(0, Math.floor(s || 0)); return ar(Math.floor(s / 60)) + ':' + String(s % 60).padStart(2, '0').replace(/\d/g, x => '٠١٢٣٤٥٦٧٨٩'[x]); };
 
 /* ---------- Zikr recordings ---------- */
 const zAudio = new Audio(); let zPlaying = null;
+function syncSay() { document.querySelectorAll('.say').forEach(b => { const on = zPlaying === b.closest('.zcard').dataset.id && !zAudio.paused; b.innerHTML = ico(on ? 'stop' : 'play'); b.classList.toggle('on', on); }); }
 function playZikr(id, btn) {
-  if (zPlaying === id && !zAudio.paused) { zAudio.pause(); btn.innerHTML = ico('play'); zPlaying = null; return; }
-  document.querySelectorAll('.say').forEach(b => b.innerHTML = ico('play'));
-  zAudio.src = ZIKR_AUDIO[id]; zAudio.play().catch(() => {}); zPlaying = id; btn.innerHTML = ico('stop');
-  zAudio.onended = () => { btn.innerHTML = ico('play'); zPlaying = null; };
+  if (btn) { // tapped on a card: toggle that zikr, leave play-all
+    if (zPlaying === id && !zAudio.paused) { zAudio.pause(); zPlaying = null; chain = null; syncSay(); return; }
+    chain = null;
+  }
+  try { audio.pause(); } catch (e) {}
+  zAudio.src = ZIKR_AUDIO[id]; zPlaying = id;
+  zAudio.play().catch(() => toast('تعذّر تشغيل التسجيل'));
+  syncSay();
 }
+zAudio.addEventListener('pause', syncSay); zAudio.addEventListener('play', syncSay);
+zAudio.addEventListener('ended', () => {
+  const was = zPlaying; zPlaying = null; syncSay();
+  if (chain) {
+    const pg = document.querySelector(`#v-section .zcard[data-id="${was}"]`);
+    const next = pg && pg.closest('.zpage').nextElementSibling;
+    setTimeout(() => playPage(next), 600);
+  }
+});
 
 /* ---------- Horizontal pager ---------- */
 function pagerHTML(items, showSection) {
@@ -937,9 +983,9 @@ function renderSection(key) {
       <div class="pl"><i id="sBar"></i></div>
     </div>
     ${SECTION_AUDIO[key] ? `<div class="splayer">
-      <button class="ib primary" id="spPlay" aria-label="تشغيل التسجيل">${ico('play')}</button>
+      <button class="ib primary" id="spPlay" aria-label="تشغيل الكل">${ico('play')}</button>
       <div class="sp-body"><div class="sp-t">استمع إلى ${sec.name} بصوت ${SECTION_AUDIO[key].by}</div>
-        <div class="sp-row"><input type="range" id="spSeek" min="0" max="1000" value="0" aria-label="موضع التشغيل"><span id="spTime">٠:٠٠</span></div></div>
+        <div class="sp-row"><div class="sp-track"><i id="spBar"></i></div><span id="spTime"></span></div></div>
     </div>` : ''}
     ${pagerHTML(sec.items, false)}`;
   document.body.classList.add('sec');
