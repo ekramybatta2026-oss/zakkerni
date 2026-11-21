@@ -548,6 +548,12 @@ const EVENING_ONLY = [
     ref: 'أخرجه أحمد والترمذي', fadl: 'من قالها حين يمسي ثلاث مرات لم تضره حُمَة تلك الليلة.' },
 ];
 
+const EVENING_ADADA = { id: 'adada', text: 'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ: عَدَدَ خَلْقِهِ، وَرِضَا نَفْسِهِ، وَزِنَةَ عَرْشِهِ، وَمِدَادَ كَلِمَاتِهِ',
+  count: 3, note: 'ثلاث مرات', ref: 'أخرجه مسلم' };
+
+const EVENING_ORDER = ['kursi', 'muawwidhat', 'mulk', 'bika', 'sayyid', 'ushhiduk', 'nima', 'afini', 'hasbi', 'afw', 'alim',
+  'bismillah', 'radit', 'hayy', 'fitra', 'khayr', 'kalimat', 'adada', 'subhan100', 'salat', 'tahlil10'];
+
 const SALAT = { id: 'salat', text: 'اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبِيِّنَا مُحَمَّدٍ', count: 10,
   ref: 'أخرجه الطبراني، وحسّنه الألباني في صحيح الترغيب',
   fadl: 'من صلّى عليّ حين يصبح عشرًا وحين يمسي عشرًا أدركته شفاعتي يوم القيامة.' };
@@ -578,7 +584,9 @@ function buildSection(kind) {
     return { ...z, text: t, id: kind + '_' + z.id };
   };
   if (kind === 'm') return [...SHARED_ME, ...MORNING_ONLY, SALAT].map(pick);
-  return [...SHARED_ME, ...EVENING_ONLY, SALAT].map(pick);
+  // ترتيب أذكار المساء مطابق لتسجيل إكرامي فاروق
+  const pool = Object.fromEntries([...SHARED_ME, ...EVENING_ONLY, EVENING_ADADA, SALAT].map(z => [z.id, z]));
+  return EVENING_ORDER.map(id => pick(pool[id]));
 }
 
 const SECTIONS = {
@@ -624,6 +632,7 @@ const ZIKR_AUDIO = {
  "e_fitra": "audio/evening/15-fitra.mp3",
  "e_khayr": "audio/evening/16-khayr.mp3",
  "e_kalimat": "audio/evening/17-kalimat.mp3",
+ "e_adada": "audio/evening/18-adada.mp3",
  "e_salat": "audio/evening/19-salat.mp3",
  "e_tahlil10": "audio/evening/20-tahlil10.mp3"
 };
