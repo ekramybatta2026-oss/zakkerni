@@ -1,0 +1,50 @@
+plugins {
+    id 'com.android.application'
+}
+
+def ksFile = System.getenv('KS_FILE')
+
+android {
+    namespace 'com.zakkerni.app'
+    compileSdk 36
+
+    defaultConfig {
+        applicationId 'com.zakkerni.app'
+        minSdk 24
+        targetSdk 36
+        versionCode 1
+        versionName '1.0.0'
+    }
+
+    signingConfigs {
+        release {
+            if (ksFile) {
+                storeFile file(ksFile)
+                storePassword System.getenv('KS_PASS')
+                keyAlias System.getenv('KS_ALIAS')
+                keyPassword System.getenv('KS_PASS')
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig ksFile ? signingConfigs.release : signingConfigs.debug
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    lint {
+        checkReleaseBuilds false
+        abortOnError false
+    }
+}
+
+dependencies {
+    implementation 'androidx.webkit:webkit:1.12.1'
+}
