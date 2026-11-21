@@ -150,9 +150,9 @@ main{padding:16px}
 .shbar .pl{position:absolute;left:0;right:0;bottom:0;height:4px;background:var(--surface-2)}
 .shbar .pl i{display:block;height:100%;width:0;background:var(--grad-or);transition:width .45s ease;margin-inline-start:auto}
 /* Zikr card */
-.zlist{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scroll-behavior:smooth;overscroll-behavior-x:contain;scrollbar-width:none;margin:0 -16px;flex:1;min-height:0;-webkit-overflow-scrolling:touch}
-.zlist::-webkit-scrollbar{display:none}
-.zpage{flex:0 0 100%;scroll-snap-align:center;scroll-snap-stop:always;padding:2px 16px 6px;display:flex;min-height:0}
+.zlist{position:relative;overflow:hidden;margin:0 -16px;flex:1;min-height:0;touch-action:pan-y}
+.ztrack{display:flex;flex-direction:row-reverse;direction:ltr;height:100%;will-change:transform}
+.zpage{flex:0 0 100%;width:100%;max-width:100%;direction:rtl;padding:2px 16px 6px;display:flex;min-height:0;box-sizing:border-box}
 .zpage .zcard{flex:1;display:flex;flex-direction:column;min-height:0;transform:scale(.9);opacity:.45;transition:transform .45s cubic-bezier(.2,.8,.2,1),opacity .45s ease,border-color .3s,background .3s}
 .zpage.cur .zcard{transform:none;opacity:1}
 .zpage.cur .zcard.pulse{transform:scale(.985)}
@@ -944,27 +944,65 @@ zAudio.addEventListener('ended', () => {
   }
 });
 
-/* ---------- Horizontal pager ---------- */
+/* ---------- Horizontal pager (transform-based: exact page positions on every phone) ---------- */
 function pagerHTML(items, showSection) {
-  return `<div class="zlist" id="zl">${items.map((z, i) => `<div class="zpage" data-i="${i}">${cardHTML(z, showSection, `${ar(i + 1)} / ${ar(items.length)}`)}</div>`).join('')}</div>`;
+  return `<div class="zlist" id="zl"><div class="ztrack">${items.map((z, i) => `<div class="zpage" data-i="${i}">${cardHTML(z, showSection, `${ar(i + 1)} / ${ar(items.length)}`)}</div>`).join('')}</div></div>`;
 }
-let pagerIO;
+let PG = null; // { zl, track, pages, i }
+function showPage(i, animate = true) {
+  if (!PG) return;
+  i = Math.max(0, Math.min(i, PG.pages.length - 1));
+  PG.i = i;
+  PG.track.style.transition = animate ? 'transform .42s cubic-bezier(.2,.8,.2,1)' : 'none';
+  PG.track.style.transform = `translate3d(${i * 100}%,0,0)`;
+  PG.pages.forEach((p, k) => p.classList.toggle('cur', k === i));
+}
 function setupPager(root, startIndex) {
-  const zl = root.querySelector('#zl'); if (!zl) return;
-  const pages = [...zl.children];
-  if (pagerIO) pagerIO.disconnect();
-  pagerIO = new IntersectionObserver((ents) => ents.forEach(e => e.target.classList.toggle('cur', e.isIntersecting)), { root: zl, threshold: 0.6 });
-  pages.forEach(p => pagerIO.observe(p));
-  const p0 = pages[Math.max(0, Math.min(startIndex || 0, pages.length - 1))];
-  requestAnimationFrame(() => { p0.scrollIntoView({ behavior: 'instant', inline: 'center', block: 'nearest' }); p0.classList.add('cur'); });
+  const zl = root.querySelector('#zl'); if (!zl) { PG = null; return; }
+  const track = zl.firstElementChild;
+  PG = { zl, track, pages: [...track.children], i: 0 };
+  showPage(startIndex || 0, false);
+  // touch / mouse drag
+  let x0 = 0, y0 = 0, dx = 0, mode = null, w = 1;
+  const down = (x, y) => { x0 = x; y0 = y; dx = 0; mode = null; w = zl.clientWidth || 1; };
+  const move = (x, y, ev) => {
+    const ddx = x - x0, ddy = y - y0;
+    if (!mode) { if (Math.abs(ddx) > 8 && Math.abs(ddx) > Math.abs(ddy) * 1.2) mode = 'h'; else if (Math.abs(ddy) > 8) mode = 'v'; }
+    if (mode !== 'h') return;
+    if (ev && ev.cancelable) ev.preventDefault();
+    dx = ddx;
+    const edge = (PG.i === 0 && dx < 0) || (PG.i === PG.pages.length - 1 && dx > 0) ? 0.35 : 1; // resistance at ends
+    track.style.transition = 'none';
+    track.style.transform = `translate3d(calc(${PG.i * 100}% + ${dx * edge}px),0,0)`;
+  };
+  const up = () => {
+    if (mode === 'h') {
+      zl.dataset.dragged = '1'; setTimeout(() => delete zl.dataset.dragged, 60);
+      const th = Math.min(80, w * 0.18);
+      if (dx > th) showPage(PG.i + 1);       // finger moves right → next (RTL)
+      else if (dx < -th) showPage(PG.i - 1); // finger moves left → previous
+      else showPage(PG.i);
+    }
+    mode = null;
+  };
+  zl.addEventListener('touchstart', (e) => down(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
+  zl.addEventListener('touchmove', (e) => move(e.touches[0].clientX, e.touches[0].clientY, e), { passive: false });
+  zl.addEventListener('touchend', up); zl.addEventListener('touchcancel', up);
+  let mdown = false;
+  zl.addEventListener('mousedown', (e) => { mdown = true; down(e.clientX, e.clientY); });
+  window.addEventListener('mousemove', (e) => { if (mdown) move(e.clientX, e.clientY, e); });
+  window.addEventListener('mouseup', () => { if (mdown) { mdown = false; up(); } });
+  // a drag must not count as a tap on the zikr
+  zl.addEventListener('click', (e) => { if (zl.dataset.dragged) { e.stopPropagation(); e.preventDefault(); } }, true);
+  window.onresize = () => PG && showPage(PG.i, false);
   if (!S.swipeHint) { S.swipeHint = 1; save(); setTimeout(() => toast('اسحب يمينًا ويسارًا للتنقل بين الأذكار'), 600); }
 }
-function goPage(page) { if (page) page.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); }
-function curPage() { return document.querySelector('.view.active .zpage.cur'); }
+function goPage(page) { if (page && PG && PG.pages.includes(page)) showPage(PG.pages.indexOf(page)); }
+function curPage() { const p = document.querySelector('.view.active .zpage.cur'); return p; }
 document.addEventListener('keydown', (e) => {
-  const p = curPage(); if (!p) return;
-  if (e.key === 'ArrowLeft') goPage(p.nextElementSibling);
-  if (e.key === 'ArrowRight') goPage(p.previousElementSibling);
+  if (!PG || !document.querySelector('.view.active #zl')) return;
+  if (e.key === 'ArrowLeft') showPage(PG.i + 1);
+  if (e.key === 'ArrowRight') showPage(PG.i - 1);
 });
 
 /* ---------- Section ---------- */
