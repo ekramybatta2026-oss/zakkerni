@@ -125,6 +125,15 @@ main{padding:16px}
 [data-theme="dark"] .btn.ghost{color:#D9B8F5}
 .btn svg.i{width:18px;height:18px}
 
+/* Full-section player */
+.splayer{flex:none;display:flex;align-items:center;gap:10px;margin:-6px -6px 12px;padding:8px 10px;background:var(--surface);border-radius:20px;box-shadow:var(--shadow);border:1px solid var(--line)}
+.splayer .ib{width:40px;height:40px}
+.sp-body{flex:1;min-width:0}
+.sp-t{font-size:12.5px;font-weight:800;color:var(--purple);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+[data-theme="dark"] .sp-t{color:#D9B8F5}
+.sp-row{display:flex;align-items:center;gap:8px}
+.sp-row input{flex:1;height:20px;margin:0}
+.sp-row span{font-size:11.5px;font-weight:700;color:var(--muted);white-space:nowrap}
 /* Section bar (same look as bottom nav) */
 .shbar{position:sticky;top:calc(8px + env(safe-area-inset-top));z-index:15;display:flex;align-items:center;gap:10px;margin:0 -6px 14px;padding:7px 8px 10px;background:var(--surface);border-radius:24px;box-shadow:0 2px 30px rgba(90,38,144,.16);border:1px solid var(--line);overflow:hidden;white-space:nowrap}
 .shbar .ic{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;color:#fff;flex:none}
@@ -608,6 +617,11 @@ const REVIEW_NOTES = [
 /* تسجيلات الأذكار الصوتية: معرّف الذكر -> اسم الملف (مثال: 'm_kursi': 'audio/m_kursi.mp3') */
 const ZIKR_AUDIO = {};
 
+/* التسجيل الكامل لكل قسم */
+const SECTION_AUDIO = {
+  evening: { file: 'audio/evening.m4a', by: 'إكرامي فاروق' },
+};
+
 </script>
 <script>
 (() => {
@@ -856,6 +870,28 @@ function refreshCard(card, keepInfo = true) {
 function wrapOne(el) { return { querySelectorAll: () => [el] }; }
 let currentOnChange = null;
 
+/* ---------- Full-section recording ---------- */
+const secAudio = new Audio(); secAudio.preload = 'metadata'; let secKey = null;
+const mmss = (s) => { s = Math.max(0, Math.floor(s || 0)); return ar(Math.floor(s / 60)) + ':' + String(s % 60).padStart(2, '0').replace(/\d/g, x => '٠١٢٣٤٥٦٧٨٩'[x]); };
+function bindSectionPlayer(key) {
+  const info = SECTION_AUDIO[key];
+  if (secKey !== key) { secAudio.pause(); secAudio.src = info.file; secKey = key; S.trackPos = S.trackPos || {}; secAudio.currentTime = S.trackPos[key] || 0; }
+  const btn = $('#spPlay'), seek = $('#spSeek'), tm = $('#spTime');
+  const sync = () => {
+    if (!btn || !document.body.contains(btn)) return;
+    btn.innerHTML = ico(secAudio.paused ? 'play' : 'stop');
+    const d = secAudio.duration || 0;
+    if (!seek.matches(':active')) seek.value = d ? Math.round(secAudio.currentTime / d * 1000) : 0;
+    tm.textContent = `${mmss(secAudio.currentTime)} / ${mmss(d)}`;
+  };
+  btn.onclick = () => { if (secAudio.paused) { zAudio.pause(); secAudio.play().catch(() => toast('تعذّر تشغيل التسجيل')); } else secAudio.pause(); };
+  seek.oninput = () => { const d = secAudio.duration || 0; if (d) secAudio.currentTime = seek.value / 1000 * d; sync(); };
+  secAudio.ontimeupdate = () => { sync(); if (Math.floor(secAudio.currentTime) % 5 === 0) { S.trackPos = S.trackPos || {}; S.trackPos[key] = secAudio.currentTime; save(); } };
+  secAudio.onplay = secAudio.onpause = secAudio.onloadedmetadata = sync;
+  secAudio.onended = () => { S.trackPos[key] = 0; save(); sync(); };
+  sync();
+}
+
 /* ---------- Zikr recordings ---------- */
 const zAudio = new Audio(); let zPlaying = null;
 function playZikr(id, btn) {
@@ -900,8 +936,14 @@ function renderSection(key) {
       <button class="ib primary" id="sAll" aria-label="إكمال جميع الأذكار" title="إكمال جميع الأذكار">${ico('done-all')}</button>
       <div class="pl"><i id="sBar"></i></div>
     </div>
+    ${SECTION_AUDIO[key] ? `<div class="splayer">
+      <button class="ib primary" id="spPlay" aria-label="تشغيل التسجيل">${ico('play')}</button>
+      <div class="sp-body"><div class="sp-t">استمع إلى ${sec.name} بصوت ${SECTION_AUDIO[key].by}</div>
+        <div class="sp-row"><input type="range" id="spSeek" min="0" max="1000" value="0" aria-label="موضع التشغيل"><span id="spTime">٠:٠٠</span></div></div>
+    </div>` : ''}
     ${pagerHTML(sec.items, false)}`;
   document.body.classList.add('sec');
+  if (SECTION_AUDIO[key]) bindSectionPlayer(key);
   const upd = () => { const s = secStats(key); $("#sCnt").textContent = `${ar(s.done)} من ${ar(s.total)}`; $('#sBar').style.width = s.pct + '%'; return s; };
   currentOnChange = (id, nowDone) => {
     const s = upd();
