@@ -24,10 +24,11 @@ public class Bridge {
         else v.vibrate(ms);
     }
 
-    /** json: [{"t": epochMillis, "n": "الظهر"}, ...] */
+    /** json: [{"t": epochMillis, "n": "الظهر", "s": "١١:٣٩ ص", "a": true, "f": "adhan.mp3"}, ...] */
     @JavascriptInterface
-    public void scheduleAdhans(String json) {
-        AdhanScheduler.save(ctx, json);
+    public void scheduleAdhans(String json, boolean pinned, String city) {
+        AdhanScheduler.save(ctx, json, pinned, city == null ? "" : city);
+        AdhanScheduler.updatePinned(ctx);
         AdhanScheduler.scheduleNext(ctx);
     }
 

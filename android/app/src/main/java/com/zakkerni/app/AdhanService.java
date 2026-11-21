@@ -27,6 +27,8 @@ public class AdhanService extends Service {
         }
         String name = intent != null ? intent.getStringExtra("name") : null;
         if (name == null) name = "الصلاة";
+        String file = intent != null ? intent.getStringExtra("file") : null;
+        if (file == null || file.contains("..")) file = "adhan.mp3";
 
         AdhanScheduler.createChannel(this);
         PendingIntent open = PendingIntent.getActivity(this, 0,
@@ -52,11 +54,11 @@ public class AdhanService extends Service {
         if (Build.VERSION.SDK_INT >= 29) startForeground(NOTIF_ID, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
         else startForeground(NOTIF_ID, n);
 
-        play();
+        play(file);
         return START_NOT_STICKY;
     }
 
-    private void play() {
+    private void play(String file) {
         release();
         try {
             player = new MediaPlayer();
@@ -64,7 +66,9 @@ public class AdhanService extends Service {
                     .setUsage(AudioAttributes.USAGE_ALARM)
                     .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
                     .build());
-            AssetFileDescriptor afd = getAssets().openFd("www/adhan.mp3");
+            AssetFileDescriptor afd;
+            try { afd = getAssets().openFd("www/" + file); }
+            catch (Exception missing) { afd = getAssets().openFd("www/adhan.mp3"); }
             player.setDataSource(afd.getFileDescriptor(), afd.getStartOffset(), afd.getLength());
             afd.close();
             player.setWakeMode(this, PowerManager.PARTIAL_WAKE_LOCK);

@@ -134,6 +134,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        AdhanScheduler.updatePinned(this);
         if (web != null) web.evaluateJavascript("window.onNativeResume && window.onNativeResume()", null);
     }
 
