@@ -44,38 +44,49 @@ public class AdhanActivity extends Activity {
         root.setLayoutDirection(android.view.View.LAYOUT_DIRECTION_RTL);
         int pad = dp(28);
         root.setPadding(pad, pad, pad, pad);
-        root.setBackground(new GradientDrawable(GradientDrawable.Orientation.TL_BR,
-                new int[]{Color.parseColor("#7137A8"), Color.parseColor("#5A2690"), Color.parseColor("#B04E0A")}));
+        // orange brand background with a light arabesque
+        GradientDrawable grad = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
+                new int[]{Color.parseColor("#FFAA5C"), Color.parseColor("#F28A32"), Color.parseColor("#E8761E")});
+        android.graphics.drawable.BitmapDrawable pat = new android.graphics.drawable.BitmapDrawable(getResources(),
+                android.graphics.Bitmap.createScaledBitmap(android.graphics.BitmapFactory.decodeResource(getResources(), R.drawable.adhan_pat), dp(260), dp(260), true));
+        pat.setTileModeXY(android.graphics.Shader.TileMode.MIRROR, android.graphics.Shader.TileMode.MIRROR);
+        pat.setAlpha(150);
+        root.setBackground(new android.graphics.drawable.LayerDrawable(new android.graphics.drawable.Drawable[]{grad, pat}));
+        getWindow().setStatusBarColor(Color.parseColor("#FFAA5C"));
+        getWindow().setNavigationBarColor(Color.parseColor("#E8761E"));
 
-        ImageView icon = new ImageView(this);
-        icon.setImageResource(R.mipmap.ic_zakkerni);
-        root.addView(icon, new LinearLayout.LayoutParams(dp(112), dp(112)));
+        ImageView word = new ImageView(this);
+        word.setImageResource(R.drawable.adhan_word);
+        word.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        root.addView(word, new LinearLayout.LayoutParams(dp(220), dp(139)));
 
-        TextView small = text("حان الآن موعد أذان", 18, false, Color.parseColor("#F1E8F8"));
-        small.setPadding(0, dp(28), 0, 0);
+        int deep = Color.parseColor("#4A1C78");
+        TextView small = text("حان الآن موعد أذان", 18, false, deep);
+        small.setPadding(0, dp(30), 0, 0);
         root.addView(small);
-        root.addView(text(AdhanService.curName.isEmpty() ? "الصلاة" : AdhanService.curName, 48, true, Color.WHITE));
-        TextView time = text(AdhanService.curTime, 20, true, Color.parseColor("#FFB066"));
+        root.addView(text(AdhanService.curName.isEmpty() ? "الصلاة" : AdhanService.curName, 50, true, deep));
+        TextView time = text(AdhanService.curTime, 22, true, Color.WHITE);
         root.addView(time);
         String city = AdhanScheduler.prefs(this).getString(AdhanScheduler.KEY_CITY, "");
-        if (!city.isEmpty()) root.addView(text(city, 15, false, Color.parseColor("#F1E8F8")));
+        if (!city.isEmpty()) root.addView(text(city, 15, false, Color.parseColor("#5A2690")));
 
         Button stop = new Button(this);
         stop.setText("إيقاف الأذان");
         stop.setAllCaps(false);
         stop.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
         stop.setTypeface(Typeface.DEFAULT_BOLD);
-        stop.setTextColor(Color.WHITE);
+        stop.setTextColor(Color.parseColor("#FFB066"));
         GradientDrawable bg = new GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT,
-                new int[]{Color.parseColor("#FFB066"), Color.parseColor("#F28A32")});
+                new int[]{Color.parseColor("#7137A8"), Color.parseColor("#4A1C78")});
         bg.setCornerRadius(dp(30));
         stop.setBackground(bg);
+        stop.setElevation(dp(6));
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(dp(240), dp(60));
         lp.topMargin = dp(44);
         root.addView(stop, lp);
         stop.setOnClickListener(v -> stopAdhan());
 
-        TextView hint = text("أو اضغط زر رفع/خفض الصوت", 14, false, Color.parseColor("#E6D6F5"));
+        TextView hint = text("أو اضغط زر رفع/خفض الصوت", 14, false, Color.parseColor("#5A2690"));
         hint.setPadding(0, dp(14), 0, 0);
         root.addView(hint);
 
