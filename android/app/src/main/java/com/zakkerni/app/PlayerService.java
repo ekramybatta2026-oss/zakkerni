@@ -464,7 +464,6 @@ public class PlayerService extends Service implements MediaPlayer.OnPreparedList
                 .setColor(Color.parseColor("#7137A8"))
                 .setContentTitle(title.isEmpty() ? "مشغّل ذَكِّرني" : title)
                 .setContentText(artist)
-                .setLargeIcon(art != null ? art : WidgetRenderer.fallbackArt(this))
                 .setContentIntent(open)
                 .setDeleteIntent(action(A_STOP, 66))
                 .setOngoing(isPlaying())
@@ -497,10 +496,6 @@ public class PlayerService extends Service implements MediaPlayer.OnPreparedList
         }
         v.setTextViewText(R.id.n_title, title.isEmpty() ? "مشغّل ذَكِّرني" : title);
         v.setTextViewText(R.id.n_artist, artist == null ? "" : artist);
-        v.setImageViewResource(R.id.n_toggle, isPlaying() ? R.drawable.ic_p_pause : R.drawable.ic_p_play);
-        v.setOnClickPendingIntent(R.id.n_prev, action(A_PREV, 61));
-        v.setOnClickPendingIntent(R.id.n_toggle, action(A_TOGGLE, 62));
-        v.setOnClickPendingIntent(R.id.n_next, action(A_NEXT, 63));
         return v;
     }
 
