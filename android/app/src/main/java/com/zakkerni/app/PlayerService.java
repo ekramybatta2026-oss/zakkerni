@@ -62,7 +62,8 @@ public class PlayerService extends Service implements MediaPlayer.OnPreparedList
     private int idx = 0, repeat = 0, eqPreset = -1;
     private boolean shuffle = false, prepared = false, wantPlay = false, foreground = false;
     private float speed = 1f;
-    private long pendingSeek = 0, sleepAt = 0;
+    private long pendingSeek = 0;
+    long sleepAt = 0;
     boolean sleepEnd = false;
     String title = "", artist = "";
     private long curId = -1, duration = 0;
