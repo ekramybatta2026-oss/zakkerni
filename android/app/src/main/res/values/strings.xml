@@ -9,4 +9,6 @@
     <string name="wd_next">الصلاة القادمة مع العدّ التنازلي</string>
     <string name="wd_day">الصلوات الخمس في سطر واحد</string>
     <string name="wd_list">قائمة رأسية بالصلوات الخمس</string>
+    <string name="wl_player">مشغّل الصوتيات</string>
+    <string name="wd_player">تحكّم في التشغيل من الشاشة الرئيسية</string>
 </resources>

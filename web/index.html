@@ -239,10 +239,10 @@ body.sec .shbar{flex:none;position:relative;top:0}
 .sel{font-family:inherit;font-size:15px;font-weight:700;color:var(--text);background:var(--surface-2);border:0;border-radius:12px;padding:8px 10px;max-width:52%}
 .note-s{font-size:12.5px;color:var(--muted);line-height:1.8;padding:12px 16px}
 /* Tools on home */
-.tools{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
-.tool{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:18px;background:var(--surface);box-shadow:var(--shadow);border:1px solid var(--line);text-align:right}
+.tools{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
+.tool{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 6px;text-align:center !important;border-radius:18px;background:var(--surface);box-shadow:var(--shadow);border:1px solid var(--line);text-align:right}
 .tool .ti{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;color:#fff;background:var(--grad);flex:none}
-.tool b{display:block;font-size:14.5px}.tool small{font-size:11px;color:var(--muted)}
+.tool b{display:block;font-size:13.5px}.tool small{font-size:10.5px;color:var(--muted)}
 /* Qibla */
 .qcard{position:relative;background:var(--surface);border-radius:26px;box-shadow:var(--shadow);padding:26px 16px 18px;text-align:center;border:2px solid transparent;transition:border-color .3s,background .3s}
 .qcard.ok{border-color:var(--orange);background:linear-gradient(180deg,var(--soft-or),var(--surface))}
@@ -262,6 +262,41 @@ body.sec .shbar{flex:none;position:relative;top:0}
 .qinfo{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
 .qinfo div{background:var(--surface-2);border-radius:14px;padding:8px}
 .qinfo small{display:block;font-size:11.5px;color:var(--muted)}.qinfo b{font-size:15px}
+/* Player */
+.pnow{background:var(--surface);border-radius:26px;box-shadow:var(--shadow);padding:16px;text-align:center;margin-bottom:12px}
+.part{width:150px;height:150px;margin:0 auto 10px;border-radius:24px;background:var(--grad);display:grid;place-items:center;color:#fff;overflow:hidden;box-shadow:0 10px 26px rgba(113,55,168,.3)}
+.part svg.i{width:60px;height:60px}.part img{width:100%;height:100%;object-fit:cover}
+.pmeta b{display:block;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pmeta small{display:block;color:var(--muted);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pmeta .psleep{color:var(--orange);font-weight:700}
+.pseek{display:flex;align-items:center;gap:8px;margin-top:10px;direction:ltr}
+.pseek input{flex:1;accent-color:var(--orange)}.pseek span{font-size:11.5px;color:var(--muted);min-width:38px}
+.pctl{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:6px;direction:ltr}
+.pb{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;color:var(--purple)}
+[data-theme="dark"] .pb{color:#D9B8F5}
+.pb.big{width:68px;height:68px;background:var(--grad-or);color:#fff;box-shadow:0 8px 20px rgba(242,138,50,.4)}
+.pb.big svg.i{width:30px;height:30px}
+.pb.sm{width:40px;height:40px;color:var(--muted);position:relative}
+.pb.sm.on{color:var(--orange);background:var(--soft-or)}
+[data-theme="dark"] .pb.sm.on{background:rgba(242,138,50,.15)}
+#pRep[data-one="١"]::after{content:"١";position:absolute;top:2px;right:4px;font-size:10px;font-weight:800;color:var(--orange)}
+.pchips{display:flex;gap:6px;justify-content:center;margin-top:10px;flex-wrap:wrap}
+.pchip{display:inline-flex;align-items:center;gap:5px;padding:7px 12px;border-radius:999px;background:var(--surface-2);font-size:12.5px;font-weight:700}
+.pchip svg.i{width:17px;height:17px}.pchip.on{background:var(--orange);color:#fff}
+.ptabs{display:flex;justify-content:center;margin-bottom:8px}
+.psearch{width:100%;font:inherit;font-size:15px;padding:11px 14px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--text);margin-bottom:8px}
+.plist{background:var(--surface);border-radius:22px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:12px}
+.prow{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border-bottom:1px solid var(--line);text-align:right}
+.prow:last-child{border-bottom:0}.prow.cur{background:var(--soft-or)}
+[data-theme="dark"] .prow.cur{background:rgba(242,138,50,.12)}
+.pic{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;background:var(--lav);color:var(--purple);flex:none}
+[data-theme="dark"] .pic{background:#3F3052;color:#D9B8F5}
+.pinfo{flex:1;min-width:0}.pinfo b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pinfo small{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.pplay{flex:none;padding:6px 12px;border-radius:12px;background:var(--grad-or);color:#fff;font-weight:700;font-size:12.5px}
+.sheet .modal-card{text-align:right}
+.shlist{display:grid;gap:6px;max-height:55vh;overflow:auto}
+.shi{padding:12px 14px;border-radius:14px;background:var(--surface-2);font-weight:700;text-align:right}
+.shi.on{background:var(--orange);color:#fff}
 /* Mosques */
 .mseg{margin:0 0 10px;justify-content:center;display:flex}
 .mlist{background:var(--surface);border-radius:22px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:12px}
@@ -330,6 +365,17 @@ body.sec .toast.show{transform:translateX(-50%)}
   <defs><linearGradient id="gOr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFB066"/><stop offset="1" stop-color="#F28A32"/></linearGradient></defs>
   <symbol id="i-mosque" viewBox="0 0 24 24"><path d="M3 21h18M5 21v-7M19 21v-7M4 14h2M18 14h2M5 14V9.5L5 7M19 14V9.5L19 7M5 7l-.01 0M19 7l-.01 0"/><path d="M8 21v-5a4 4 0 0 1 8 0v5"/><path d="M7.5 12.5c0-2.6 2-4 4.5-5.5 2.5 1.5 4.5 2.9 4.5 5.5"/><path d="M12 4.5V7M11 21v-2.5a1 1 0 0 1 2 0V21"/></symbol>
   <symbol id="i-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5 13.4 13.4 8.5 15.5 10.6 10.6z" fill="currentColor"/></symbol>
+  <symbol id="i-music" viewBox="0 0 24 24"><path d="M9 18V5l11-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor"/></symbol>
+  <symbol id="i-skipf" viewBox="0 0 24 24"><path d="M5 6l9 6-9 6z" fill="currentColor"/><path d="M18 6v12"/></symbol>
+  <symbol id="i-skipb" viewBox="0 0 24 24"><path d="M19 6l-9 6 9 6z" fill="currentColor"/><path d="M6 6v12"/></symbol>
+  <symbol id="i-shuffle" viewBox="0 0 24 24"><path d="M3 7h3.5c2 0 3.2 1 4.3 2.7l2.4 4.6C14.3 16 15.5 17 17.5 17H21M3 17h3.5c1.4 0 2.4-.5 3.3-1.5M14.2 8.5C15 7.5 16 7 17.5 7H21M18.5 4.5 21 7l-2.5 2.5M18.5 14.5 21 17l-2.5 2.5"/></symbol>
+  <symbol id="i-repeat" viewBox="0 0 24 24"><path d="M4 11V9a3 3 0 0 1 3-3h13M17 3l3 3-3 3M20 13v2a3 3 0 0 1-3 3H4M7 21l-3-3 3-3"/></symbol>
+  <symbol id="i-timer" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9.5 2h5"/></symbol>
+  <symbol id="i-speed" viewBox="0 0 24 24"><path d="M4 15a8 8 0 1 1 16 0"/><path d="M12 15l4-5"/></symbol>
+  <symbol id="i-eq" viewBox="0 0 24 24"><path d="M5 20V10M10 20V4M15 20v-8M20 20V7"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
   <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></symbol>
   <symbol id="i-bell-off" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 9.4-4.9M18 11v5l1.5 2H8"/><path d="M10 20.5a2 2 0 0 0 4 0M3 3l18 18"/></symbol>
   <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/></symbol>
@@ -377,6 +423,7 @@ body.sec .toast.show{transform:translateX(-50%)}
     <section class="view" id="v-adhan"></section>
     <section class="view" id="v-qibla"></section>
     <section class="view" id="v-mosques"></section>
+    <section class="view" id="v-player"></section>
   </main>
 </div>
 
@@ -407,6 +454,7 @@ body.sec .toast.show{transform:translateX(-50%)}
   <div class="actions"><button class="btn primary" id="aPlay" style="display:none"><svg class="i"><use href="#i-play"/></svg>تشغيل الأذان</button><button class="btn ghost" id="aStop">إيقاف الأذان</button></div>
 </div></div>
 <audio id="adhanAudio" src="adhan.mp3" preload="none"></audio>
+<div class="modal sheet" id="sheet"><div class="modal-card"><h3 id="shTitle"></h3><div id="shList" class="shlist"></div><button class="btn ghost" style="width:100%;margin-top:8px" onclick="this.closest('.modal').classList.remove('show')">إغلاق</button></div></div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -698,7 +746,7 @@ const ar = (n) => nd(String(Number(n)));
 const todayKey = () => { const d = new Date(); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; };
 
 /* ---------- Storage ---------- */
-const defaults = () => ({ date: todayKey(), counts: {}, celebrated: {}, favs: [], settings: { theme: 'auto', digits: 'ar', font: 17, sound: true, vib: true }, prayer: { city: 'auto', fallback: 'riyadh', loc: null, voice: 'ekramy', pin: false, vol: 80, pre: 5, silent: 0, full: true, method: '', asr: 1, on: true, per: { fajr: true, dhuhr: true, asr: true, maghrib: true, isha: true } }, played: {} });
+const defaults = () => ({ date: todayKey(), counts: {}, celebrated: {}, favs: [], settings: { theme: 'auto', digits: 'ar', font: 17, sound: true, vib: true }, prayer: { city: 'auto', fallback: 'riyadh', loc: null, voice: 'ekramy', pin: false, vol: 80, pre: 5, silent: 0, sdelay: 5, full: true, method: '', asr: 1, on: true, per: { fajr: true, dhuhr: true, asr: true, maghrib: true, isha: true } }, played: {} });
 let S;
 function load() {
   try { S = JSON.parse(localStorage.getItem(KEY)) || defaults(); } catch (e) { S = defaults(); }
@@ -802,6 +850,7 @@ function go(view, push = true) {
   else if (view === 'favs') { renderFavs(); $('#v-favs').classList.add('active'); }
   else if (view === 'settings') { renderSettings(); $('#v-settings').classList.add('active'); }
   else if (view === 'adhan') { renderAdhan(); $('#v-adhan').classList.add('active'); }
+  else if (view === 'player') { renderPlayer(); $('#v-player').classList.add('active'); }
   else if (view === 'qibla') { renderQibla(); $('#v-qibla').classList.add('active'); }
   else if (view === 'mosques') { renderMosques(); $('#v-mosques').classList.add('active'); }
   window.scrollTo({ top: 0 });
@@ -855,7 +904,8 @@ function renderHome() {
     </div>
     <div class="tools">
       <button class="tool" data-open="qibla"><span class="ti">${ico('compass')}</span><span><b>القبلة</b><small>اتجاه الكعبة من موقعك</small></span></button>
-      <button class="tool" data-open="mosques"><span class="ti">${ico('mosque')}</span><span><b>مساجد قريبة</b><small>حسب موقعك الحالي</small></span></button>
+      <button class="tool" data-open="mosques"><span class="ti">${ico('mosque')}</span><span><b>مساجد قريبة</b><small>حسب موقعك</small></span></button>
+      <button class="tool" data-open="player"><span class="ti">${ico('music')}</span><span><b>المشغّل</b><small>صوتيات الجوال</small></span></button>
     </div>
     <div class="overall">
       <div class="ring"><svg viewBox="0 0 80 80"><circle class="track" cx="40" cy="40" r="34" fill="none" stroke-width="9"/><circle class="bar" cx="40" cy="40" r="34" fill="none" stroke-width="9" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - pct / 100)}"/></svg><span>${ar(pct)}٪</span></div>
@@ -1262,7 +1312,7 @@ function scheduleNative() {
     if (p.k === 'sunrise') return;
     list.push({ t: p.at.getTime(), n: p.name, s: fmtTime(p.at), a: !!(S.prayer.on && p.adhan && S.prayer.per[p.k]), f: voiceFile(p.k) });
   });
-  try { AndroidBridge.setAdhanSettings && AndroidBridge.setAdhanSettings(JSON.stringify({ dig: S.settings.digits || 'ar', vol: S.prayer.vol, pre: S.prayer.pre, silent: S.prayer.silent, full: S.prayer.full, city: city().name })); } catch (e) {}
+  try { AndroidBridge.setAdhanSettings && AndroidBridge.setAdhanSettings(JSON.stringify({ dig: S.settings.digits || 'ar', vol: S.prayer.vol, pre: S.prayer.pre, silent: S.prayer.silent, sdelay: S.prayer.sdelay ?? 5, full: S.prayer.full, city: city().name })); } catch (e) {}
   try { AndroidBridge.scheduleAdhans(JSON.stringify(list), !!S.prayer.pin, city().name); } catch (e) {}
 }
 window.onNativeResume = () => { rollDay(); scheduleNative(); if (current === 'adhan') renderAdhan(); };
@@ -1331,7 +1381,8 @@ function renderAdhan() {
       <div class="set-row" style="flex-wrap:wrap"><div class="ic2">${ico('sound')}</div><div class="lbl"><b>مستوى صوت الأذان</b><small id="pVolL">${ar(S.prayer.vol)}٪</small></div>
         <input type="range" id="pVol" min="10" max="100" step="5" value="${S.prayer.vol}"></div>
       <div class="set-row"><div class="ic2">${ico('bell')}</div><div class="lbl"><b>تنبيه قبل الأذان</b><small>تذكير بقرب موعد الصلاة</small></div><select class="sel" id="pPre">${opts([[0, 'بدون'], [5, 'قبل ٥ دقائق'], [10, 'قبل ١٠ دقائق'], [15, 'قبل ١٥ دقيقة'], [20, 'قبل ٢٠ دقيقة'], [30, 'قبل ٣٠ دقيقة']], S.prayer.pre)}</select></div>
-      ${NATIVE ? `<div class="set-row"><div class="ic2">${ico('vib')}</div><div class="lbl"><b>الوضع الصامت بعد الأذان</b><small>ثم يعود الجوال لوضعه السابق تلقائيًا</small></div><select class="sel" id="pSil">${opts([[0, 'إيقاف'], [10, '١٠ دقائق'], [15, '١٥ دقيقة'], [20, '٢٠ دقيقة'], [30, '٣٠ دقيقة'], [45, '٤٥ دقيقة'], [60, 'ساعة']], S.prayer.silent)}</select></div>
+      ${NATIVE ? `<div class="set-row"><div class="ic2">${ico('vib')}</div><div class="lbl"><b>مدة الوضع الصامت</b><small>يتحوّل الجوال للصامت تلقائيًا بعد الأذان ثم يعود لوضعه السابق</small></div><select class="sel" id="pSil">${opts([[0, 'إيقاف'], [10, '١٠ دقائق'], [15, '١٥ دقيقة'], [20, '٢٠ دقيقة'], [30, '٣٠ دقيقة'], [45, '٤٥ دقيقة'], [60, 'ساعة']], S.prayer.silent)}</select></div>
+      ${S.prayer.silent > 0 ? `<div class="set-row"><div class="ic2">${ico('timer')}</div><div class="lbl"><b>بدء الوضع الصامت</b><small>بعد دخول وقت الأذان</small></div><select class="sel" id="pSilD">${opts([[0, 'مع الأذان مباشرة'], [5, 'بعد ٥ دقائق'], [10, 'بعد ١٠ دقائق'], [15, 'بعد ١٥ دقيقة'], [20, 'بعد ٢٠ دقيقة']].map(([v, l]) => [v, nd(l)]), S.prayer.sdelay ?? 5)}</select></div>` : ''}
       <div class="set-row"><div class="ic2">${ico('mosque')}</div><div class="lbl"><b>شاشة كاملة عند الأذان</b><small>والجوال مقفول؛ وإن كان مفتوحًا يظهر شريط علوي فقط</small></div><button class="switch ${S.prayer.full ? 'on' : ''}" id="pFull" aria-label="شاشة كاملة"></button></div>` : ''}
       ${NATIVE ? `<div class="set-row"><div class="ic2">${ico('bell')}</div><div class="lbl"><b>مواقيت الصلاة في الإشعارات</b><small>إشعار دائم بالصلاة القادمة وعدّاد تنازلي</small></div><button class="switch ${S.prayer.pin ? 'on' : ''}" id="pPin" aria-label="إشعار المواقيت"></button></div>` : ''}
       <div class="set-row"><div class="ic2">${ico('pin')}</div><div class="lbl"><b>المدينة</b></div><select class="sel" id="pCity">${opts([['auto', '📍 تلقائي حسب موقعي'], ...CITIES.map(x => [x.id, x.name])], S.prayer.city)}</select></div>
@@ -1353,6 +1404,7 @@ function renderAdhan() {
   pv.onchange = () => scheduleNative();
   $('#pPre').onchange = (e) => { S.prayer.pre = +e.target.value; save(); renderAdhan(); };
   const ps = $('#pSil'); if (ps) ps.onchange = (e) => { S.prayer.silent = +e.target.value; save(); renderAdhan(); if (S.prayer.silent && !AndroidBridge.hasDnd()) toast('اسمح للتطبيق بالتحكم في وضع عدم الإزعاج'); };
+  const psd = $('#pSilD'); if (psd) psd.onchange = (e) => { S.prayer.sdelay = +e.target.value; save(); scheduleNative(); };
   const pf = $('#pFull'); if (pf) pf.onclick = () => { S.prayer.full = !S.prayer.full; save(); renderAdhan(); };
   $('#pVoice').onchange = (e) => { S.prayer.voice = e.target.value; save(); stopAdhan(); setVoiceSrc(); renderAdhan(); };
   const pp = $('#pPin'); if (pp) pp.onclick = () => { S.prayer.pin = !S.prayer.pin; save(); renderAdhan(); };
@@ -1499,6 +1551,115 @@ function renderMosques() {
   });
 }
 
+/* ---------- Audio player (phone's own files, Android) ---------- */
+let PS = {}, LIB = null, pTab = 'all', pQuery = '', pFolder = null, EQS = null;
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const PB = () => window.AndroidBridge && AndroidBridge.playerCmd;
+window.onPlayer = (st) => { if (st.art === '=') st.art = PS.art; PS = st || {}; if (current === 'player') paintNow(); };
+window.onAudioPermission = (ok) => { if (current === 'player') { LIB = null; renderPlayer(); } if (!ok) toast('لم يُسمح بالوصول إلى الملفات الصوتية'); };
+const tms = (ms) => mmss((ms || 0) / 1000);
+function pcmd(c, arg = '') { try { AndroidBridge.playerCmd(c, String(arg)); } catch (e) {} }
+function renderPlayer() {
+  const v = $('#v-player');
+  if (!PB()) { v.innerHTML = `<div class="sec-head" style="position:static"><h2>المشغّل</h2></div><div class="empty">${ico('music')}<p>تشغيل الملفات الصوتية الموجودة على الجوال متاح في نسخة الأندرويد من ذَكِّرني.</p></div>`; return; }
+  if (!AndroidBridge.hasAudioPermission()) {
+    v.innerHTML = `<div class="sec-head" style="position:static"><h2>المشغّل</h2></div><div class="empty">${ico('music')}<p>للتشغيل من ملفات جوالك، اسمح لذَكِّرني بالوصول إلى الملفات الصوتية.</p><button class="btn primary" id="pAsk">السماح بالوصول</button></div>`;
+    $('#pAsk').onclick = () => AndroidBridge.requestAudioPermission(); return;
+  }
+  try { PS = JSON.parse(AndroidBridge.playerState() || '{}'); } catch (e) { PS = {}; }
+  if (!LIB) { try { LIB = JSON.parse(AndroidBridge.getLibrary() || '[]'); } catch (e) { LIB = []; } }
+  v.innerHTML = `
+    <div class="pnow">
+      <div class="part" id="pArt">${ico('music')}</div>
+      <div class="pmeta"><b id="pTitle">اختر ملفًا للتشغيل</b><small id="pArtist"></small><small class="psleep" id="pSleep"></small></div>
+      <div class="pseek"><span id="pPos">٠:٠٠</span><input type="range" id="pSeekR" min="0" max="1000" value="0"><span id="pDur">٠:٠٠</span></div>
+      <div class="pctl">
+        <button class="pb sm" id="pShuf" aria-label="عشوائي">${ico('shuffle')}</button>
+        <button class="pb" id="pPrevB" aria-label="السابق">${ico('skipb')}</button>
+        <button class="pb big" id="pTog" aria-label="تشغيل">${ico('play')}</button>
+        <button class="pb" id="pNextB" aria-label="التالي">${ico('skipf')}</button>
+        <button class="pb sm" id="pRep" aria-label="تكرار">${ico('repeat')}</button>
+      </div>
+      <div class="pchips">
+        <button class="pchip" id="pSleepB">${ico('timer')}<span>مؤقت النوم</span></button>
+        <button class="pchip" id="pSpeed">${ico('speed')}<span>السرعة</span></button>
+        <button class="pchip" id="pEq">${ico('eq')}<span>المؤثرات</span></button>
+      </div>
+    </div>
+    <div class="ptabs seg">${[['all', 'كل الملفات'], ['folders', 'المجلدات'], ['artists', 'الفنانون']].map(([k, l]) => `<button data-pt="${k}" class="${pTab === k ? 'on' : ''}">${l}</button>`).join('')}</div>
+    <input class="psearch" id="pSearch" placeholder="ابحث عن ملف صوتي…" value="${esc(pQuery)}">
+    <div class="plist" id="pList"></div>`;
+  $('#pTog').onclick = () => { if (PS.id > 0) pcmd('toggle'); else { const f = filtered(); if (f.length) playFrom(f, 0); } };
+  $('#pPrevB').onclick = () => pcmd('prev'); $('#pNextB').onclick = () => pcmd('next');
+  $('#pShuf').onclick = () => { pcmd('shuffle', PS.shuffle ? 0 : 1); toast(PS.shuffle ? 'التشغيل بالترتيب' : 'تشغيل عشوائي'); };
+  $('#pRep').onclick = () => { const m = ((PS.repeat || 0) + 1) % 3; pcmd('repeat', m); toast(['بدون تكرار', 'تكرار القائمة', 'تكرار المقطع الحالي'][m]); };
+  const sr = $('#pSeekR'); sr.oninput = () => { $('#pPos').textContent = tms(sr.value / 1000 * (PS.dur || 0)); }; sr.onchange = () => pcmd('seek', Math.round(sr.value / 1000 * (PS.dur || 0)));
+  $('#pSleepB').onclick = sleepSheet; $('#pSpeed').onclick = speedSheet; $('#pEq').onclick = eqSheet;
+  v.querySelectorAll('[data-pt]').forEach(b => b.onclick = () => { pTab = b.dataset.pt; pFolder = null; renderPlayer(); });
+  $('#pSearch').oninput = (e) => { pQuery = e.target.value; paintList(); };
+  paintList(); paintNow();
+}
+function filtered() {
+  const q = pQuery.trim().toLowerCase();
+  let L = LIB || [];
+  if (pFolder) L = L.filter(t => (pTab === 'folders' ? t.f : (t.a || 'غير معروف')) === pFolder);
+  if (q) L = L.filter(t => ((t.t || '') + ' ' + (t.a || '') + ' ' + (t.al || '') + ' ' + (t.f || '')).toLowerCase().includes(q));
+  return L;
+}
+function playFrom(list, i) { try { AndroidBridge.playerQueue(list.map(t => t.i).join(','), i); } catch (e) {} }
+function paintList() {
+  const el = $('#pList'); if (!el) return;
+  if (!LIB.length) { el.innerHTML = `<div class="empty">${ico('music')}<p>لا توجد ملفات صوتية على الجوال.</p></div>`; return; }
+  if (pTab !== 'all' && !pFolder) {
+    const key = t => pTab === 'folders' ? (t.f || '—') : (t.a && !/^</.test(t.a) ? t.a : 'غير معروف');
+    const groups = {}; LIB.forEach(t => { const k = key(t); (groups[k] = groups[k] || []).push(t); });
+    const q = pQuery.trim().toLowerCase();
+    el.innerHTML = Object.keys(groups).filter(k => !q || k.toLowerCase().includes(q)).sort().map(k => `<button class="prow grp" data-g="${esc(k)}"><span class="pic">${ico(pTab === 'folders' ? 'folder' : 'user')}</span><span class="pinfo"><b>${esc(k)}</b><small>${ar(groups[k].length)} ملف</small></span></button>`).join('');
+    el.querySelectorAll('[data-g]').forEach(b => b.onclick = () => { pFolder = b.dataset.g; paintList(); });
+    return;
+  }
+  const L = filtered(), max = 400;
+  el.innerHTML = (pFolder ? `<button class="prow back" id="pBack"><span class="pic">${ico('reset')}</span><span class="pinfo"><b>${esc(pFolder)}</b><small>رجوع</small></span><span class="pplay" id="pAll">تشغيل الكل</span></button>` : '') +
+    L.slice(0, max).map((t, i) => `<button class="prow ${t.i === PS.id ? 'cur' : ''}" data-k="${i}"><span class="pic">${ico(t.i === PS.id && PS.playing ? 'eq' : 'music')}</span><span class="pinfo"><b>${esc(t.t)}</b><small>${esc(t.a && !/^</.test(t.a) ? t.a : t.f)} · ${tms(t.d)}</small></span></button>`).join('') +
+    (L.length > max ? `<div class="note-s">يُعرض ${ar(max)} من ${ar(L.length)} — استخدم البحث للوصول للباقي.</div>` : '');
+  el.querySelectorAll('[data-k]').forEach(b => b.onclick = () => playFrom(L, +b.dataset.k));
+  const bk = $('#pBack'); if (bk) bk.onclick = (e) => { if (e.target.id === 'pAll') { playFrom(L, 0); return; } pFolder = null; paintList(); };
+}
+function paintNow() {
+  if (!$('#pTitle')) return;
+  const has = PS.id > 0;
+  $('#pTitle').textContent = has ? PS.title : 'اختر ملفًا للتشغيل';
+  $('#pArtist').textContent = has ? (PS.artist || '') : '';
+  $('#pArt').innerHTML = PS.art ? `<img src="data:image/jpeg;base64,${PS.art}" alt="">` : ico('music');
+  $('#pTog').innerHTML = ico(PS.playing ? 'pause' : 'play');
+  $('#pShuf').classList.toggle('on', !!PS.shuffle);
+  $('#pRep').classList.toggle('on', (PS.repeat || 0) > 0); $('#pRep').dataset.one = PS.repeat === 2 ? '١' : '';
+  const sr = $('#pSeekR'); if (sr && !sr.matches(':active')) sr.value = PS.dur ? Math.round(PS.pos / PS.dur * 1000) : 0;
+  $('#pPos').textContent = tms(PS.pos); $('#pDur').textContent = tms(PS.dur);
+  const sl = PS.sleepEnd ? 'يتوقف بعد هذا المقطع' : PS.sleepAt > 0 ? `يتوقف بعد ${mmss((PS.sleepAt - Date.now()) / 1000)}` : '';
+  $('#pSleep').textContent = sl ? '⏱ ' + sl : '';
+  $('#pSleepB').classList.toggle('on', !!sl);
+  $('#pSpeed span').textContent = Math.abs((PS.speed || 1) - 1) < .01 ? 'السرعة' : nd('×' + PS.speed);
+  $('#pEq').classList.toggle('on', (PS.eq ?? -1) >= 0);
+  document.querySelectorAll('#pList .prow[data-k]').forEach(b => {});
+}
+function sheet(title, items, onPick) {
+  const m = $('#sheet'); $('#shTitle').textContent = title;
+  $('#shList').innerHTML = items.map(([v, l, on]) => `<button class="shi ${on ? 'on' : ''}" data-v="${v}">${l}</button>`).join('');
+  m.classList.add('show');
+  $('#shList').querySelectorAll('[data-v]').forEach(b => b.onclick = () => { m.classList.remove('show'); onPick(b.dataset.v); });
+}
+function sleepSheet() {
+  const opts = [5, 10, 15, 20, 30, 45, 60, 90, 120].map(n => [n, nd(n < 60 ? `${n} دقيقة` : n === 60 ? 'ساعة' : n === 90 ? 'ساعة ونصف' : 'ساعتان')]);
+  sheet('مؤقت النوم', [...opts, ['end', 'بعد انتهاء المقطع الحالي'], ['0', 'إلغاء المؤقت']], (v) => { pcmd('sleep', v); toast(v === '0' ? 'تم إلغاء المؤقت' : 'تم ضبط مؤقت النوم — يخفت الصوت تدريجيًا قبل التوقف'); });
+}
+function speedSheet() { sheet('سرعة التشغيل', [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2].map(s => [s, nd('×' + s) + (s === 1 ? ' (عادي)' : ''), Math.abs((PS.speed || 1) - s) < .01]), v => pcmd('speed', v)); }
+function eqSheet() {
+  if (!EQS) { try { EQS = JSON.parse(AndroidBridge.eqPresets() || '[]'); } catch (e) { EQS = []; } }
+  const names = { Normal: 'عادي', Classical: 'كلاسيكي', Dance: 'حماسي', Flat: 'مسطّح', Folk: 'شعبي', 'Heavy Metal': 'قوي', 'Hip Hop': 'إيقاعي', Jazz: 'جاز', Pop: 'بوب', Rock: 'روك' };
+  sheet('مؤثرات الصوت', [[-1, 'بدون مؤثرات', (PS.eq ?? -1) < 0], ...EQS.map((n, i) => [i, names[n] || n, PS.eq === i])], v => pcmd('eq', v));
+}
+
 /* ---------- Boot ---------- */
 load(); applySettings();
 try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => S.settings.theme === 'auto' && applySettings()); } catch (e) {}
@@ -1508,7 +1669,7 @@ setTimeout(scheduleNative, 800);
 // installable web app (iPhone / any browser)
 if (!NATIVE && 'serviceWorker' in navigator && location.protocol === 'https:') { try { navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {} }
 let start = (location.hash || '').slice(1); if (start === 'prefs') start = 'settings';
-go(SECTIONS[start] || ['favs', 'settings', 'adhan', 'qibla', 'mosques'].includes(start) ? start : 'home', false);
+go(SECTIONS[start] || ['favs', 'settings', 'adhan', 'qibla', 'mosques', 'player'].includes(start) ? start : 'home', false);
 try { history.replaceState({ view: current }, '', '#' + (current === 'settings' ? 'prefs' : current)); } catch (e) {}
 setTimeout(() => $('#splash').classList.add('hide'), 1300);
 document.addEventListener('visibilitychange', () => { if (!document.hidden && S.date !== todayKey()) { rollDay(); go(current, false); } });

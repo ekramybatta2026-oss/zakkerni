@@ -32,6 +32,7 @@ import androidx.webkit.WebViewAssetLoader;
 public class MainActivity extends Activity implements SensorEventListener {
     private static final int REQ_GEO = 11;
     private static final int REQ_NOTIF = 12;
+    private static final int REQ_AUDIO = 13;
     static final String START_URL = "https://appassets.androidplatform.net/assets/www/index.html";
 
     static MainActivity current;
@@ -112,7 +113,10 @@ public class MainActivity extends Activity implements SensorEventListener {
         web.addJavascriptInterface(new Bridge(this), "AndroidBridge");
 
         if (savedInstanceState != null) web.restoreState(savedInstanceState);
-        else web.loadUrl(START_URL + ("adhan".equals(getIntent().getStringExtra("go")) ? "#adhan" : ""));
+        else {
+            String go = getIntent().getStringExtra("go");
+            web.loadUrl(START_URL + ("adhan".equals(go) || "player".equals(go) ? "#" + go : ""));
+        }
 
         if (Build.VERSION.SDK_INT >= 33
                 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
@@ -128,6 +132,10 @@ public class MainActivity extends Activity implements SensorEventListener {
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQ_AUDIO && web != null) {
+            boolean ok = grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED;
+            web.evaluateJavascript("window.onAudioPermission && window.onAudioPermission(" + ok + ")", null);
+        }
         if (requestCode == REQ_GEO && geoCallback != null) {
             geoCallback.invoke(geoOrigin, hasLocation(), false);
             geoCallback = null;
@@ -150,6 +158,14 @@ public class MainActivity extends Activity implements SensorEventListener {
                      : (f | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
             getWindow().getDecorView().setSystemUiVisibility(f);
         }
+    }
+
+    void requestAudio() {
+        requestPermissions(new String[]{Build.VERSION.SDK_INT >= 33 ? Manifest.permission.READ_MEDIA_AUDIO : Manifest.permission.READ_EXTERNAL_STORAGE}, REQ_AUDIO);
+    }
+
+    void pushPlayer(String json) {
+        if (web != null) web.evaluateJavascript("window.onPlayer && window.onPlayer(" + json + ")", null);
     }
 
     /* ---------- Qibla compass (rotation-vector sensor) ---------- */
@@ -214,8 +230,9 @@ public class MainActivity extends Activity implements SensorEventListener {
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        if (web != null && "adhan".equals(intent.getStringExtra("go")))
-            web.evaluateJavascript("window.zGo && window.zGo('adhan')", null);
+        String go = intent.getStringExtra("go");
+        if (web != null && ("adhan".equals(go) || "player".equals(go)))
+            web.evaluateJavascript("window.zGo && window.zGo('" + go + "')", null);
     }
 
     @Override

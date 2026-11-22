@@ -19,14 +19,14 @@ import java.util.List;
 
 /** Draws every Zakkerni widget type from the saved prayer times and each widget's own settings. */
 final class WidgetRenderer {
-    static final int T_NEXT = 0, T_DAY = 1, T_FULL = 2, T_LIST = 3;
+    static final int T_NEXT = 0, T_DAY = 1, T_FULL = 2, T_LIST = 3, T_PLAYER = 4;
     static final String WPREFS = "zakkerni_widgets";
     static final String ACTION_TICK = "com.zakkerni.app.WIDGET_TICK";
 
     static final String[] STYLES = {"grad", "purple", "orange", "dark", "light"};
     static final String[] STYLE_NAMES = {"متدرّج", "بنفسجي", "برتقالي", "داكن", "فاتح"};
-    static final Class<?>[] PROVIDERS = {WidgetNext.class, WidgetDay.class, PrayerWidget.class, WidgetList.class};
-    static final int[] LAYOUTS = {R.layout.widget_next, R.layout.widget_day, R.layout.widget_prayer, R.layout.widget_list};
+    static final Class<?>[] PROVIDERS = {WidgetNext.class, WidgetDay.class, PrayerWidget.class, WidgetList.class, PlayerWidget.class};
+    static final int[] LAYOUTS = {R.layout.widget_next, R.layout.widget_day, R.layout.widget_prayer, R.layout.widget_list, R.layout.widget_player};
 
     private static final int[] NAMES = {R.id.n0, R.id.n1, R.id.n2, R.id.n3, R.id.n4};
     private static final int[] TIMES = {R.id.t0, R.id.t1, R.id.t2, R.id.t3, R.id.t4};
@@ -119,6 +119,7 @@ final class WidgetRenderer {
 
     /* ---------- build ---------- */
     static RemoteViews build(Context c, int type, Cfg g) {
+        if (type == T_PLAYER) return buildPlayer(c, g);
         RemoteViews v = new RemoteViews(c.getPackageName(), LAYOUTS[type]);
         Intent open = new Intent(c, MainActivity.class).putExtra("go", "adhan").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         v.setOnClickPendingIntent(R.id.widget_root, PendingIntent.getActivity(c, 50 + type, open,
@@ -170,6 +171,48 @@ final class WidgetRenderer {
                 }
             }
         }
+        return v;
+    }
+
+    /* ---------- player widget ---------- */
+    static PendingIntent playerAction(Context c, String a, int code) {
+        Intent i = new Intent(c, PlayerService.class).setAction(a).putExtra("fg", true);
+        return android.os.Build.VERSION.SDK_INT >= 26
+                ? PendingIntent.getForegroundService(c, code, i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE)
+                : PendingIntent.getService(c, code, i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+    }
+
+    static RemoteViews buildPlayer(Context c, Cfg g) {
+        RemoteViews v = new RemoteViews(c.getPackageName(), R.layout.widget_player);
+        Intent open = new Intent(c, MainActivity.class).putExtra("go", "player").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        v.setOnClickPendingIntent(R.id.widget_root, PendingIntent.getActivity(c, 70, open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
+        v.setImageViewResource(R.id.wbg, bgRes(g.style, g.radius));
+        v.setInt(R.id.wbg, "setImageAlpha", Math.round(255 * g.opacity / 100f));
+        boolean dark = darkText(g);
+        int main = dark ? 0xFF2A1F36 : 0xFFFFFFFF, sub = dark ? 0xFF6B5E7B : 0xDDF1E8F8;
+        int hi = g.style == 2 ? (dark ? 0xFF5A2690 : 0xFF4A1C78) : (dark ? 0xFFD06A12 : 0xFFFFB066);
+        float f = g.font == 0 ? 0.85f : g.font == 2 ? 1.2f : 1f;
+
+        PlayerService p = PlayerService.inst;
+        android.content.SharedPreferences sp = c.getSharedPreferences(PlayerService.PREFS, Context.MODE_PRIVATE);
+        String title = p != null ? p.title : sp.getString("title", "");
+        String artist = p != null ? p.artist : sp.getString("artist", "");
+        boolean playing = p != null && p.isPlaying();
+        if (title == null || title.isEmpty()) { title = "مشغّل ذَكِّرني"; artist = "اضغط لاختيار الملفات"; }
+        setText(v, R.id.p_title, title, main, 15 * f);
+        setText(v, R.id.p_artist, artist == null ? "" : artist, sub, 12 * f);
+        String sl = "";
+        if (p != null && p.sleepEnd) sl = "⏱ يتوقف بعد هذا المقطع";
+        else if (p != null && p.sleepAt > 0) sl = digits(c, "⏱ يتوقف بعد " + Math.max(1, (p.sleepAt - System.currentTimeMillis() + 59_999) / 60_000) + " د");
+        setText(v, R.id.p_sleep, sl, hi, 11 * f);
+        v.setViewVisibility(R.id.p_sleep, sl.isEmpty() ? View.GONE : View.VISIBLE);
+        if (p != null && p.art != null) v.setImageViewBitmap(R.id.p_art, android.graphics.Bitmap.createScaledBitmap(p.art, 144, 144, true));
+        else v.setImageViewResource(R.id.p_art, R.mipmap.ic_launcher);
+        v.setImageViewResource(R.id.p_toggle, playing ? R.drawable.ic_p_pause : R.drawable.ic_p_play);
+        for (int id : new int[]{R.id.p_prev, R.id.p_toggle, R.id.p_next}) v.setInt(id, "setColorFilter", main);
+        v.setOnClickPendingIntent(R.id.p_prev, playerAction(c, PlayerService.A_PREV, 71));
+        v.setOnClickPendingIntent(R.id.p_toggle, playerAction(c, PlayerService.A_TOGGLE, 72));
+        v.setOnClickPendingIntent(R.id.p_next, playerAction(c, PlayerService.A_NEXT, 73));
         return v;
     }
 

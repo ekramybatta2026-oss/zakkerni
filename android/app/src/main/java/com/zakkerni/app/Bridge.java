@@ -116,7 +116,7 @@ public class Bridge {
         if (Build.VERSION.SDK_INT < 26) return false;
         AppWidgetManager m = AppWidgetManager.getInstance(ctx);
         if (!m.isRequestPinAppWidgetSupported()) return false;
-        try { return m.requestPinAppWidget(new ComponentName(ctx, WidgetRenderer.PROVIDERS[Math.max(0, Math.min(3, type))]), null, null); }
+        try { return m.requestPinAppWidget(new ComponentName(ctx, WidgetRenderer.PROVIDERS[Math.max(0, Math.min(WidgetRenderer.PROVIDERS.length - 1, type))]), null, null); }
         catch (Exception e) { return false; }
     }
 
@@ -125,6 +125,80 @@ public class Bridge {
 
     @JavascriptInterface
     public void stopCompass() { MainActivity a = MainActivity.current; if (a != null) a.runOnUiThread(a::stopCompass); }
+
+    /* ---------- audio player ---------- */
+    @JavascriptInterface
+    public boolean hasAudioPermission() {
+        String p = Build.VERSION.SDK_INT >= 33 ? android.Manifest.permission.READ_MEDIA_AUDIO : android.Manifest.permission.READ_EXTERNAL_STORAGE;
+        return ctx.checkSelfPermission(p) == android.content.pm.PackageManager.PERMISSION_GRANTED;
+    }
+
+    @JavascriptInterface
+    public void requestAudioPermission() { MainActivity a = MainActivity.current; if (a != null) a.runOnUiThread(a::requestAudio); }
+
+    /** All audio files on the phone: [{i:id,t:title,a:artist,al:album,d:durationMs,f:folder}] */
+    @JavascriptInterface
+    public String getLibrary() {
+        org.json.JSONArray out = new org.json.JSONArray();
+        String[] proj = Build.VERSION.SDK_INT >= 29
+                ? new String[]{"_id", "title", "artist", "album", "duration", "relative_path"}
+                : new String[]{"_id", "title", "artist", "album", "duration", "_data"};
+        try (android.database.Cursor c = ctx.getContentResolver().query(android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, proj,
+                "duration >= 3000", null, "title COLLATE NOCASE")) {
+            while (c != null && c.moveToNext()) {
+                org.json.JSONObject o = new org.json.JSONObject();
+                o.put("i", c.getLong(0)); o.put("t", c.getString(1)); o.put("a", c.getString(2)); o.put("al", c.getString(3)); o.put("d", c.getLong(4));
+                String f = c.getString(5);
+                if (f != null && Build.VERSION.SDK_INT < 29) { int s = f.lastIndexOf('/'); f = s > 0 ? f.substring(0, s) : f; int t = f.lastIndexOf('/'); f = t >= 0 ? f.substring(t + 1) : f; }
+                else if (f != null) { f = f.replaceAll("/+$", ""); int t = f.lastIndexOf('/'); f = t >= 0 ? f.substring(t + 1) : f; }
+                o.put("f", f == null ? "" : f);
+                out.put(o);
+            }
+        } catch (Exception ignored) { }
+        return out.toString();
+    }
+
+    @JavascriptInterface
+    public void playerQueue(String idsCsv, int start) {
+        String[] parts = idsCsv.split(",");
+        long[] ids = new long[parts.length];
+        try { for (int k = 0; k < parts.length; k++) ids[k] = Long.parseLong(parts[k].trim()); } catch (Exception e) { return; }
+        send(new Intent(ctx, PlayerService.class).setAction(PlayerService.A_QUEUE).putExtra("ids", ids).putExtra("start", start));
+    }
+
+    /** cmd: toggle|play|pause|next|prev|stop|seek|shuffle|repeat|speed|sleep|eq|jump */
+    @JavascriptInterface
+    public void playerCmd(String cmd, String arg) {
+        Intent i = new Intent(ctx, PlayerService.class);
+        switch (cmd) {
+            case "toggle": i.setAction(PlayerService.A_TOGGLE); break;
+            case "play": i.setAction(PlayerService.A_PLAY); break;
+            case "pause": i.setAction(PlayerService.A_PAUSE); break;
+            case "next": i.setAction(PlayerService.A_NEXT); break;
+            case "prev": i.setAction(PlayerService.A_PREV); break;
+            case "stop": i.setAction(PlayerService.A_STOP); break;
+            case "seek": i.setAction(PlayerService.A_SEEK).putExtra("ms", (long) num(arg)); break;
+            case "jump": i.setAction(PlayerService.A_JUMP).putExtra("pos", (int) num(arg)); break;
+            case "shuffle": i.setAction(PlayerService.A_SHUFFLE).putExtra("on", "1".equals(arg)); break;
+            case "repeat": i.setAction(PlayerService.A_REPEAT).putExtra("mode", (int) num(arg)); break;
+            case "speed": i.setAction(PlayerService.A_SPEED).putExtra("v", (float) num(arg)); break;
+            case "sleep": i.setAction(PlayerService.A_SLEEP).putExtra("min", "end".equals(arg) ? 0 : (int) num(arg)).putExtra("end", "end".equals(arg)); break;
+            case "eq": i.setAction(PlayerService.A_EQ).putExtra("preset", (int) num(arg)); break;
+            default: return;
+        }
+        if (PlayerService.inst == null && ("stop".equals(cmd) || "pause".equals(cmd))) return;
+        send(i);
+    }
+
+    @JavascriptInterface
+    public String playerState() { PlayerService p = PlayerService.inst; return p != null ? p.stateJson() : "{}"; }
+
+    @JavascriptInterface
+    public String eqPresets() { return PlayerService.eqPresets(ctx); }
+
+    private double num(String s) { try { return Double.parseDouble(s); } catch (Exception e) { return 0; } }
+
+    private void send(Intent i) { try { ctx.startService(i); } catch (Exception e) { try { if (Build.VERSION.SDK_INT >= 26) ctx.startForegroundService(i.putExtra("fg", true)); } catch (Exception ignored) { } } }
 
     private void open(Intent i) {
         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

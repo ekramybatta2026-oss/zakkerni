@@ -13,15 +13,23 @@ public class AdhanReceiver extends BroadcastReceiver {
             WidgetRenderer.updateAll(c);
             return;
         }
+        if (AdhanScheduler.ACTION_SILENCE.equals(action)) {
+            AdhanScheduler.applySilence(c);
+            return;
+        }
         if (AdhanScheduler.ACTION_RESTORE.equals(action)) {
             AdhanScheduler.restoreRinger(c);
             return;
         }
         if (AdhanScheduler.ACTION_FIRE.equals(action) && intent.getStringExtra("name") != null) {
             String name = intent.getStringExtra("name");
-            if (intent.getBooleanExtra("pre", false)) {
+            boolean pre = intent.getBooleanExtra("pre", false);
+            if (pre) {
                 AdhanScheduler.showPre(c, name, intent.getStringExtra("time"));
-            } else if (intent.getBooleanExtra("adhan", true)) {
+            } else {
+                AdhanScheduler.scheduleSilence(c); // silent mode N minutes after the prayer time
+            }
+            if (!pre && intent.getBooleanExtra("adhan", true)) {
                 Intent s = new Intent(c, AdhanService.class)
                         .putExtra("name", name)
                         .putExtra("time", intent.getStringExtra("time"))

@@ -31,7 +31,8 @@ final class AdhanScheduler {
     static final String KEY_VOL = "vol";        // 10..100 (% of alarm volume)
     static final String KEY_PRE = "pre";        // minutes before adhan, 0 = off
     static final String KEY_SILENT = "silent";  // minutes of silent mode after adhan, 0 = off
-    static final String KEY_FULL = "full";      // full-screen adhan when locked
+    static final String KEY_FULL = "full";
+    static final String KEY_SILENT_DELAY = "silent_delay"; // minutes after the adhan before silent mode starts      // full-screen adhan when locked
     static final String KEY_PREV_RINGER = "prev_ringer";
 
     static final String CHANNEL = "adhan_v2";
@@ -39,6 +40,7 @@ final class AdhanScheduler {
     static final String CHANNEL_PRE = "prayer_pre";
     static final String ACTION_FIRE = "com.zakkerni.app.ADHAN";
     static final String ACTION_RESTORE = "com.zakkerni.app.RESTORE_RINGER";
+    static final String ACTION_SILENCE = "com.zakkerni.app.START_SILENCE";
     static final int PIN_ID = 78, PRE_ID = 79;
 
     private AdhanScheduler() { }
@@ -56,6 +58,7 @@ final class AdhanScheduler {
                     .putInt(KEY_VOL, o.optInt("vol", 80))
                     .putInt(KEY_PRE, o.optInt("pre", 5))
                     .putInt(KEY_SILENT, o.optInt("silent", 0))
+                    .putInt(KEY_SILENT_DELAY, o.optInt("sdelay", 5))
                     .putBoolean(KEY_FULL, o.optBoolean("full", true))
                     .putString(KEY_CITY, o.optString("city", prefs(c).getString(KEY_CITY, "")))
                     .putString("dig", o.optString("dig", "ar"))
@@ -153,6 +156,18 @@ final class AdhanScheduler {
                 .setCategory(Notification.CATEGORY_REMINDER);
         NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
         try { if (nm != null) nm.notify(PRE_ID, b.build()); } catch (SecurityException ignored) { }
+    }
+
+    /** At a prayer time: arm silent mode to start after the chosen delay (default 5 minutes). */
+    static void scheduleSilence(Context c) {
+        if (prefs(c).getInt(KEY_SILENT, 0) <= 0) return;
+        int delay = prefs(c).getInt(KEY_SILENT_DELAY, 5);
+        if (delay <= 0) { applySilence(c); return; }
+        AlarmManager am = (AlarmManager) c.getSystemService(Context.ALARM_SERVICE);
+        if (am == null) return;
+        PendingIntent pi = PendingIntent.getBroadcast(c, 1004, new Intent(c, AdhanReceiver.class).setAction(ACTION_SILENCE),
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        setAlarm(am, System.currentTimeMillis() + delay * 60_000L, pi);
     }
 
     /** Silent mode for the user-chosen minutes, then restore. Needs Do-Not-Disturb access. */

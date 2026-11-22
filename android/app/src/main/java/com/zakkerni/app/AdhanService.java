@@ -161,7 +161,6 @@ public class AdhanService extends Service {
             if (au != null && savedAlarmVol >= 0) { try { au.setStreamVolume(AudioManager.STREAM_ALARM, savedAlarmVol, 0); } catch (Exception ignored) { } }
             running = false;
             sendBroadcast(new Intent(ACTION_DONE).setPackage(getPackageName()));
-            AdhanScheduler.applySilence(this);
         }
         if (Build.VERSION.SDK_INT >= 24) stopForeground(STOP_FOREGROUND_REMOVE);
         else stopForeground(true);
