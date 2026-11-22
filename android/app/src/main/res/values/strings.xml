@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">ذَكِّرني</string>
+    <string name="widget_desc">مواقيت الصلاة والصلاة القادمة مع عدّاد تنازلي</string>
+    <string name="widget_label">مواقيت الصلاة — ذَكِّرني</string>
 </resources>

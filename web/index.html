@@ -464,7 +464,7 @@ const PRAYERS = [
 
 /* أصوات الأذان — أضف صوتًا جديدًا بإضافة ملفه إلى مجلد التطبيق وسطر هنا */
 const ADHANS = [
-  { id: 'ekramy', name: 'إكرامي فاروق', note: 'الأذان الرسمي لذَكِّرني', file: 'adhan.mp3' },
+  { id: 'ekramy', name: 'إكرامي فاروق', note: 'الأذان الرسمي لذَكِّرني', file: 'adhan.mp3', fajr: 'adhan-fajr.mp3' },
 ];
 
 </script>
@@ -654,7 +654,7 @@ const ar = (n) => Number(n).toLocaleString('ar-EG');
 const todayKey = () => { const d = new Date(); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; };
 
 /* ---------- Storage ---------- */
-const defaults = () => ({ date: todayKey(), counts: {}, celebrated: {}, favs: [], settings: { theme: 'light', font: 17, sound: true, vib: true }, prayer: { city: 'auto', fallback: 'riyadh', loc: null, voice: 'ekramy', pin: true, method: '', asr: 1, on: true, per: { fajr: true, dhuhr: true, asr: true, maghrib: true, isha: true } }, played: {} });
+const defaults = () => ({ date: todayKey(), counts: {}, celebrated: {}, favs: [], settings: { theme: 'auto', font: 17, sound: true, vib: true }, prayer: { city: 'auto', fallback: 'riyadh', loc: null, voice: 'ekramy', pin: true, vol: 80, pre: 5, silent: 0, full: true, method: '', asr: 1, on: true, per: { fajr: true, dhuhr: true, asr: true, maghrib: true, isha: true } }, played: {} });
 let S;
 function load() {
   try { S = JSON.parse(localStorage.getItem(KEY)) || defaults(); } catch (e) { S = defaults(); }
@@ -728,12 +728,19 @@ $('#mClose').onclick = () => $('#modal').classList.remove('show');
 $('#modal').onclick = (e) => { if (e.target.id === 'modal') $('#modal').classList.remove('show'); };
 
 /* ---------- Theme / font ---------- */
+const sysDark = () => {
+  try { if (window.AndroidBridge && AndroidBridge.isSystemDark) return AndroidBridge.isSystemDark(); } catch (e) {}
+  return !!(window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
+};
+const effTheme = () => S.settings.theme === 'auto' ? (sysDark() ? 'dark' : 'light') : S.settings.theme;
 function applySettings() {
-  document.documentElement.dataset.theme = S.settings.theme;
+  const th = effTheme();
+  document.documentElement.dataset.theme = th;
+  try { window.AndroidBridge && AndroidBridge.setDarkBars && AndroidBridge.setDarkBars(th === 'dark'); } catch (e) {}
   document.documentElement.style.setProperty('--zfont', S.settings.font + 'px');
-  const m = $('meta[name=theme-color]'); if (m) m.content = S.settings.theme === 'dark' ? '#1D1726' : '#7137A8';
+  const m = $('meta[name=theme-color]'); if (m) m.content = th === 'dark' ? '#1D1726' : '#7137A8';
 }
-$('#themeQuick').onclick = () => { S.settings.theme = S.settings.theme === 'dark' ? 'light' : 'dark'; save(); applySettings(); if (current === 'settings') renderSettings(); };
+$('#themeQuick').onclick = () => { S.settings.theme = effTheme() === 'dark' ? 'light' : 'dark'; save(); applySettings(); if (current === 'settings') renderSettings(); };
 
 /* ---------- Router ---------- */
 let current = 'home';
@@ -1084,8 +1091,8 @@ function renderSettings() {
   v.innerHTML = `
     <div class="sec-head" style="position:static"><h2>الإعدادات</h2><div class="time">خصّص ذَكِّرني كما تحب</div></div>
     <div class="set-group">
-      <div class="set-row"><div class="ic2">${ico('theme')}</div><div class="lbl"><b>المظهر</b><small>الوضع النهاري أو الليلي</small></div>
-        <div class="seg"><button data-th="light" class="${s.theme === 'light' ? 'on' : ''}">نهاري</button><button data-th="dark" class="${s.theme === 'dark' ? 'on' : ''}">ليلي</button></div></div>
+      <div class="set-row"><div class="ic2">${ico('theme')}</div><div class="lbl"><b>المظهر</b><small>نهاري، ليلي، أو حسب مظهر الجوال</small></div>
+        <div class="seg"><button data-th="light" class="${s.theme === 'light' ? 'on' : ''}">نهاري</button><button data-th="dark" class="${s.theme === 'dark' ? 'on' : ''}">ليلي</button><button data-th="auto" class="${s.theme === 'auto' ? 'on' : ''}">مثل الجوال</button></div></div>
       <div class="set-row" style="flex-wrap:wrap"><div class="ic2">${ico('font')}</div><div class="lbl"><b>حجم خط الأذكار</b><small id="fsz">${ar(s.font)} بكسل</small></div>
         <input type="range" id="fRange" min="14" max="30" step="1" value="${s.font}"></div>
       <div class="preview">سُبْحَانَ اللَّهِ وَبِحَمْدِهِ</div>
@@ -1173,9 +1180,10 @@ function updateClock() {
 }
 const audio = $('#adhanAudio');
 const voice = () => ADHANS.find(v => v.id === S.prayer.voice) || ADHANS[0];
-function setVoiceSrc() { const f = voice().file; if (!audio.src.endsWith(f)) { audio.src = f; } }
-function playAdhan() {
-  setVoiceSrc();
+function voiceFile(k) { const v = voice(); return k === 'fajr' && v.fajr ? v.fajr : v.file; }
+function setVoiceSrc(k) { const f = voiceFile(k); if (!audio.src.endsWith(f)) { audio.src = f; } audio.volume = Math.max(0.05, (S.prayer.vol || 80) / 100); }
+function playAdhan(k) {
+  setVoiceSrc(k);
   audio.currentTime = 0;
   const pr = audio.play();
   if (pr && pr.catch) pr.catch(() => { $('#aPlay').style.display = ''; });
@@ -1188,11 +1196,12 @@ $('#aPlay').onclick = () => { $('#aPlay').style.display = 'none'; playAdhan(); }
 const NATIVE = !!(window.AndroidBridge && window.AndroidBridge.scheduleAdhans);
 function scheduleNative() {
   if (!NATIVE) return;
-  const list = [], f = voice().file;
+  const list = [];
   for (let d = 0; d < 30; d++) dayTimes(d).forEach(p => {
     if (p.k === 'sunrise') return;
-    list.push({ t: p.at.getTime(), n: p.name, s: fmtTime(p.at), a: !!(S.prayer.on && p.adhan && S.prayer.per[p.k]), f });
+    list.push({ t: p.at.getTime(), n: p.name, s: fmtTime(p.at), a: !!(S.prayer.on && p.adhan && S.prayer.per[p.k]), f: voiceFile(p.k) });
   });
+  try { AndroidBridge.setAdhanSettings && AndroidBridge.setAdhanSettings(JSON.stringify({ vol: S.prayer.vol, pre: S.prayer.pre, silent: S.prayer.silent, full: S.prayer.full, city: city().name })); } catch (e) {}
   try { AndroidBridge.scheduleAdhans(JSON.stringify(list), !!S.prayer.pin, city().name); } catch (e) {}
 }
 window.onNativeResume = () => { rollDay(); scheduleNative(); if (current === 'adhan') renderAdhan(); };
@@ -1201,23 +1210,39 @@ function checkAdhan() {
   if (!S.prayer.on) return;
   const now = Date.now();
   dayTimes(0).forEach(p => {
+    if (p.adhan && S.prayer.pre > 0) {
+      const pk = p.key + '-pre', t0 = p.at - S.prayer.pre * 60000;
+      if (!S.played[pk] && now >= t0 && now < p.at) { S.played[pk] = 1; save(); toast(`باقي ${ar(S.prayer.pre)} دقائق على أذان ${p.name}`); tick('done'); }
+    }
     if (!p.adhan || !S.prayer.per[p.k] || S.played[p.key]) return;
     if (now >= p.at && now - p.at < 5 * 60000) {
       S.played = { [p.key]: 1, ...Object.fromEntries(Object.entries(S.played).slice(-12)) }; save();
       $('#aTitle').textContent = `حان الآن موعد أذان ${p.name}`;
       $('#aSub').textContent = `${city().name} · ${fmtTime(p.at)}`;
       $('#aPlay').style.display = 'none';
-      $('#adhanModal').classList.add('show'); playAdhan(); tick('done');
+      $('#adhanModal').classList.add('show'); playAdhan(p.k); tick('done');
     }
   });
 }
 function syncPreviewBtn() {
   const b = $('#pPrev'); if (!b) return;
   const playing = !audio.paused;
-  b.innerHTML = `${ico(playing ? 'stop' : 'play')}${playing ? 'إيقاف الأذان' : 'استمع إلى الأذان'}`;
+  b.innerHTML = `${ico(playing ? 'stop' : 'play')}${playing ? 'إيقاف الأذان' : 'الأذان'}`;
 }
 audio.addEventListener('play', syncPreviewBtn); audio.addEventListener('pause', syncPreviewBtn);
 
+function permRows() {
+  if (!NATIVE) return '';
+  const B = AndroidBridge, row = (id, title, sub) => `<button class="set-row" id="${id}" style="width:100%;text-align:right"><div class="ic2">${ico('bell')}</div><div class="lbl"><b class="danger">${title}</b><small>${sub}</small></div></button>`;
+  let h = '';
+  try {
+    if (B.canExact && !B.canExact()) h += row('pExact', 'اسمح بالمنبّهات الدقيقة', 'ليُرفع الأذان في وقته تمامًا والتطبيق مغلق');
+    if (S.prayer.full && B.canFullScreen && !B.canFullScreen()) h += row('pFS', 'اسمح بالشاشة الكاملة', 'لتظهر شاشة الأذان والجوال مقفول');
+    if (S.prayer.silent > 0 && B.hasDnd && !B.hasDnd()) h += row('pDnd', 'اسمح بالتحكم في وضع عدم الإزعاج', 'مطلوب لتحويل الجوال إلى الصامت بعد الأذان');
+    if (B.isIgnoringBattery && !B.isIgnoringBattery()) h += row('pBat', 'استثنِ ذَكِّرني من توفير البطارية', 'ليبقى الأذان يعمل في الخلفية دائمًا');
+  } catch (e) {}
+  return h;
+}
 function renderAdhan() {
   scheduleNative();
   const v = $('#v-adhan'), c = city(), n = nextPrayer(), list = dayTimes(0), now = Date.now();
@@ -1238,15 +1263,20 @@ function renderAdhan() {
         <button class="bell ${!p.adhan ? 'none' : S.prayer.per[p.k] && S.prayer.on ? '' : 'off'}" data-bell="${p.k}" aria-label="تنبيه ${p.name}">${ico(S.prayer.per[p.k] && S.prayer.on ? 'bell' : 'bell-off')}</button>
       </div>`).join('')}
     </div>
-    <button class="btn primary" id="pPrev" style="width:100%;margin-bottom:12px"></button>
+    <div class="actions" style="margin-bottom:12px"><button class="btn primary" id="pPrev"></button><button class="btn ghost" id="pPrevF">${ico('play')}أذان الفجر</button></div>
     <div class="set-group">
       <div class="set-row"><div class="ic2">${ico('bell')}</div><div class="lbl"><b>تشغيل الأذان تلقائيًا</b><small>عند دخول وقت كل صلاة</small></div><button class="switch ${S.prayer.on ? 'on' : ''}" id="pOn" aria-label="الأذان"></button></div>
       <div class="set-row"><div class="ic2">${ico('sound')}</div><div class="lbl"><b>صوت الأذان</b><small>${voice().note || ''}</small></div><select class="sel" id="pVoice">${opts(ADHANS.map(x => [x.id, x.name]), voice().id)}</select></div>
+      <div class="set-row" style="flex-wrap:wrap"><div class="ic2">${ico('sound')}</div><div class="lbl"><b>مستوى صوت الأذان</b><small id="pVolL">${ar(S.prayer.vol)}٪</small></div>
+        <input type="range" id="pVol" min="10" max="100" step="5" value="${S.prayer.vol}"></div>
+      <div class="set-row"><div class="ic2">${ico('bell')}</div><div class="lbl"><b>تنبيه قبل الأذان</b><small>تذكير بقرب موعد الصلاة</small></div><select class="sel" id="pPre">${opts([[0, 'بدون'], [5, 'قبل ٥ دقائق'], [10, 'قبل ١٠ دقائق'], [15, 'قبل ١٥ دقيقة'], [20, 'قبل ٢٠ دقيقة'], [30, 'قبل ٣٠ دقيقة']], S.prayer.pre)}</select></div>
+      ${NATIVE ? `<div class="set-row"><div class="ic2">${ico('vib')}</div><div class="lbl"><b>الوضع الصامت بعد الأذان</b><small>ثم يعود الجوال لوضعه السابق تلقائيًا</small></div><select class="sel" id="pSil">${opts([[0, 'إيقاف'], [10, '١٠ دقائق'], [15, '١٥ دقيقة'], [20, '٢٠ دقيقة'], [30, '٣٠ دقيقة'], [45, '٤٥ دقيقة'], [60, 'ساعة']], S.prayer.silent)}</select></div>
+      <div class="set-row"><div class="ic2">${ico('mosque')}</div><div class="lbl"><b>شاشة كاملة عند الأذان</b><small>والجوال مقفول؛ وإن كان مفتوحًا يظهر شريط علوي فقط</small></div><button class="switch ${S.prayer.full ? 'on' : ''}" id="pFull" aria-label="شاشة كاملة"></button></div>` : ''}
       ${NATIVE ? `<div class="set-row"><div class="ic2">${ico('bell')}</div><div class="lbl"><b>مواقيت الصلاة في الإشعارات</b><small>إشعار دائم بالصلاة القادمة وعدّاد تنازلي</small></div><button class="switch ${S.prayer.pin ? 'on' : ''}" id="pPin" aria-label="إشعار المواقيت"></button></div>` : ''}
       <div class="set-row"><div class="ic2">${ico('pin')}</div><div class="lbl"><b>المدينة</b></div><select class="sel" id="pCity">${opts([['auto', '📍 تلقائي حسب موقعي'], ...CITIES.map(x => [x.id, x.name])], S.prayer.city)}</select></div>
       <div class="set-row"><div class="ic2">${ico('book')}</div><div class="lbl"><b>طريقة الحساب</b></div><select class="sel" id="pMethod">${opts([['', 'تلقائي حسب المدينة'], ...Object.entries(PrayerCalc.METHODS).map(([k, m]) => [k, m.name])], S.prayer.method)}</select></div>
       <div class="set-row"><div class="ic2">${ico('sun')}</div><div class="lbl"><b>حساب العصر</b></div><select class="sel" id="pAsr">${opts([[1, 'الجمهور (المثل)'], [2, 'الحنفي (المثلين)']], S.prayer.asr)}</select></div>
-      ${NATIVE && AndroidBridge.canExact && !AndroidBridge.canExact() ? `<button class="set-row" id="pExact" style="width:100%;text-align:right"><div class="ic2">${ico('bell')}</div><div class="lbl"><b class="danger">اسمح بالمنبّهات الدقيقة</b><small>ليُرفع الأذان في وقته تمامًا والتطبيق مغلق</small></div></button>` : ''}
+      ${permRows()}
       <div class="note-s">المواقيت محسوبة فلكيًا وقد تختلف دقيقة أو دقيقتين عن التقويم الرسمي. ${NATIVE ? 'يُرفع الأذان في وقته حتى والتطبيق مغلق، ومعه إشعار فيه زر إيقاف.' : 'يعمل الأذان التلقائي أثناء فتح التطبيق؛ وللأذان والتطبيق مغلق ثبّت نسخة الأندرويد.'}</div>
     </div>`;
   syncPreviewBtn();
@@ -1255,7 +1285,14 @@ function renderAdhan() {
     const k = b.dataset.bell; if (!S.prayer.on) { S.prayer.on = true; } else S.prayer.per[k] = !S.prayer.per[k];
     save(); renderAdhan(); toast(S.prayer.per[k] ? 'سيُرفع الأذان لهذه الصلاة' : 'تم إيقاف الأذان لهذه الصلاة');
   });
-  const ex = $('#pExact'); if (ex) ex.onclick = () => AndroidBridge.openExactAlarmSettings();
+  const bindP = (id, fn) => { const el = $('#' + id); if (el) el.onclick = () => { try { AndroidBridge[fn](); } catch (e) {} }; };
+  bindP('pExact', 'openExactAlarmSettings'); bindP('pFS', 'openFullScreenSettings'); bindP('pDnd', 'openDndSettings'); bindP('pBat', 'openBatterySettings');
+  $('#pPrevF').onclick = () => { stopAdhan(); playAdhan('fajr'); };
+  const pv = $('#pVol'); pv.oninput = () => { S.prayer.vol = +pv.value; $('#pVolL').textContent = ar(S.prayer.vol) + '٪'; audio.volume = S.prayer.vol / 100; save(); };
+  pv.onchange = () => scheduleNative();
+  $('#pPre').onchange = (e) => { S.prayer.pre = +e.target.value; save(); renderAdhan(); };
+  const ps = $('#pSil'); if (ps) ps.onchange = (e) => { S.prayer.silent = +e.target.value; save(); renderAdhan(); if (S.prayer.silent && !AndroidBridge.hasDnd()) toast('اسمح للتطبيق بالتحكم في وضع عدم الإزعاج'); };
+  const pf = $('#pFull'); if (pf) pf.onclick = () => { S.prayer.full = !S.prayer.full; save(); renderAdhan(); };
   $('#pVoice').onchange = (e) => { S.prayer.voice = e.target.value; save(); stopAdhan(); setVoiceSrc(); renderAdhan(); };
   const pp = $('#pPin'); if (pp) pp.onclick = () => { S.prayer.pin = !S.prayer.pin; save(); renderAdhan(); };
   $('#pOn').onclick = () => { S.prayer.on = !S.prayer.on; save(); renderAdhan(); };
@@ -1272,6 +1309,8 @@ setInterval(updateClock, 1000);
 
 /* ---------- Boot ---------- */
 load(); applySettings();
+try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => S.settings.theme === 'auto' && applySettings()); } catch (e) {}
+window.onSystemTheme = () => { if (S.settings.theme === 'auto') applySettings(); };
 if (S.prayer.city === 'auto') setTimeout(() => locate(false), 1500);
 setTimeout(scheduleNative, 800);
 // installable web app (iPhone / any browser)

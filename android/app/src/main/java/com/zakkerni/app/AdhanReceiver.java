@@ -8,17 +8,27 @@ import android.os.Build;
 public class AdhanReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context c, Intent intent) {
-        if (AdhanScheduler.ACTION_FIRE.equals(intent.getAction()) && intent.getBooleanExtra("adhan", true)
-                && intent.getStringExtra("name") != null) {
-            Intent s = new Intent(c, AdhanService.class);
-            s.putExtra("name", intent.getStringExtra("name"));
-            s.putExtra("file", intent.getStringExtra("file"));
-            try {
-                if (Build.VERSION.SDK_INT >= 26) c.startForegroundService(s);
-                else c.startService(s);
-            } catch (Exception ignored) { }
+        String action = intent.getAction();
+        if (AdhanScheduler.ACTION_RESTORE.equals(action)) {
+            AdhanScheduler.restoreRinger(c);
+            return;
         }
-        // after a prayer time, boot, time change or app update: refresh the notification, arm the next one
+        if (AdhanScheduler.ACTION_FIRE.equals(action) && intent.getStringExtra("name") != null) {
+            String name = intent.getStringExtra("name");
+            if (intent.getBooleanExtra("pre", false)) {
+                AdhanScheduler.showPre(c, name, intent.getStringExtra("time"));
+            } else if (intent.getBooleanExtra("adhan", true)) {
+                Intent s = new Intent(c, AdhanService.class)
+                        .putExtra("name", name)
+                        .putExtra("time", intent.getStringExtra("time"))
+                        .putExtra("file", intent.getStringExtra("file"));
+                try {
+                    if (Build.VERSION.SDK_INT >= 26) c.startForegroundService(s);
+                    else c.startService(s);
+                } catch (Exception ignored) { }
+            }
+        }
+        // after any event, boot, time change or update: refresh notification/widget, arm the next event
         AdhanScheduler.updatePinned(c);
         AdhanScheduler.scheduleNext(c);
     }

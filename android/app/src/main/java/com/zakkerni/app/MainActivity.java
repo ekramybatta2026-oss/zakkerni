@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Insets;
 import android.net.Uri;
@@ -28,6 +29,8 @@ public class MainActivity extends Activity {
     private static final int REQ_NOTIF = 12;
     static final String START_URL = "https://appassets.androidplatform.net/assets/www/index.html";
 
+    static MainActivity current;
+    private FrameLayout root;
     private WebView web;
     private GeolocationPermissions.Callback geoCallback;
     private String geoOrigin;
@@ -37,7 +40,8 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         AdhanScheduler.createChannel(this);
 
-        FrameLayout root = new FrameLayout(this);
+        current = this;
+        root = new FrameLayout(this);
         root.setBackgroundColor(Color.parseColor("#FAF6FD"));
         web = new WebView(this);
         root.addView(web, new FrameLayout.LayoutParams(-1, -1));
@@ -50,13 +54,8 @@ public class MainActivity extends Activity {
                 v.setPadding(b.left, b.top, b.right, b.bottom);
                 return WindowInsets.CONSUMED;
             });
-            WindowInsetsController c = getWindow().getInsetsController();
-            if (c != null) {
-                c.setSystemBarsAppearance(
-                        WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS | WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS,
-                        WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS | WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS);
-            }
         }
+        applyBars((getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES);
 
         final WebViewAssetLoader loader = new WebViewAssetLoader.Builder()
                 .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
@@ -123,6 +122,36 @@ public class MainActivity extends Activity {
             geoCallback.invoke(geoOrigin, hasLocation(), false);
             geoCallback = null;
         }
+    }
+
+    /** Status/navigation bar colours that match the app theme (light or dark). */
+    void applyBars(boolean dark) {
+        int bg = Color.parseColor(dark ? "#1D1726" : "#FAF6FD");
+        if (root != null) root.setBackgroundColor(bg);
+        getWindow().setStatusBarColor(bg);
+        getWindow().setNavigationBarColor(bg);
+        int light = WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS | WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS;
+        if (Build.VERSION.SDK_INT >= 30) {
+            WindowInsetsController c = getWindow().getInsetsController();
+            if (c != null) c.setSystemBarsAppearance(dark ? 0 : light, light);
+        } else if (Build.VERSION.SDK_INT >= 26) {
+            int f = getWindow().getDecorView().getSystemUiVisibility();
+            f = dark ? (f & ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR & ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR)
+                     : (f | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
+            getWindow().getDecorView().setSystemUiVisibility(f);
+        }
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        if (web != null) web.evaluateJavascript("window.onSystemTheme && window.onSystemTheme()", null);
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (current == this) current = null;
+        super.onDestroy();
     }
 
     @Override
