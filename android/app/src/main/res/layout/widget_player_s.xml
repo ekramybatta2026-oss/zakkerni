@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/widget_root" android:layout_width="match_parent" android:layout_height="match_parent" android:layoutDirection="rtl">
+    <ImageView android:id="@+id/wbg" android:layout_width="match_parent" android:layout_height="match_parent" android:scaleType="fitXY" android:src="@drawable/wbg_grad_2" android:contentDescription="@null" />
+    <ImageView android:id="@+id/wscrim" android:layout_width="match_parent" android:layout_height="match_parent" android:scaleType="fitXY" android:src="@drawable/wbg_dark_2" android:contentDescription="@null" />
+    <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:gravity="center" android:padding="10dp">
+        <ImageView android:id="@+id/p_art" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" android:contentDescription="@null" />
+        <TextView android:id="@+id/p_title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="مشغّل ذَكِّرني" android:textColor="#FFFFFF" android:textSize="14sp" android:maxLines="1" android:ellipsize="end" android:textStyle="bold" android:gravity="center"/>
+        <TextView android:id="@+id/p_artist" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="" android:textColor="#E6D6F5" android:textSize="11sp" android:maxLines="1" android:ellipsize="end"  android:gravity="center"/>
+        <TextView android:id="@+id/p_sleep" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="" android:textColor="#FFB066" android:textSize="11sp" android:maxLines="1" android:ellipsize="end"  android:visibility="gone"/>
+        <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layoutDirection="ltr">
+            <ImageView android:id="@+id/p_prev" android:layout_width="36dp" android:layout_height="36dp" android:padding="6dp" android:src="@drawable/ic_p_prev" android:contentDescription="p_prev" />
+            <ImageView android:id="@+id/p_toggle" android:layout_width="54dp" android:layout_height="54dp" android:padding="8dp" android:src="@drawable/ic_p_play" android:contentDescription="p_toggle" />
+            <ImageView android:id="@+id/p_next" android:layout_width="36dp" android:layout_height="36dp" android:padding="6dp" android:src="@drawable/ic_p_next" android:contentDescription="p_next" />
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>

@@ -82,6 +82,14 @@
                 android:resource="@xml/prayer_widget_info" />
         </receiver>
 
+        <receiver android:name=".PlayerWidgetSmall" android:label="@string/wl_player_s" android:exported="true">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_player_s_info" />
+        </receiver>
+        <receiver android:name=".PlayerWidgetLarge" android:label="@string/wl_player_l" android:exported="true">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_player_l_info" />
+        </receiver>
         <receiver android:name=".PlayerWidget" android:label="@string/wl_player" android:exported="true">
             <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_player_info" />

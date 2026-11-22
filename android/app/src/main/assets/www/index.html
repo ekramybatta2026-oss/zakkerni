@@ -1208,7 +1208,7 @@ function renderSettings() {
     </div>
     ${NATIVE && AndroidBridge.pinWidget ? `<div class="set-group">
       <div class="set-row"><div class="ic2">${ico('home')}</div><div class="lbl"><b>ويدجت الشاشة الرئيسية</b><small>اختر الشكل، ثم خصّص الألوان والشفافية والحجم</small></div></div>
-      <div class="wgrid">${[[0, 'الصلاة القادمة', 'صغير'], [1, 'مواقيت اليوم', 'عريض'], [2, 'مواقيت الصلاة', 'كبير'], [3, 'قائمة الصلوات', 'طولي'], [4, 'مشغّل الصوتيات', 'عريض']].map(([t, n, z]) => `<button class="wbtn" data-wid="${t}"><b>${n}</b><small>${z}</small></button>`).join('')}</div>
+      <div class="wgrid">${[[0, 'الصلاة القادمة', 'صغير'], [1, 'مواقيت اليوم', 'عريض'], [2, 'مواقيت الصلاة', 'كبير'], [3, 'قائمة الصلوات', 'طولي'], [4, 'المشغّل', 'عريض'], [5, 'المشغّل', 'صغير'], [6, 'المشغّل', 'كبير بتحكم كامل']].map(([t, n, z]) => `<button class="wbtn" data-wid="${t}"><b>${n}</b><small>${z}</small></button>`).join('')}</div>
     </div>` : ''}
     <div class="set-group">
       <button class="set-row" id="rDay" style="width:100%;text-align:right"><div class="ic2">${ico('reset')}</div><div class="lbl"><b class="danger">إعادة تعيين التقدم اليومي</b><small>تصفير عدادات الصباح والمساء والنوم لهذا اليوم</small></div></button>

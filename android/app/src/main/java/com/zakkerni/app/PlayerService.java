@@ -44,7 +44,7 @@ public class PlayerService extends Service implements MediaPlayer.OnPreparedList
     static final String A_QUEUE = "z.player.QUEUE", A_TOGGLE = "z.player.TOGGLE", A_PLAY = "z.player.PLAY", A_PAUSE = "z.player.PAUSE",
             A_NEXT = "z.player.NEXT", A_PREV = "z.player.PREV", A_STOP = "z.player.STOP", A_SEEK = "z.player.SEEK",
             A_SHUFFLE = "z.player.SHUFFLE", A_REPEAT = "z.player.REPEAT", A_SPEED = "z.player.SPEED", A_SLEEP = "z.player.SLEEP",
-            A_EQ = "z.player.EQ", A_JUMP = "z.player.JUMP";
+            A_EQ = "z.player.EQ", A_JUMP = "z.player.JUMP", A_SHUFFLE_T = "z.player.SHUFFLE_T", A_REPEAT_C = "z.player.REPEAT_C", A_SLEEP_C = "z.player.SLEEP_C";
     static final String PREFS = "zakkerni_player", CH = "player";
     static final int NID = 90;
 
@@ -59,8 +59,10 @@ public class PlayerService extends Service implements MediaPlayer.OnPreparedList
 
     private long[] queue = new long[0];
     private List<Integer> order = new ArrayList<>();
-    private int idx = 0, repeat = 0, eqPreset = -1;
-    private boolean shuffle = false, prepared = false, wantPlay = false, foreground = false;
+    private int idx = 0, eqPreset = -1;
+    int repeat = 0;
+    boolean shuffle = false;
+    private boolean prepared = false, wantPlay = false, foreground = false;
     private float speed = 1f;
     private long pendingSeek = 0;
     long sleepAt = 0;
@@ -115,6 +117,17 @@ public class PlayerService extends Service implements MediaPlayer.OnPreparedList
             case A_SPEED: setSpeed(i.getFloatExtra("v", 1f)); break;
             case A_SLEEP: setSleep(i.getIntExtra("min", 0), i.getBooleanExtra("end", false)); break;
             case A_EQ: setEq(i.getIntExtra("preset", -1)); break;
+            case A_SHUFFLE_T: setShuffle(!shuffle); toast(shuffle ? "تشغيل عشوائي" : "التشغيل بالترتيب"); break;
+            case A_REPEAT_C: repeat = (repeat + 1) % 3; toast(new String[]{"بدون تكرار", "تكرار القائمة", "تكرار المقطع الحالي"}[repeat]); changed(false); break;
+            case A_SLEEP_C: {
+                int[] steps = {15, 30, 60, 0};
+                int curMin = sleepAt > 0 ? (int) ((sleepAt - System.currentTimeMillis() + 59_999) / 60_000) : 0;
+                int nextMin = 15;
+                for (int k = 0; k < steps.length; k++) if (sleepAt > 0 && curMin <= steps[k]) { nextMin = steps[(k + 1) % steps.length]; break; }
+                setSleep(nextMin, false);
+                toast(nextMin > 0 ? WidgetRenderer.digits(this, "مؤقت النوم: " + nextMin + " دقيقة") : "تم إلغاء مؤقت النوم");
+                break;
+            }
             case A_STOP: stopAll(); return START_NOT_STICKY;
         }
         if (queue.length == 0 && foreground && !mp.isPlaying()) { stopFg(true); stopSelf(); }
@@ -272,6 +285,7 @@ public class PlayerService extends Service implements MediaPlayer.OnPreparedList
         changed(false);
     }
 
+    private int tick5 = 0;
     private final Runnable ticker = new Runnable() {
         @Override public void run() {
             if (sleepAt > 0) {
@@ -285,7 +299,7 @@ public class PlayerService extends Service implements MediaPlayer.OnPreparedList
                     try { mp.setVolume(v, v); } catch (Exception ignored) { }
                 }
             }
-            if (mp != null && mp.isPlaying()) { pushState(); updateSessionState(); }
+            if (mp != null && mp.isPlaying()) { pushState(); updateSessionState(); if (++tick5 % 5 == 0) PlayerWidget.update(PlayerService.this); }
             h.postDelayed(this, 1000);
         }
     };
@@ -391,7 +405,8 @@ public class PlayerService extends Service implements MediaPlayer.OnPreparedList
                     .putString(MediaMetadata.METADATA_KEY_TITLE, title)
                     .putString(MediaMetadata.METADATA_KEY_ARTIST, artist)
                     .putLong(MediaMetadata.METADATA_KEY_DURATION, duration);
-            if (art != null) m.putBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART, art);
+            android.graphics.Bitmap la = art != null ? art : WidgetRenderer.fallbackArt(this);
+            if (la != null) m.putBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART, la);
             ms.setMetadata(m.build());
         }
         updateSessionState();
@@ -409,6 +424,10 @@ public class PlayerService extends Service implements MediaPlayer.OnPreparedList
                         | PlaybackState.ACTION_SKIP_TO_NEXT | PlaybackState.ACTION_SKIP_TO_PREVIOUS | PlaybackState.ACTION_SEEK_TO | PlaybackState.ACTION_STOP)
                 .setState(isPlaying() ? PlaybackState.STATE_PLAYING : PlaybackState.STATE_PAUSED, pos, isPlaying() ? speed : 0f).build());
     }
+
+    long durationMs() { return duration; }
+    long positionMs() { try { return prepared ? mp.getCurrentPosition() : pendingSeek; } catch (Exception e) { return 0; } }
+    private void toast(String t) { h.post(() -> android.widget.Toast.makeText(this, t, android.widget.Toast.LENGTH_SHORT).show()); }
 
     boolean isPlaying() { try { return mp != null && mp.isPlaying(); } catch (Exception e) { return false; } }
 
@@ -445,7 +464,7 @@ public class PlayerService extends Service implements MediaPlayer.OnPreparedList
                 .setColor(Color.parseColor("#7137A8"))
                 .setContentTitle(title.isEmpty() ? "مشغّل ذَكِّرني" : title)
                 .setContentText(artist)
-                .setLargeIcon(art)
+                .setLargeIcon(art != null ? art : WidgetRenderer.fallbackArt(this))
                 .setContentIntent(open)
                 .setDeleteIntent(action(A_STOP, 66))
                 .setOngoing(isPlaying())
