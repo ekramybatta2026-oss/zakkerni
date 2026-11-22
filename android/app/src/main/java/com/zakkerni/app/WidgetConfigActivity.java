@@ -68,7 +68,7 @@ public class WidgetConfigActivity extends Activity {
         wall.setBackground(wp);
         wall.setPadding(dp(18), dp(18), dp(18), dp(18));
         preview = new FrameLayout(this);
-        int[] ph = {150, 96, 170, 300, 86};
+        int[] ph = {150, 120, 170, 300, 86};
         int[] pw = {170, -1, -1, 190, -1};
         FrameLayout.LayoutParams plp = new FrameLayout.LayoutParams(pw[type] < 0 ? -1 : dp(pw[type]), dp(ph[type]), Gravity.CENTER);
         wall.addView(preview, plp);
@@ -97,6 +97,10 @@ public class WidgetConfigActivity extends Activity {
         box.addView(segment(new String[]{"حادة", "مستديرة", "دائرية"}, cfg.radius, i -> cfg.radius = i, false));
         box.addView(head("لون النص"));
         box.addView(segment(new String[]{"تلقائي", "أبيض", "داكن"}, cfg.text, i -> cfg.text = i, false));
+        if (type != WidgetRenderer.T_PLAYER) {
+            box.addView(head("صيغة الوقت"));
+            box.addView(segment(new String[]{digits("05:19"), digits("5:19 ص"), digits("17:19")}, cfg.fmt, i -> cfg.fmt = i, false));
+        }
         box.addView(head("حجم الخط"));
         box.addView(segment(new String[]{"صغير", "عادي", "كبير"}, cfg.font, i -> cfg.font = i, false));
 

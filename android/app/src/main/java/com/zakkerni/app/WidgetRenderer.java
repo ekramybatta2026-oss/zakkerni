@@ -35,18 +35,20 @@ final class WidgetRenderer {
 
     /** Per-widget settings. */
     static final class Cfg {
-        int style = 0, opacity = 100, radius = 2, text = 0, font = 1;
+        int style = 0, opacity = 100, radius = 2, text = 0, font = 1, fmt = 0;
         boolean cd = true, city = true, hijri = true;
 
         static Cfg load(Context c, int id) {
             SharedPreferences p = c.getSharedPreferences(WPREFS, Context.MODE_PRIVATE);
             Cfg g = new Cfg();
             String k = "w" + id + "_";
+            if (!p.contains(k + "style") && typeOf(c, id) == T_DAY) { g.style = 3; g.opacity = 85; g.radius = 1; } // dark, like classic prayer widgets
             g.style = p.getInt(k + "style", g.style);
             g.opacity = p.getInt(k + "opacity", g.opacity);
             g.radius = p.getInt(k + "radius", g.radius);
             g.text = p.getInt(k + "text", g.text);
             g.font = p.getInt(k + "font", g.font);
+            g.fmt = p.getInt(k + "fmt", g.fmt);
             g.cd = p.getBoolean(k + "cd", g.cd);
             g.city = p.getBoolean(k + "city", g.city);
             g.hijri = p.getBoolean(k + "hijri", g.hijri);
@@ -57,7 +59,7 @@ final class WidgetRenderer {
             String k = "w" + id + "_";
             c.getSharedPreferences(WPREFS, Context.MODE_PRIVATE).edit()
                     .putInt(k + "style", style).putInt(k + "opacity", opacity).putInt(k + "radius", radius)
-                    .putInt(k + "text", text).putInt(k + "font", font)
+                    .putInt(k + "text", text).putInt(k + "font", font).putInt(k + "fmt", fmt)
                     .putBoolean(k + "cd", cd).putBoolean(k + "city", city).putBoolean(k + "hijri", hijri).apply();
         }
 
@@ -91,6 +93,18 @@ final class WidgetRenderer {
             android.icu.text.DateFormat df = android.icu.text.DateFormat.getDateInstance(android.icu.text.DateFormat.LONG, loc);
             return digits(c, df.format(new java.util.Date()));
         } catch (Throwable t) { return ""; }
+    }
+
+    /** fmt 0: 05:19   1: 5:19 ص   2: 17:19 (24h) — in the prayer city's time zone. */
+    static String fmtTime(Context c, long t, int fmt) {
+        String tz = AdhanScheduler.prefs(c).getString("tz", "");
+        java.util.Calendar cal = java.util.Calendar.getInstance(tz.isEmpty() ? java.util.TimeZone.getDefault() : java.util.TimeZone.getTimeZone(tz));
+        cal.setTimeInMillis(t);
+        int h = cal.get(java.util.Calendar.HOUR_OF_DAY), m = cal.get(java.util.Calendar.MINUTE), h12 = h % 12 == 0 ? 12 : h % 12;
+        String s = fmt == 2 ? String.format(java.util.Locale.US, "%02d:%02d", h, m)
+                : fmt == 1 ? String.format(java.util.Locale.US, "%d:%02d %s", h12, m, h < 12 ? "ص" : "م")
+                : String.format(java.util.Locale.US, "%02d:%02d", h12, m);
+        return digits(c, s);
     }
 
     static String countdown(Context c, long ms) {
@@ -151,10 +165,24 @@ final class WidgetRenderer {
             return v;
         }
         float bigSize = type == T_NEXT ? 20 : type == T_LIST ? 17 : 18;
-        setText(v, R.id.w_next, n.optString("n") + "  " + digits(c, n.optString("s")), main, bigSize * f);
+        setText(v, R.id.w_next, n.optString("n") + "  " + fmtTime(c, n.optLong("t"), g.fmt), main, bigSize * f);
         setText(v, R.id.w_cd, countdown(c, n.optLong("t") - now), hi, (type == T_NEXT ? 15 : 14) * f);
         v.setViewVisibility(R.id.w_cd, g.cd ? View.VISIBLE : View.GONE);
 
+        if (type == T_DAY) {
+            int[][] heads = {{R.drawable.whead_dark_0, R.drawable.whead_dark_1, R.drawable.whead_dark_2}, {R.drawable.whead_light_0, R.drawable.whead_light_1, R.drawable.whead_light_2}};
+            v.setInt(R.id.w_head, "setBackgroundResource", heads[dark ? 1 : 0][Math.max(0, Math.min(2, g.radius))]);
+            setText(v, R.id.w_next, n.optString("n") + " بعد", main, 17 * f);
+            v.setChronometer(R.id.w_chrono, SystemClock.elapsedRealtime() + (n.optLong("t") - now), null, true);
+            if (android.os.Build.VERSION.SDK_INT >= 24) v.setChronometerCountDown(R.id.w_chrono, true);
+            v.setTextColor(R.id.w_chrono, main);
+            v.setTextViewTextSize(R.id.w_chrono, TypedValue.COMPLEX_UNIT_SP, 17 * f);
+            v.setViewVisibility(R.id.w_chrono, g.cd ? View.VISIBLE : View.GONE);
+            v.setViewVisibility(R.id.w_cd, View.GONE);
+            v.setTextViewTextSize(R.id.w_hijri, TypedValue.COMPLEX_UNIT_SP, 15 * f);
+            v.setTextColor(R.id.w_hijri, main);
+            if (!g.cd) setText(v, R.id.w_next, n.optString("n") + "  " + fmtTime(c, n.optLong("t"), g.fmt), main, 17 * f);
+        }
         if (type != T_NEXT) {
             List<JSONObject> day = AdhanScheduler.dayOf(a, n);
             for (int i = 0; i < NAMES.length; i++) {
@@ -163,8 +191,14 @@ final class WidgetRenderer {
                     boolean isNext = o.optLong("t") == n.optLong("t");
                     int col = isNext ? hi : main;
                     float sz = (type == T_LIST ? 14.5f : 12f) * f;
-                    setText(v, NAMES[i], o.optString("n"), col, sz);
-                    setText(v, TIMES[i], digits(c, o.optString("s")), col, sz);
+                    if (type == T_DAY) {
+                        setText(v, NAMES[i], o.optString("n"), isNext ? hi : main, 14 * f);
+                        setText(v, TIMES[i], fmtTime(c, o.optLong("t"), g.fmt), isNext ? 0xFF1D1726 : main, 19 * f);
+                        v.setInt(TIMES[i], "setBackgroundResource", isNext ? R.drawable.w_pill : 0);
+                    } else {
+                        setText(v, NAMES[i], o.optString("n"), col, sz);
+                        setText(v, TIMES[i], fmtTime(c, o.optLong("t"), g.fmt), col, sz);
+                    }
                 } else {
                     v.setTextViewText(NAMES[i], "");
                     v.setTextViewText(TIMES[i], "");

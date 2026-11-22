@@ -62,6 +62,7 @@ final class AdhanScheduler {
                     .putBoolean(KEY_FULL, o.optBoolean("full", true))
                     .putString(KEY_CITY, o.optString("city", prefs(c).getString(KEY_CITY, "")))
                     .putString("dig", o.optString("dig", "ar"))
+                    .putString("tz", o.optString("tz", ""))
                     .apply();
         } catch (Exception ignored) { }
     }
