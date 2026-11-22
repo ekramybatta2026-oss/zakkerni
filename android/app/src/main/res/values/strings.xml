@@ -24,5 +24,5 @@
     <string name="wd_sw">ساعة إيقاف مع اللفات</string>
     <string name="wd_cal">الشهر بالتاريخين الهجري والميلادي</string>
     <string name="wl_clock">الساعة والطقس</string>
-    <string name="wd_clock">الساعة والطقس والتاريخ الهجري والميلادي</string>
+    <string name="wd_clock">مربع ٢×٢: الساعة والطقس والتاريخ</string>
 </resources>

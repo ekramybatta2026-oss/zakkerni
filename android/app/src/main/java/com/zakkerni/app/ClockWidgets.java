@@ -119,31 +119,29 @@ final class ClockWidgets {
         RemoteViews v = new RemoteViews(c.getPackageName(), R.layout.widget_clock);
         WidgetRenderer.applyBg(v, g);
         boolean dark = WidgetRenderer.darkText(g);
-        int main = dark ? 0xFF2A1F36 : 0xFFFFFFFF, sub = dark ? 0xFF6B5E7B : 0xEEF1E8F8, hi = dark ? 0xFFC2580C : 0xFFFFB066;
+        int main = dark ? 0xFF2A1F36 : 0xFFFFFFFF, hi = dark ? 0xFFC2580C : 0xFFFFB066;
         float f = g.font == 0 ? 0.85f : g.font == 2 ? 1.2f : 1f;
         boolean h24 = g.fmt == 2;
         v.setCharSequence(R.id.k_time, "setFormat12Hour", h24 ? "HH:mm" : "h:mm");
         v.setCharSequence(R.id.k_time, "setFormat24Hour", h24 ? "HH:mm" : "h:mm");
         v.setTextColor(R.id.k_time, main);
-        v.setTextViewTextSize(R.id.k_time, TypedValue.COMPLEX_UNIT_DIP, 48 * f);
+        v.setTextViewTextSize(R.id.k_time, TypedValue.COMPLEX_UNIT_DIP, 40 * f);
         Calendar now = Calendar.getInstance();
-        txt(v, R.id.k_ampm, h24 ? "" : (now.get(Calendar.HOUR_OF_DAY) < 12 ? "ص" : "م"), hi, 16 * f);
+        txt(v, R.id.k_ampm, h24 ? "" : (now.get(Calendar.HOUR_OF_DAY) < 12 ? "ص" : "م"), hi, 14 * f);
         v.setViewVisibility(R.id.k_ampm, h24 ? View.GONE : View.VISIBLE);
         String[] days = {"الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"};
         String[] gm = {"يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"};
-        txt(v, R.id.k_day, days[now.get(Calendar.DAY_OF_WEEK) - 1], main, 15 * f);
-        txt(v, R.id.k_greg, WidgetRenderer.digits(c, now.get(Calendar.DAY_OF_MONTH) + " " + gm[now.get(Calendar.MONTH)] + " " + now.get(Calendar.YEAR)), sub, 12.5f * f);
-        txt(v, R.id.k_hijri, WidgetRenderer.hijri(c), hi, 12.5f * f);
-        txt(v, R.id.k_day, days[now.get(Calendar.DAY_OF_WEEK) - 1], main, 15 * f);
+        txt(v, R.id.k_day, WidgetRenderer.digits(c, days[now.get(Calendar.DAY_OF_WEEK) - 1] + " " + now.get(Calendar.DAY_OF_MONTH) + " " + gm[now.get(Calendar.MONTH)]), main, 12.5f * f);
+        String hj = WidgetRenderer.hijri(c).replaceAll("\\s*[0-9٠-٩۰-۹]{4}.*$", "").trim(); // day + month only
+        txt(v, R.id.k_hijri, hj, hi, 11.5f * f);
         android.content.SharedPreferences wp = Weather.prefs(c);
         if (Weather.fresh(c)) {
             int code = wp.getInt("code", 0);
             v.setViewVisibility(R.id.k_wx, View.VISIBLE);
-            txt(v, R.id.k_wicon, Weather.icon(code, wp.getBoolean("day", true)), main, 30 * f);
-            txt(v, R.id.k_temp, WidgetRenderer.digits(c, Math.round(wp.getFloat("temp", 0)) + "°"), main, 30 * f);
-            txt(v, R.id.k_wdesc, Weather.desc(code), sub, 12 * f);
-            String hl = wp.contains("max") ? WidgetRenderer.digits(c, "↑" + Math.round(wp.getFloat("max", 0)) + "°  ↓" + Math.round(wp.getFloat("min", 0)) + "°") : "";
-            txt(v, R.id.k_hl, hl, hi, 12 * f);
+            txt(v, R.id.k_wicon, Weather.icon(code, wp.getBoolean("day", true)), main, 18 * f);
+            txt(v, R.id.k_temp, WidgetRenderer.digits(c, Math.round(wp.getFloat("temp", 0)) + "°"), main, 18 * f);
+            String hl = wp.contains("max") ? WidgetRenderer.digits(c, Math.round(wp.getFloat("max", 0)) + "°/" + Math.round(wp.getFloat("min", 0)) + "°") : "";
+            txt(v, R.id.k_hl, hl, hi, 11 * f);
             v.setOnClickPendingIntent(R.id.k_wx, open(c, "weather", 98));
         } else {
             v.setViewVisibility(R.id.k_wx, View.GONE);
