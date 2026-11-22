@@ -75,10 +75,13 @@ final class ClockStore {
         return who == null ? null : new Object[]{best, who};
     }
 
+    /** Activity PendingIntent: AlarmManager may launch it straight over the lock screen (like a clock app). */
     private static PendingIntent alarmPi(Context c, int id, String label, boolean create) {
-        Intent i = new Intent(c, ClockReceiver.class).setAction(A_ALARM).putExtra("id", id).putExtra("label", label == null ? "" : label);
+        Intent i = new Intent(c, RingActivity.class).putExtra("fire", "alarm").putExtra("id", id).putExtra("label", label == null ? "" : label)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_USER_ACTION)
+                .setData(android.net.Uri.parse("zk://alarm/" + id));
         int flags = PendingIntent.FLAG_IMMUTABLE | (create ? PendingIntent.FLAG_UPDATE_CURRENT : PendingIntent.FLAG_NO_CREATE);
-        return PendingIntent.getBroadcast(c, 5000 + Math.floorMod(id, 4000), i, flags);
+        return PendingIntent.getActivity(c, 5000 + Math.floorMod(id, 4000), i, flags);
     }
 
     static void scheduleAlarms(Context c) {
@@ -185,7 +188,8 @@ final class ClockStore {
     static void armTimer(Context c) {
         AlarmManager am = (AlarmManager) c.getSystemService(Context.ALARM_SERVICE);
         if (am == null) return;
-        PendingIntent pi = PendingIntent.getBroadcast(c, 7000, new Intent(c, ClockReceiver.class).setAction(A_TIMER),
+        PendingIntent pi = PendingIntent.getActivity(c, 7000, new Intent(c, RingActivity.class).putExtra("fire", "timer")
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_USER_ACTION).setData(android.net.Uri.parse("zk://timer")),
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         if (p(c).getBoolean("t_run", false)) AdhanScheduler.setClock(c, am, p(c).getLong("t_end", 0), pi);
         else am.cancel(pi);

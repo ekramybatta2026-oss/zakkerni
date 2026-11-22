@@ -32,6 +32,7 @@ public class RingActivity extends Activity {
         if (Build.VERSION.SDK_INT >= 27) { setShowWhenLocked(true); setTurnScreenOn(true); }
         else getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        if (!fire(getIntent())) { finish(); return; }
         boolean timer = "timer".equals(RingService.kind);
 
         LinearLayout root = new LinearLayout(this);
@@ -68,7 +69,35 @@ public class RingActivity extends Activity {
 
         IntentFilter f = new IntentFilter(RingService.DONE);
         if (Build.VERSION.SDK_INT >= 33) registerReceiver(done, f, Context.RECEIVER_NOT_EXPORTED); else registerReceiver(done, f);
-        if (!RingService.running) finish();
+    }
+
+    /** Launched by AlarmManager at ring time: update state and start the sound. False = nothing to ring. */
+    private boolean fire(Intent i) {
+        String f = i == null ? null : i.getStringExtra("fire");
+        if (f == null) return RingService.running;
+        i.removeExtra("fire");
+        if ("timer".equals(f)) {
+            boolean was = ClockStore.p(this).getBoolean("t_run", false);
+            long late = System.currentTimeMillis() - ClockStore.p(this).getLong("t_end", 0);
+            ClockStore.timerCmd(this, "done", 0);
+            if (!was || late > 10 * 60_000L) return false;
+            RingService.kind = "timer"; RingService.label = "";
+        } else {
+            int id = i.getIntExtra("id", 0);
+            ClockStore.afterRing(this, id);
+            WidgetRenderer.updateAll(this);
+            RingService.kind = "alarm"; RingService.alarmId = id; RingService.label = i.getStringExtra("label") == null ? "" : i.getStringExtra("label");
+        }
+        Intent s = new Intent(this, RingService.class).putExtra("kind", RingService.kind).putExtra("id", RingService.alarmId).putExtra("label", RingService.label);
+        try { if (Build.VERSION.SDK_INT >= 26) startForegroundService(s); else startService(s); } catch (Exception e) { return false; }
+        RingService.running = true;
+        return true;
+    }
+
+    @Override
+    protected void onNewIntent(Intent i) {
+        super.onNewIntent(i);
+        if (i != null && i.getStringExtra("fire") != null) { setIntent(i); recreate(); }
     }
 
     @Override
@@ -83,6 +112,7 @@ public class RingActivity extends Activity {
     }
 
     @Override protected void onDestroy() { try { unregisterReceiver(done); } catch (Exception ignored) { } super.onDestroy(); }
+
 
     private Button button(String s, int[] cols) {
         Button b = new Button(this);
