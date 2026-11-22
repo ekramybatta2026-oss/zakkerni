@@ -125,15 +125,29 @@ final class ClockWidgets {
         v.setCharSequence(R.id.k_time, "setFormat12Hour", h24 ? "HH:mm" : "h:mm");
         v.setCharSequence(R.id.k_time, "setFormat24Hour", h24 ? "HH:mm" : "h:mm");
         v.setTextColor(R.id.k_time, main);
-        v.setTextViewTextSize(R.id.k_time, TypedValue.COMPLEX_UNIT_DIP, 46 * f);
+        v.setTextViewTextSize(R.id.k_time, TypedValue.COMPLEX_UNIT_DIP, 48 * f);
         Calendar now = Calendar.getInstance();
         txt(v, R.id.k_ampm, h24 ? "" : (now.get(Calendar.HOUR_OF_DAY) < 12 ? "ص" : "م"), hi, 16 * f);
         v.setViewVisibility(R.id.k_ampm, h24 ? View.GONE : View.VISIBLE);
         String[] days = {"الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"};
         String[] gm = {"يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"};
         txt(v, R.id.k_day, days[now.get(Calendar.DAY_OF_WEEK) - 1], main, 15 * f);
-        txt(v, R.id.k_greg, WidgetRenderer.digits(c, now.get(Calendar.DAY_OF_MONTH) + " " + gm[now.get(Calendar.MONTH)] + " " + now.get(Calendar.YEAR)), sub, 12 * f);
-        txt(v, R.id.k_hijri, WidgetRenderer.hijri(c), hi, 12 * f);
+        txt(v, R.id.k_greg, WidgetRenderer.digits(c, now.get(Calendar.DAY_OF_MONTH) + " " + gm[now.get(Calendar.MONTH)] + " " + now.get(Calendar.YEAR)), sub, 12.5f * f);
+        txt(v, R.id.k_hijri, WidgetRenderer.hijri(c), hi, 12.5f * f);
+        txt(v, R.id.k_day, days[now.get(Calendar.DAY_OF_WEEK) - 1], main, 15 * f);
+        android.content.SharedPreferences wp = Weather.prefs(c);
+        if (Weather.fresh(c)) {
+            int code = wp.getInt("code", 0);
+            v.setViewVisibility(R.id.k_wx, View.VISIBLE);
+            txt(v, R.id.k_wicon, Weather.icon(code, wp.getBoolean("day", true)), main, 30 * f);
+            txt(v, R.id.k_temp, WidgetRenderer.digits(c, Math.round(wp.getFloat("temp", 0)) + "°"), main, 30 * f);
+            txt(v, R.id.k_wdesc, Weather.desc(code), sub, 12 * f);
+            String hl = wp.contains("max") ? WidgetRenderer.digits(c, "↑" + Math.round(wp.getFloat("max", 0)) + "°  ↓" + Math.round(wp.getFloat("min", 0)) + "°") : "";
+            txt(v, R.id.k_hl, hl, hi, 12 * f);
+            v.setOnClickPendingIntent(R.id.k_wx, open(c, "weather", 98));
+        } else {
+            v.setViewVisibility(R.id.k_wx, View.GONE);
+        }
         v.setOnClickPendingIntent(R.id.widget_root, open(c, "clock", 99));
         return v;
     }

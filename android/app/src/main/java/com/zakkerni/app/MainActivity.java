@@ -256,6 +256,6 @@ public class MainActivity extends Activity implements SensorEventListener {
     }
 
     static boolean goOk(String g) {
-        return g != null && java.util.Arrays.asList("adhan", "player", "clock", "alarm", "timer", "stopwatch", "calendar").contains(g);
+        return g != null && java.util.Arrays.asList("adhan", "player", "clock", "weather", "alarm", "timer", "stopwatch", "calendar").contains(g);
     }
 }

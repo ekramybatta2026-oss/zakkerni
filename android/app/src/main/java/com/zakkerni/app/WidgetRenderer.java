@@ -404,6 +404,7 @@ final class WidgetRenderer {
     /* ---------- refresh ---------- */
     static void updateAll(Context c) {
         boolean any = false;
+        Weather.maybeRefresh(c);
         try {
             AppWidgetManager m = AppWidgetManager.getInstance(c);
             for (int t = 0; t < PROVIDERS.length; t++) {
