@@ -118,6 +118,14 @@ final class WidgetRenderer {
         return digits(c, s);
     }
 
+    static final long SINCE_MS = 30 * 60_000L;
+
+    static String sinceText(Context c, long ms) {
+        long m = Math.max(0, ms / 60_000);
+        String s = m < 1 ? "حان الآن" : m == 1 ? "منذ دقيقة" : m == 2 ? "منذ دقيقتين" : "منذ " + m + (m <= 10 ? " دقائق" : " دقيقة");
+        return digits(c, s);
+    }
+
     static String countdown(Context c, long ms) {
         long min = Math.max(0, (ms + 59_999) / 60_000);
         long h = min / 60, m = min % 60;
@@ -189,9 +197,19 @@ final class WidgetRenderer {
         JSONArray a = AdhanScheduler.list(c);
         long now = System.currentTimeMillis();
         JSONObject n = AdhanScheduler.next(a, now);
+        // for 30 minutes after a prayer's time, show "الظهر منذ ١٢ د" instead of the next prayer
+        boolean since = false;
+        JSONObject prev = null;
+        for (int i = 0; i < a.length(); i++) {
+            JSONObject o = a.optJSONObject(i);
+            if (o == null || o.optString("n").contains("الشروق")) continue;
+            long t = o.optLong("t");
+            if (t <= now + 1500 && now - t < SINCE_MS && (prev == null || t > prev.optLong("t"))) prev = o;
+        }
+        if (prev != null) { n = prev; since = true; }
         String city = AdhanScheduler.prefs(c).getString(AdhanScheduler.KEY_CITY, "");
 
-        setText(v, R.id.w_label, "الصلاة القادمة", sub, 11 * f);
+        setText(v, R.id.w_label, since ? "الصلاة الحالية" : "الصلاة القادمة", sub, 11 * f);
         setText(v, R.id.w_city, city, sub, 10.5f * f);
         v.setViewVisibility(R.id.w_city, g.city && !city.isEmpty() ? View.VISIBLE : View.GONE);
         setText(v, R.id.w_hijri, g.hijri ? hijri(c) : "", sub, 11 * f);
@@ -207,7 +225,7 @@ final class WidgetRenderer {
         }
         float bigSize = type == T_NEXT ? 20 : type == T_LIST ? 17 : 18;
         setText(v, R.id.w_next, n.optString("n") + "  " + fmtTime(c, n.optLong("t"), g.fmt), main, bigSize * f);
-        setText(v, R.id.w_cd, countdown(c, n.optLong("t") - now), hi, (type == T_NEXT ? 15 : 14) * f);
+        setText(v, R.id.w_cd, since ? sinceText(c, now - n.optLong("t")) : countdown(c, n.optLong("t") - now), hi, (type == T_NEXT ? 15 : 14) * f);
         v.setViewVisibility(R.id.w_cd, g.cd ? View.VISIBLE : View.GONE);
 
         // sizes that always fit the widget width
@@ -223,16 +241,16 @@ final class WidgetRenderer {
         if (type == T_DAY) {
             int[][] heads = {{R.drawable.whead_dark_0, R.drawable.whead_dark_1, R.drawable.whead_dark_2}, {R.drawable.whead_light_0, R.drawable.whead_light_1, R.drawable.whead_light_2}};
             if (g.design == 0) v.setInt(R.id.w_head, "setBackgroundResource", heads[dark ? 1 : 0][Math.max(0, Math.min(2, g.radius))]);
-            setText(v, R.id.w_next, n.optString("n") + (g.design == 2 ? "" : " بعد"), main, (g.design == 2 ? 18 : 14) * f);
+            setText(v, R.id.w_next, n.optString("n") + (g.design == 2 ? "" : since ? " منذ" : " بعد"), main, (g.design == 2 ? 18 : 14) * f);
             v.setChronometer(R.id.w_chrono, SystemClock.elapsedRealtime() + (n.optLong("t") - now), null, true);
-            if (android.os.Build.VERSION.SDK_INT >= 24) v.setChronometerCountDown(R.id.w_chrono, true);
+            if (android.os.Build.VERSION.SDK_INT >= 24) v.setChronometerCountDown(R.id.w_chrono, !since);
             v.setTextColor(R.id.w_chrono, g.design == 2 ? hi : main);
             v.setTextViewTextSize(R.id.w_chrono, TypedValue.COMPLEX_UNIT_DIP, (g.design == 2 ? 15 : 14) * f);
             v.setViewVisibility(R.id.w_chrono, g.cd ? View.VISIBLE : View.GONE);
             v.setViewVisibility(R.id.w_cd, View.GONE);
             v.setTextViewTextSize(R.id.w_hijri, TypedValue.COMPLEX_UNIT_DIP, (g.design == 2 ? 10.5f : 12) * f);
             v.setTextColor(R.id.w_hijri, g.design == 2 ? sub : main);
-            if (g.design == 2) setText(v, R.id.w_label, "الصلاة القادمة", sub, 11 * f);
+            if (g.design == 2) setText(v, R.id.w_label, since ? "الصلاة الحالية" : "الصلاة القادمة", sub, 11 * f);
             if (!g.cd && g.design != 2) setText(v, R.id.w_next, n.optString("n") + "  " + fmtTime(c, n.optLong("t"), g.fmt), main, 14 * f);
         }
         if (type != T_NEXT) {
