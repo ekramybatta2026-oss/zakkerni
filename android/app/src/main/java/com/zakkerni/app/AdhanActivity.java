@@ -61,15 +61,15 @@ public class AdhanActivity extends Activity {
         root.addView(word, new LinearLayout.LayoutParams(dp(200), dp(126)));
 
         TextView small = text("حان الآن موعد أذان", 19, false, orL);
-        small.setPadding(0, dp(26), 0, 0);
+        small.setPadding(0, dp(30), 0, dp(8));
         root.addView(small);
         root.addView(text(AdhanService.curName.isEmpty() ? "الصلاة" : AdhanService.curName, 52, true, or));
 
         TextView time = text(AdhanService.curTime, 32, true, orL);
-        time.setPadding(dp(24), dp(2), dp(24), dp(2));
-        time.setBackground(frame(dp(22)));
+        time.setPadding(dp(36), dp(8), dp(36), dp(8));
+        time.setBackground(frame(dp(26)));
         LinearLayout.LayoutParams tl = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        tl.topMargin = dp(10);
+        tl.topMargin = dp(18);
         root.addView(time, tl);
 
         String city = AdhanScheduler.prefs(this).getString(AdhanScheduler.KEY_CITY, "");
@@ -78,7 +78,7 @@ public class AdhanActivity extends Activity {
             c.setPadding(dp(22), dp(4), dp(22), dp(4));
             c.setBackground(frame(dp(30)));
             LinearLayout.LayoutParams cl = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-            cl.topMargin = dp(14);
+            cl.topMargin = dp(18);
             root.addView(c, cl);
         }
 
@@ -95,12 +95,12 @@ public class AdhanActivity extends Activity {
         stop.setBackground(bg);
         stop.setElevation(dp(6));
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(dp(240), dp(60));
-        lp.topMargin = dp(40);
+        lp.topMargin = dp(46);
         root.addView(stop, lp);
         stop.setOnClickListener(v -> stopAdhan());
 
         TextView hint = text("أو اضغط زر رفع/خفض الصوت", 14, false, Color.parseColor("#B4A6C6"));
-        hint.setPadding(0, dp(14), 0, 0);
+        hint.setPadding(0, dp(18), 0, 0);
         root.addView(hint);
 
         setContentView(root);
