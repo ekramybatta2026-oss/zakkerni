@@ -194,6 +194,7 @@ final class AdhanScheduler {
         try {
             int current = au.getRingerMode();
             if (current != AudioManager.RINGER_MODE_SILENT) prefs(c).edit().putInt(KEY_PREV_RINGER, current).apply();
+            if (current != AudioManager.RINGER_MODE_SILENT) { cue(c, false); try { Thread.sleep(900); } catch (InterruptedException ignored) { } }
             au.setRingerMode(AudioManager.RINGER_MODE_SILENT);
         } catch (Exception ignored) { return; }
         AlarmManager am = (AlarmManager) c.getSystemService(Context.ALARM_SERVICE);
@@ -203,12 +204,27 @@ final class AdhanScheduler {
         setAlarm(am, System.currentTimeMillis() + min * 60_000L, pi);
     }
 
+    /** Soft chime + short buzz when the phone goes silent (falling tone) or back to ringing (rising tone). */
+    static void cue(Context c, boolean back) {
+        try {
+            android.media.ToneGenerator tg = new android.media.ToneGenerator(AudioManager.STREAM_NOTIFICATION, 45);
+            tg.startTone(back ? android.media.ToneGenerator.TONE_PROP_ACK : android.media.ToneGenerator.TONE_PROP_PROMPT, 400);
+            new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(tg::release, 1200);
+        } catch (Exception ignored) { }
+        try {
+            android.os.Vibrator v = (android.os.Vibrator) c.getSystemService(Context.VIBRATOR_SERVICE);
+            long[] p = back ? new long[]{0, 60, 90, 60} : new long[]{0, 140};
+            if (Build.VERSION.SDK_INT >= 26) v.vibrate(android.os.VibrationEffect.createWaveform(p, -1));
+            else v.vibrate(p, -1);
+        } catch (Exception ignored) { }
+    }
+
     static void restoreRinger(Context c) {
         AudioManager au = (AudioManager) c.getSystemService(Context.AUDIO_SERVICE);
         int prev = prefs(c).getInt(KEY_PREV_RINGER, -1);
         if (au == null || prev < 0) return;
         try {
-            if (au.getRingerMode() == AudioManager.RINGER_MODE_SILENT) au.setRingerMode(prev); // only undo our own change
+            if (au.getRingerMode() == AudioManager.RINGER_MODE_SILENT) { au.setRingerMode(prev); cue(c, true); } // only undo our own change
         } catch (Exception ignored) { }
         prefs(c).edit().remove(KEY_PREV_RINGER).apply();
     }
