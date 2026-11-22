@@ -18,6 +18,7 @@ final class ClockWidgets {
     private ClockWidgets() { }
 
     static RemoteViews build(Context c, WidgetRenderer.Cfg g, int type, int widgetId) {
+        if (type == WidgetRenderer.T_CLOCK) return clockFace(c, g);
         int lay = type == WidgetRenderer.T_ALARM ? R.layout.widget_alarm : type == WidgetRenderer.T_TIMER ? R.layout.widget_timer
                 : type == WidgetRenderer.T_SW ? R.layout.widget_sw : R.layout.widget_cal;
         RemoteViews v = new RemoteViews(c.getPackageName(), lay);
@@ -111,6 +112,29 @@ final class ClockWidgets {
         v.setOnClickPendingIntent(R.id.c_head, cmdW(c, "today", widgetId, 3));
         v.setInt(R.id.c_prev, "setColorFilter", main);
         v.setInt(R.id.c_next, "setColorFilter", main);
+        return v;
+    }
+
+    private static RemoteViews clockFace(Context c, WidgetRenderer.Cfg g) {
+        RemoteViews v = new RemoteViews(c.getPackageName(), R.layout.widget_clock);
+        WidgetRenderer.applyBg(v, g);
+        boolean dark = WidgetRenderer.darkText(g);
+        int main = dark ? 0xFF2A1F36 : 0xFFFFFFFF, sub = dark ? 0xFF6B5E7B : 0xEEF1E8F8, hi = dark ? 0xFFC2580C : 0xFFFFB066;
+        float f = g.font == 0 ? 0.85f : g.font == 2 ? 1.2f : 1f;
+        boolean h24 = g.fmt == 2;
+        v.setCharSequence(R.id.k_time, "setFormat12Hour", h24 ? "HH:mm" : "h:mm");
+        v.setCharSequence(R.id.k_time, "setFormat24Hour", h24 ? "HH:mm" : "h:mm");
+        v.setTextColor(R.id.k_time, main);
+        v.setTextViewTextSize(R.id.k_time, TypedValue.COMPLEX_UNIT_DIP, 46 * f);
+        Calendar now = Calendar.getInstance();
+        txt(v, R.id.k_ampm, h24 ? "" : (now.get(Calendar.HOUR_OF_DAY) < 12 ? "ص" : "م"), hi, 16 * f);
+        v.setViewVisibility(R.id.k_ampm, h24 ? View.GONE : View.VISIBLE);
+        String[] days = {"الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"};
+        String[] gm = {"يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"};
+        txt(v, R.id.k_day, days[now.get(Calendar.DAY_OF_WEEK) - 1], main, 15 * f);
+        txt(v, R.id.k_greg, WidgetRenderer.digits(c, now.get(Calendar.DAY_OF_MONTH) + " " + gm[now.get(Calendar.MONTH)] + " " + now.get(Calendar.YEAR)), sub, 12 * f);
+        txt(v, R.id.k_hijri, WidgetRenderer.hijri(c), hi, 12 * f);
+        v.setOnClickPendingIntent(R.id.widget_root, open(c, "clock", 99));
         return v;
     }
 

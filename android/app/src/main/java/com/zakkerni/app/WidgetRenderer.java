@@ -19,15 +19,15 @@ import java.util.List;
 
 /** Draws every Zakkerni widget type from the saved prayer times and each widget's own settings. */
 final class WidgetRenderer {
-    static final int T_NEXT = 0, T_DAY = 1, T_FULL = 2, T_LIST = 3, T_PLAYER = 4, T_PLAYER_S = 5, T_PLAYER_L = 6, T_ALARM = 7, T_TIMER = 8, T_SW = 9, T_CAL = 10;
+    static final int T_NEXT = 0, T_DAY = 1, T_FULL = 2, T_LIST = 3, T_PLAYER = 4, T_PLAYER_S = 5, T_PLAYER_L = 6, T_ALARM = 7, T_TIMER = 8, T_SW = 9, T_CAL = 10, T_CLOCK = 11;
     static final String WPREFS = "zakkerni_widgets";
     static final String ACTION_TICK = "com.zakkerni.app.WIDGET_TICK";
 
     static final String[] STYLES = {"grad", "purple", "orange", "dark", "light", "deep", "lav", "soft", "sunset", "auto"};
     static final String[] STYLE_NAMES = {"متدرّج", "بنفسجي", "برتقالي", "داكن", "فاتح", "ليلي", "لافندر", "مشمشي", "غروب", "أرابيسك"};
     static final String[] DESIGNS = {"كلاسيكي", "بطاقات", "مدمج"};
-    static final Class<?>[] PROVIDERS = {WidgetNext.class, WidgetDay.class, PrayerWidget.class, WidgetList.class, PlayerWidget.class, PlayerWidgetSmall.class, PlayerWidgetLarge.class, WidgetAlarm.class, WidgetTimer.class, WidgetStopwatch.class, WidgetCalendar.class};
-    static final int[] LAYOUTS = {R.layout.widget_next, R.layout.widget_day, R.layout.widget_prayer, R.layout.widget_list, R.layout.widget_player, R.layout.widget_player_s, R.layout.widget_player_l, R.layout.widget_alarm, R.layout.widget_timer, R.layout.widget_sw, R.layout.widget_cal};
+    static final Class<?>[] PROVIDERS = {WidgetNext.class, WidgetDay.class, PrayerWidget.class, WidgetList.class, PlayerWidget.class, PlayerWidgetSmall.class, PlayerWidgetLarge.class, WidgetAlarm.class, WidgetTimer.class, WidgetStopwatch.class, WidgetCalendar.class, WidgetClock.class};
+    static final int[] LAYOUTS = {R.layout.widget_next, R.layout.widget_day, R.layout.widget_prayer, R.layout.widget_list, R.layout.widget_player, R.layout.widget_player_s, R.layout.widget_player_l, R.layout.widget_alarm, R.layout.widget_timer, R.layout.widget_sw, R.layout.widget_cal, R.layout.widget_clock};
 
     private static final int[] NAMES = {R.id.n0, R.id.n1, R.id.n2, R.id.n3, R.id.n4};
     private static final int[] TIMES = {R.id.t0, R.id.t1, R.id.t2, R.id.t3, R.id.t4};

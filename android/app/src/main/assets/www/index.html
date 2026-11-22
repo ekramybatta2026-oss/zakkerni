@@ -442,6 +442,19 @@ body.sec .toast.show{transform:translateX(-50%)}
 .pfav svg.i{width:19px;height:19px}
 .pfav.on{color:#E0457B}.pfav.on svg.i{fill:currentColor}
 .pchip.fav{background:#E0457B;color:#fff}.pchip.fav svg.i{fill:currentColor}
+.ck-tabs{grid-template-columns:repeat(5,1fr)}.ck-tabs button span{font-size:11px;white-space:nowrap}
+.an-wrap{width:min(70vw,250px);margin:0 auto}
+.an{width:100%;display:block}
+.an .face{fill:var(--surface);stroke:var(--orange);stroke-width:4;filter:drop-shadow(0 8px 18px rgba(90,38,144,.18))}
+.an .tk{stroke:var(--muted);stroke-width:1.2;opacity:.6}.an .tk5{stroke:var(--purple);stroke-width:3;stroke-linecap:round}
+.an text{font:800 15px Cairo,sans-serif;fill:var(--text);text-anchor:middle}
+.an .hh{stroke:var(--purple);stroke-width:7;stroke-linecap:round}.an .hm{stroke:var(--text);stroke-width:4.5;stroke-linecap:round}
+.an .hs{stroke:var(--orange);stroke-width:2;stroke-linecap:round}.an .hub{fill:var(--orange)}
+[data-theme="dark"] .an .tk5{stroke:#D9B8F5}[data-theme="dark"] .an .hh{stroke:#B98BE6}
+.dg{display:flex;justify-content:center;align-items:baseline;gap:6px;margin-top:12px}
+.dg b{font-size:44px;font-weight:800;color:var(--text);direction:ltr}.dg b small{font-size:18px;color:var(--muted)}.dg b i{font-style:normal;font-size:22px;color:var(--orange)}
+.dg span{font-size:20px;font-weight:800;color:var(--orange);min-width:28px}
+.dg-date{text-align:center;font-weight:700;color:var(--muted);font-size:14px}
 </style>
 </head>
 <body>
@@ -480,6 +493,7 @@ body.sec .toast.show{transform:translateX(-50%)}
   <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5.5 21V4M5.5 4h11l-2 4 2 4h-11"/></symbol>
   <symbol id="i-chev-r" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
   <symbol id="i-chev-l" viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
   <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
   <symbol id="i-done-all" viewBox="0 0 24 24"><path d="M2 12.5 6.5 17 15 7.5M9.5 16l1 1L22 7"/></symbol>
   <symbol id="i-sound" viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></symbol>
@@ -945,7 +959,7 @@ function go(view, push = true) {
   else if (view === 'player') { renderPlayer(); $('#v-player').classList.add('active'); }
   else if (view === 'qibla') { renderQibla(); $('#v-qibla').classList.add('active'); }
   else if (view === 'mosques') { renderMosques(); $('#v-mosques').classList.add('active'); }
-  else if (['alarm', 'timer', 'stopwatch', 'calendar'].includes(view)) { renderClock(view); $('#v-clock').classList.add('active'); }
+  else if (['clock', 'alarm', 'timer', 'stopwatch', 'calendar'].includes(view)) { renderClock(view); $('#v-clock').classList.add('active'); }
   window.scrollTo({ top: 0 });
   if (push) { try { history.pushState({ view }, '', '#' + (view === 'settings' ? 'prefs' : view)); } catch (e) {} }
 }
@@ -995,13 +1009,14 @@ function renderHome() {
       <div class="dates"><span class="chip fit">${ico('cal')}${hijri ? `${hijri}<span class="sep">•</span>` : ''}${greg}</span></div>
       <div class="nextp" id="homeNext" data-go-adhan>${ico('mosque')}<span id="hnText"></span></div>
     </div>
-    <div class="tools">
+    <div class="tools t4">
+      <button class="tool" data-open="clock"><span class="ti">${ico('clock')}</span><span><b>الساعة</b></span></button>
       <button class="tool" data-open="qibla"><span class="ti">${ico('compass')}</span><span><b>القبلة</b></span></button>
-      <button class="tool" data-open="mosques"><span class="ti">${ico('mosque')}</span><span><b>مساجد قريبة</b></span></button>
+      <button class="tool" data-open="mosques"><span class="ti">${ico('mosque')}</span><span><b>المساجد</b></span></button>
       <button class="tool" data-open="player"><span class="ti">${ico('music')}</span><span><b>المشغّل</b></span></button>
     </div>
     <div class="tools t4">
-      ${CK_TABS.map(([k, l, i]) => `<button class="tool" data-open="${k}"><span class="ti">${ico(i)}</span><span><b>${l}</b></span></button>`).join('')}
+      ${CK_TABS.slice(1).map(([k, l, i]) => `<button class="tool" data-open="${k}"><span class="ti">${ico(i)}</span><span><b>${l}</b></span></button>`).join('')}
     </div>
     <div class="overall">
       <div class="ring"><svg viewBox="0 0 80 80"><circle class="track" cx="40" cy="40" r="34" fill="none" stroke-width="9"/><circle class="bar" cx="40" cy="40" r="34" fill="none" stroke-width="9" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - pct / 100)}"/></svg><span>${ar(pct)}٪</span></div>
@@ -1769,7 +1784,7 @@ function eqSheet() {
 
 /* ---------- Time tools: alarm / timer / stopwatch / calendar ---------- */
 const CB = () => window.AndroidBridge && AndroidBridge.clockState;
-const CK_TABS = [['alarm', 'المنبه', 'alarm'], ['timer', 'المؤقت', 'hourglass'], ['stopwatch', 'ساعة الإيقاف', 'stopwatch'], ['calendar', 'التقويم', 'cal']];
+const CK_TABS = [['clock', 'الساعة', 'clock'], ['alarm', 'المنبه', 'alarm'], ['timer', 'المؤقت', 'hourglass'], ['stopwatch', 'ساعة الإيقاف', 'stopwatch'], ['calendar', 'التقويم', 'cal']];
 const WD = ['ح', 'ن', 'ث', 'ر', 'خ', 'ج', 'س'], WDL = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
 let ckLoop = null, calOff = 0, calPick = null, timerSet = { h: 0, m: 5, s: 0 };
 function ckWeb() { return S.clock || (S.clock = { alarms: [], t: { run: false, end: 0, left: 0, total: 0 }, s: { run: false, start: 0, acc: 0, laps: [] } }); }
@@ -1854,9 +1869,43 @@ function renderClock(tab) {
     <div class="ck-tabs">${CK_TABS.map(([k, l, i]) => `<button data-ck="${k}" class="${k === tab ? 'on' : ''}">${ico(i)}<span>${l}</span></button>`).join('')}</div>
     <div id="ckBody"></div>`;
   v.querySelectorAll('[data-ck]').forEach(b => b.onclick = () => go(b.dataset.ck));
-  ({ alarm: ckAlarm, timer: ckTimer, stopwatch: ckSw, calendar: ckCal })[tab]();
+  ({ clock: ckClock, alarm: ckAlarm, timer: ckTimer, stopwatch: ckSw, calendar: ckCal })[tab]();
   clearInterval(ckLoop);
-  if (tab === 'timer' || tab === 'stopwatch') ckLoop = setInterval(() => { if (current !== tab) { clearInterval(ckLoop); return; } ckPaint(tab); }, tab === 'stopwatch' ? 50 : 250);
+  if (tab === 'timer' || tab === 'stopwatch' || tab === 'clock') ckLoop = setInterval(() => { if (current !== tab) { clearInterval(ckLoop); return; } tab === 'clock' ? paintClock() : ckPaint(tab); }, tab === 'stopwatch' ? 50 : 250);
+}
+
+const WORLD = [['Asia/Riyadh', 'مكة المكرمة'], ['Africa/Cairo', 'القاهرة'], ['Asia/Dubai', 'دبي'], ['Asia/Kuwait', 'الكويت'], ['Asia/Qatar', 'الدوحة'], ['Asia/Amman', 'عمّان'], ['Asia/Baghdad', 'بغداد'], ['Africa/Casablanca', 'الدار البيضاء'], ['Africa/Tunis', 'تونس'], ['Africa/Algiers', 'الجزائر'], ['Africa/Khartoum', 'الخرطوم'], ['Europe/Istanbul', 'إسطنبول'], ['Asia/Karachi', 'كراتشي'], ['Asia/Kolkata', 'نيودلهي'], ['Asia/Kuala_Lumpur', 'كوالالمبور'], ['Asia/Jakarta', 'جاكرتا'], ['Europe/London', 'لندن'], ['Europe/Paris', 'باريس'], ['Europe/Berlin', 'برلين'], ['America/New_York', 'نيويورك'], ['America/Los_Angeles', 'لوس أنجلوس'], ['America/Toronto', 'تورونتو'], ['Asia/Tokyo', 'طوكيو'], ['Australia/Sydney', 'سيدني']];
+const wclocks = () => (S.wclocks = S.wclocks || ['Africa/Cairo']);
+function tzTime(tz, d = new Date()) { try { return new Intl.DateTimeFormat('en-GB', { timeZone: tz, hour: 'numeric', minute: '2-digit', hour12: false }).format(d); } catch (e) { return ''; } }
+function tzDiff(tz) {
+  try { const d = new Date(), a = new Date(d.toLocaleString('en-US', { timeZone: tz })), b = new Date(d.toLocaleString('en-US')); const h = Math.round((a - b) / 36e5 * 2) / 2; return h === 0 ? 'نفس التوقيت' : (h > 0 ? 'متقدمة ' : 'متأخرة ') + nd(Math.abs(h)) + ' س'; } catch (e) { return ''; }
+}
+function hm12(h, m) { return nd(`${h % 12 || 12}:${two(m)}`) + ` <small>${h < 12 ? 'ص' : 'م'}</small>`; }
+function ckClock() {
+  const ticks = Array.from({ length: 60 }, (_, i) => { const a = i * 6 * Math.PI / 180, r1 = i % 5 ? 92 : 86, r2 = 98; return `<line x1="${110 + r1 * Math.sin(a)}" y1="${110 - r1 * Math.cos(a)}" x2="${110 + r2 * Math.sin(a)}" y2="${110 - r2 * Math.cos(a)}" class="${i % 5 ? 'tk' : 'tk5'}"/>`; }).join('');
+  const nums = Array.from({ length: 12 }, (_, i) => { const n = i + 1, a = n * 30 * Math.PI / 180; return `<text x="${110 + 72 * Math.sin(a)}" y="${110 - 72 * Math.cos(a) + 6}">${nd(n)}</text>`; }).join('');
+  $('#ckBody').innerHTML = `
+    <div class="an-wrap"><svg class="an" viewBox="0 0 220 220"><circle cx="110" cy="110" r="104" class="face"/>${ticks}${nums}
+      <line id="hH" x1="110" y1="110" x2="110" y2="62" class="hh"/><line id="hM" x1="110" y1="110" x2="110" y2="40" class="hm"/><line id="hS" x1="110" y1="124" x2="110" y2="30" class="hs"/><circle cx="110" cy="110" r="5" class="hub"/></svg></div>
+    <div class="dg"><b id="dgT"></b><span id="dgS"></span></div>
+    <div class="dg-date" id="dgD"></div>
+    <div class="sec-title" style="margin-top:18px">ساعات العالم</div>
+    <div class="al-list" id="wList"></div>
+    <button class="btn ck-add" id="wAdd">${ico('clock')} إضافة مدينة</button>`;
+  $('#wAdd').onclick = () => sheet('إضافة مدينة', WORLD.filter(([z]) => !wclocks().includes(z)).map(([z, n]) => [z, `${n} <small>· ${nd(tzTime(z))}</small>`]), (z) => { wclocks().push(z); save(); paintWorld(); });
+  paintWorld(); paintClock();
+}
+function paintWorld() {
+  const el = $('#wList'); if (!el) return;
+  el.innerHTML = wclocks().map(z => { const n = (WORLD.find(w => w[0] === z) || [z, z])[1], [h, m] = tzTime(z).split(':').map(Number); return `<div class="al"><div class="al-main"><div class="al-s" style="font-size:15px;color:var(--text)">${n}</div><div class="al-n">${tzDiff(z)}</div></div><div class="al-t" style="font-size:26px">${hm12(h, m)}</div><button class="pfav" data-wdel="${z}" aria-label="حذف">✕</button></div>`; }).join('') || `<div class="empty" style="padding:20px">أضف مدنًا لمعرفة الوقت فيها</div>`;
+  el.querySelectorAll('[data-wdel]').forEach(b => b.onclick = () => { S.wclocks = wclocks().filter(z => z !== b.dataset.wdel); save(); paintWorld(); });
+}
+function paintClock() {
+  const d = new Date(), h = d.getHours(), m = d.getMinutes(), s = d.getSeconds();
+  const set = (id, deg) => { const e = $('#' + id); if (e) e.setAttribute('transform', `rotate(${deg} 110 110)`); };
+  set('hH', (h % 12 + m / 60) * 30); set('hM', (m + s / 60) * 6); set('hS', s * 6);
+  if ($('#dgT')) { $('#dgT').innerHTML = `<small>${h < 12 ? 'ص' : 'م'}</small> ${nd(`${h % 12 || 12}:${two(m)}`)}<i>${nd(':' + two(s))}</i>`; $('#dgD').textContent = fullDates(d); }
+  if (s === 0) paintWorld();
 }
 function ckAlarm() {
   const st = ckState(), list = st.alarms || [];
@@ -2010,7 +2059,7 @@ setTimeout(scheduleNative, 800);
 // installable web app (iPhone / any browser)
 if (!NATIVE && 'serviceWorker' in navigator && location.protocol === 'https:') { try { navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {} }
 let start = (location.hash || '').slice(1); if (start === 'prefs') start = 'settings';
-go(SECTIONS[start] || ['favs', 'settings', 'adhan', 'qibla', 'mosques', 'player', 'alarm', 'timer', 'stopwatch', 'calendar'].includes(start) ? start : 'home', false);
+go(SECTIONS[start] || ['favs', 'settings', 'adhan', 'qibla', 'mosques', 'player', 'clock', 'alarm', 'timer', 'stopwatch', 'calendar'].includes(start) ? start : 'home', false);
 try { history.replaceState({ view: current }, '', '#' + (current === 'settings' ? 'prefs' : current)); } catch (e) {}
 setTimeout(() => $('#splash').classList.add('hide'), 1300);
 document.addEventListener('visibilitychange', () => { if (!document.hidden && S.date !== todayKey()) { rollDay(); go(current, false); } });
