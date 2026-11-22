@@ -120,6 +120,12 @@ public class Bridge {
         catch (Exception e) { return false; }
     }
 
+    @JavascriptInterface
+    public void startCompass() { MainActivity a = MainActivity.current; if (a != null) a.runOnUiThread(a::startCompass); }
+
+    @JavascriptInterface
+    public void stopCompass() { MainActivity a = MainActivity.current; if (a != null) a.runOnUiThread(a::stopCompass); }
+
     private void open(Intent i) {
         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         try { ctx.startActivity(i); } catch (Exception e) {

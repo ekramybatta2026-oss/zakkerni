@@ -238,6 +238,40 @@ body.sec .shbar{flex:none;position:relative;top:0}
 .pt-row .bell.none{visibility:hidden}
 .sel{font-family:inherit;font-size:15px;font-weight:700;color:var(--text);background:var(--surface-2);border:0;border-radius:12px;padding:8px 10px;max-width:52%}
 .note-s{font-size:12.5px;color:var(--muted);line-height:1.8;padding:12px 16px}
+/* Tools on home */
+.tools{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.tool{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:18px;background:var(--surface);box-shadow:var(--shadow);border:1px solid var(--line);text-align:right}
+.tool .ti{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;color:#fff;background:var(--grad);flex:none}
+.tool b{display:block;font-size:14.5px}.tool small{font-size:11px;color:var(--muted)}
+/* Qibla */
+.qcard{position:relative;background:var(--surface);border-radius:26px;box-shadow:var(--shadow);padding:26px 16px 18px;text-align:center;border:2px solid transparent;transition:border-color .3s,background .3s}
+.qcard.ok{border-color:var(--orange);background:linear-gradient(180deg,var(--soft-or),var(--surface))}
+[data-theme="dark"] .qcard.ok{background:linear-gradient(180deg,rgba(242,138,50,.15),var(--surface))}
+.qpointer{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:12px solid transparent;border-right:12px solid transparent;border-top:20px solid var(--orange);z-index:2}
+.qwrap{width:min(78vw,300px);margin:0 auto}
+.qdial{width:100%;height:auto;transition:transform .12s linear}
+.qring{fill:var(--surface-2);stroke:var(--purple);stroke-width:3}
+.tl{stroke:var(--purple);stroke-width:3}.ts{stroke:var(--muted);stroke-width:1.2}
+.qn{fill:#C2410C;font:800 22px Cairo,sans-serif;text-anchor:middle}
+.qd{fill:var(--text);font:700 17px Cairo,sans-serif;text-anchor:middle}
+.qline{stroke:var(--orange);stroke-width:4;stroke-linecap:round}
+.qhub{fill:var(--purple)}
+.qstate{margin-top:10px;font-weight:800;font-size:17px;color:var(--purple)}
+[data-theme="dark"] .qstate{color:#D9B8F5}
+.qcard.ok .qstate{color:var(--orange)}
+.qinfo{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.qinfo div{background:var(--surface-2);border-radius:14px;padding:8px}
+.qinfo small{display:block;font-size:11.5px;color:var(--muted)}.qinfo b{font-size:15px}
+/* Mosques */
+.mseg{margin:0 0 10px;justify-content:center;display:flex}
+.mlist{background:var(--surface);border-radius:22px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:12px}
+.mrow{display:flex;align-items:center;gap:10px;padding:11px 12px;border-bottom:1px solid var(--line)}
+.mrow:last-child{border-bottom:0}
+.mic{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:var(--lav);color:var(--purple);flex:none}
+[data-theme="dark"] .mic{background:#3F3052;color:#D9B8F5}
+.minfo{flex:1;min-width:0}.minfo b{display:block;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.minfo small{font-size:11.5px;color:var(--muted)}
+.mgo{flex:none;padding:7px 12px;border-radius:12px;background:var(--grad-or);color:#fff;font-weight:700;font-size:12.5px;text-decoration:none}
+.mapbtn{display:flex;width:100%;text-decoration:none;margin-bottom:6px}
 /* Settings */
 .set-group{background:var(--surface);border-radius:22px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px}
 .set-row{display:flex;align-items:center;gap:12px;padding:15px 16px;border-bottom:1px solid var(--line)}
@@ -295,6 +329,7 @@ body.sec .toast.show{transform:translateX(-50%)}
 <svg width="0" height="0" style="position:absolute">
   <defs><linearGradient id="gOr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFB066"/><stop offset="1" stop-color="#F28A32"/></linearGradient></defs>
   <symbol id="i-mosque" viewBox="0 0 24 24"><path d="M3 21h18M5 21v-7M19 21v-7M4 14h2M18 14h2M5 14V9.5L5 7M19 14V9.5L19 7M5 7l-.01 0M19 7l-.01 0"/><path d="M8 21v-5a4 4 0 0 1 8 0v5"/><path d="M7.5 12.5c0-2.6 2-4 4.5-5.5 2.5 1.5 4.5 2.9 4.5 5.5"/><path d="M12 4.5V7M11 21v-2.5a1 1 0 0 1 2 0V21"/></symbol>
+  <symbol id="i-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5 13.4 13.4 8.5 15.5 10.6 10.6z" fill="currentColor"/></symbol>
   <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></symbol>
   <symbol id="i-bell-off" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 9.4-4.9M18 11v5l1.5 2H8"/><path d="M10 20.5a2 2 0 0 0 4 0M3 3l18 18"/></symbol>
   <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/></symbol>
@@ -340,6 +375,8 @@ body.sec .toast.show{transform:translateX(-50%)}
     <section class="view" id="v-favs"></section>
     <section class="view" id="v-settings"></section>
     <section class="view" id="v-adhan"></section>
+    <section class="view" id="v-qibla"></section>
+    <section class="view" id="v-mosques"></section>
   </main>
 </div>
 
@@ -756,6 +793,7 @@ function go(view, push = true) {
   rollDay();
   current = view;
   document.body.classList.remove('sec');
+  if (view !== 'qibla') stopCompass();
   if (chain || zPlaying) { chain = null; zAudio.pause(); zPlaying = null; }
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.go === view));
@@ -764,6 +802,8 @@ function go(view, push = true) {
   else if (view === 'favs') { renderFavs(); $('#v-favs').classList.add('active'); }
   else if (view === 'settings') { renderSettings(); $('#v-settings').classList.add('active'); }
   else if (view === 'adhan') { renderAdhan(); $('#v-adhan').classList.add('active'); }
+  else if (view === 'qibla') { renderQibla(); $('#v-qibla').classList.add('active'); }
+  else if (view === 'mosques') { renderMosques(); $('#v-mosques').classList.add('active'); }
   window.scrollTo({ top: 0 });
   if (push) { try { history.pushState({ view }, '', '#' + (view === 'settings' ? 'prefs' : view)); } catch (e) {} }
 }
@@ -812,6 +852,10 @@ function renderHome() {
       ${day ? `<div class="day">${day}</div>` : ''}
       <div class="dates"><span class="chip fit">${ico('cal')}${hijri ? `${hijri}<span class="sep">•</span>` : ''}${greg}</span></div>
       <div class="nextp" id="homeNext" data-go-adhan>${ico('mosque')}<span id="hnText"></span></div>
+    </div>
+    <div class="tools">
+      <button class="tool" data-open="qibla"><span class="ti">${ico('compass')}</span><span><b>القبلة</b><small>اتجاه الكعبة من موقعك</small></span></button>
+      <button class="tool" data-open="mosques"><span class="ti">${ico('mosque')}</span><span><b>مساجد قريبة</b><small>حسب موقعك الحالي</small></span></button>
     </div>
     <div class="overall">
       <div class="ring"><svg viewBox="0 0 80 80"><circle class="track" cx="40" cy="40" r="34" fill="none" stroke-width="9"/><circle class="bar" cx="40" cy="40" r="34" fill="none" stroke-width="9" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - pct / 100)}"/></svg><span>${ar(pct)}٪</span></div>
@@ -1324,6 +1368,137 @@ function renderAdhan() {
 }
 setInterval(updateClock, 1000);
 
+/* ---------- Location for Qibla & mosques ---------- */
+const KAABA = { lat: 21.422487, lng: 39.826206 };
+function hereNow(cb) {
+  const fallback = () => { const c = city(); cb({ lat: c.lat, lng: c.lng, approx: true, name: c.name }); };
+  if (!navigator.geolocation) return fallback();
+  try {
+    navigator.geolocation.getCurrentPosition(
+      p => cb({ lat: p.coords.latitude, lng: p.coords.longitude, acc: p.coords.accuracy, approx: false }),
+      () => fallback(), { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 });
+  } catch (e) { fallback(); }
+}
+const toRad = d => d * Math.PI / 180, toDeg = r => r * 180 / Math.PI;
+function bearing(a, b) {
+  const y = Math.sin(toRad(b.lng - a.lng)) * Math.cos(toRad(b.lat));
+  const x = Math.cos(toRad(a.lat)) * Math.sin(toRad(b.lat)) - Math.sin(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.cos(toRad(b.lng - a.lng));
+  return (toDeg(Math.atan2(y, x)) + 360) % 360;
+}
+const fmtDist = (m) => m < 1000 ? `${ar(Math.round(m / 10) * 10)} م` : `${nd((m / 1000).toFixed(m < 10000 ? 1 : 0))} كم`;
+
+/* ---------- Qibla compass ---------- */
+let compassOn = false, heading = null, smoothS = 0, smoothC = 1, aligned = false, qBear = null, webOri = null;
+window.onHeading = (deg, acc) => { // from Android sensors
+  const r = toRad(deg); smoothS = smoothS * 0.8 + Math.sin(r) * 0.2; smoothC = smoothC * 0.8 + Math.cos(r) * 0.2;
+  heading = (toDeg(Math.atan2(smoothS, smoothC)) + 360) % 360; drawCompass(acc);
+};
+function startCompass() {
+  if (compassOn) return; compassOn = true; heading = null;
+  if (window.AndroidBridge && AndroidBridge.startCompass) { try { AndroidBridge.startCompass(); return; } catch (e) {} }
+  webOri = (e) => {
+    let h = null;
+    if (typeof e.webkitCompassHeading === 'number') h = e.webkitCompassHeading;
+    else if (e.absolute && typeof e.alpha === 'number') h = (360 - e.alpha) % 360;
+    if (h !== null) window.onHeading(h, 3);
+  };
+  const add = () => { window.addEventListener('deviceorientationabsolute', webOri); window.addEventListener('deviceorientation', webOri); };
+  if (window.DeviceOrientationEvent && typeof DeviceOrientationEvent.requestPermission === 'function') {
+    const btn = $('#qPerm'); if (btn) { btn.style.display = ''; btn.onclick = () => DeviceOrientationEvent.requestPermission().then(s => { if (s === 'granted') { add(); btn.style.display = 'none'; } }).catch(() => {}); }
+  } else add();
+}
+function stopCompass() {
+  if (!compassOn) return; compassOn = false;
+  try { window.AndroidBridge && AndroidBridge.stopCompass && AndroidBridge.stopCompass(); } catch (e) {}
+  if (webOri) { window.removeEventListener('deviceorientationabsolute', webOri); window.removeEventListener('deviceorientation', webOri); webOri = null; }
+}
+function drawCompass(acc) {
+  const dial = $('#qDial'); if (!dial || qBear === null) return;
+  const st = $('#qState'), card = $('#qCard');
+  if (heading === null) { st.textContent = 'أمسك الجوال بشكل أفقي…'; return; }
+  dial.style.transform = `rotate(${-heading}deg)`;
+  let diff = ((qBear - heading + 540) % 360) - 180;
+  const ok = Math.abs(diff) <= 4;
+  card.classList.toggle('ok', ok);
+  if (ok && !aligned) { aligned = true; tick('done'); }
+  if (!ok) aligned = false;
+  st.innerHTML = ok ? '✓ أنت الآن متجه إلى القبلة' : `أدِر الجوال ${diff > 0 ? 'يمينًا' : 'يسارًا'} ${ar(Math.round(Math.abs(diff)))}°`;
+  const cal = $('#qCal'); if (cal) cal.style.display = acc !== undefined && acc < 2 ? '' : 'none';
+}
+function renderQibla() {
+  const v = $('#v-qibla');
+  const ticks = Array.from({ length: 72 }, (_, i) => { const a = i * 5, long = a % 30 === 0; return `<line x1="150" y1="${long ? 18 : 24}" x2="150" y2="34" transform="rotate(${a} 150 150)" class="${long ? 'tl' : 'ts'}"/>`; }).join('');
+  v.innerHTML = `
+    <div class="sec-head" style="position:static"><h2>اتجاه القبلة</h2><div class="time" id="qWhere">جارٍ تحديد موقعك…</div></div>
+    <div class="qcard" id="qCard">
+      <div class="qpointer"></div>
+      <div class="qwrap"><svg viewBox="0 0 300 300" id="qDial" class="qdial">
+        <circle cx="150" cy="150" r="140" class="qring"/>${ticks}
+        <text x="150" y="58" class="qn">ش</text><text x="246" y="156" class="qd">شر</text><text x="150" y="252" class="qd">ج</text><text x="54" y="156" class="qd">غ</text>
+        <g id="qKaaba" style="display:none"><line x1="150" y1="150" x2="150" y2="46" class="qline"/>
+          <g transform="translate(136 30)"><rect width="28" height="28" rx="3" fill="#1b1b1b"/><rect y="7" width="28" height="4" fill="#d4a63c"/><rect x="11" y="15" width="6" height="13" fill="#d4a63c"/></g></g>
+        <circle cx="150" cy="150" r="7" class="qhub"/>
+      </svg></div>
+      <div class="qstate" id="qState">جارٍ تشغيل البوصلة…</div>
+      <div class="qinfo"><div><small>زاوية القبلة</small><b id="qDeg">—</b></div><div><small>المسافة إلى مكة</small><b id="qDist">—</b></div></div>
+      <button class="btn primary" id="qPerm" style="display:none;margin-top:10px">تفعيل البوصلة</button>
+      <div class="note-s" id="qCal" style="display:none">⚠️ دقة البوصلة منخفضة: حرّك الجوال في الهواء على شكل رقم ٨ عدة مرات.</div>
+    </div>
+    <div class="note-s">ضع الجوال بشكل أفقي وبعيدًا عن المعادن والمغناطيس، ثم أدِره حتى تصبح الكعبة تحت المؤشر البرتقالي.</div>`;
+  qBear = null;
+  hereNow((h) => {
+    if (current !== 'qibla') return;
+    qBear = bearing(h, KAABA);
+    const dist = distKm(h.lat, h.lng, KAABA.lat, KAABA.lng) * 1000;
+    $('#qWhere').textContent = h.approx ? `حسب مدينة ${h.name} (تقريبي) — فعّل الموقع لدقة أعلى` : 'حسب موقعك الحالي (GPS)';
+    $('#qDeg').textContent = `${ar(Math.round(qBear))}° من الشمال`;
+    $('#qDist').textContent = fmtDist(dist);
+    $('#qKaaba').style.display = ''; $('#qKaaba').setAttribute('transform', `rotate(${qBear} 150 150)`);
+    drawCompass();
+  });
+  startCompass();
+  setTimeout(() => { if (current === 'qibla' && heading === null) { const st = $('#qState'); if (st) st.textContent = 'لا تتوفر بوصلة على هذا الجهاز — استخدم زاوية القبلة مع الاتجاه الشمالي'; } }, 4000);
+}
+
+/* ---------- Nearby mosques (OpenStreetMap) ---------- */
+let mosqueRadius = 2000;
+function renderMosques() {
+  const v = $('#v-mosques');
+  v.innerHTML = `
+    <div class="sec-head" style="position:static"><h2>مساجد قريبة</h2><div class="time" id="mWhere">جارٍ تحديد موقعك…</div></div>
+    <div class="seg mseg">${[[1000, '١ كم'], [2000, '٢ كم'], [5000, '٥ كم']].map(([r, l]) => `<button data-r="${r}" class="${mosqueRadius === r ? 'on' : ''}">${nd(l)}</button>`).join('')}</div>
+    <div id="mList" class="mlist"><div class="empty">${ico('mosque')}<p>جارٍ البحث عن المساجد…</p></div></div>
+    <a class="btn ghost mapbtn" id="mMap" target="_blank" rel="noopener">${ico('pin')}عرض المساجد القريبة في الخرائط</a>
+    <div class="note-s">بيانات المساجد من OpenStreetMap وقد لا تشمل كل المساجد؛ زر الخرائط يعرض نتائج أشمل.</div>`;
+  v.querySelectorAll('[data-r]').forEach(b => b.onclick = () => { mosqueRadius = +b.dataset.r; renderMosques(); });
+  hereNow((h) => {
+    if (current !== 'mosques') return;
+    $('#mWhere').textContent = h.approx ? `حسب مدينة ${h.name} (تقريبي) — فعّل الموقع للنتائج الأدق` : 'حسب موقعك الحالي (GPS)';
+    $('#mMap').href = `https://www.google.com/maps/search/${encodeURIComponent('مسجد')}/@${h.lat},${h.lng},15z`;
+    const q = `[out:json][timeout:20];(node["amenity"="place_of_worship"]["religion"="muslim"](around:${mosqueRadius},${h.lat},${h.lng});way["amenity"="place_of_worship"]["religion"="muslim"](around:${mosqueRadius},${h.lat},${h.lng}););out center 80;`;
+    fetch('https://overpass-api.de/api/interpreter', { method: 'POST', body: 'data=' + encodeURIComponent(q), headers: { 'Content-Type': 'application/x-www-form-urlencoded' } })
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(js => {
+        if (current !== 'mosques') return;
+        const list = (js.elements || []).map(e => {
+          const lat = e.lat || (e.center && e.center.lat), lng = e.lon || (e.center && e.center.lon);
+          const t = e.tags || {};
+          return { name: t['name:ar'] || t.name || 'مسجد', lat, lng, d: distKm(h.lat, h.lng, lat, lng) * 1000, b: bearing(h, { lat, lng }), jumah: /جامع|jami|masjid jami/i.test(t.name || '') };
+        }).filter(x => x.lat).sort((a, b) => a.d - b.d);
+        const el = $('#mList');
+        if (!list.length) { el.innerHTML = `<div class="empty">${ico('mosque')}<p>لم نجد مساجد مسجّلة في هذا النطاق. جرّب نطاقًا أوسع أو زر الخرائط.</p></div>`; return; }
+        const dirs = ['شمال', 'شمال شرق', 'شرق', 'جنوب شرق', 'جنوب', 'جنوب غرب', 'غرب', 'شمال غرب'];
+        el.innerHTML = list.map(m => `
+          <div class="mrow">
+            <div class="mic">${ico('mosque')}</div>
+            <div class="minfo"><b>${m.name.replace(/[<>&]/g, '')}</b><small>${fmtDist(m.d)} · ${nd(Math.max(1, Math.round(m.d / 80)))} دقيقة مشيًا · ${dirs[Math.round(m.b / 45) % 8]}</small></div>
+            <a class="mgo" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${m.lat},${m.lng}&travelmode=walking">الاتجاهات</a>
+          </div>`).join('');
+      })
+      .catch(() => { const el = $('#mList'); if (el) el.innerHTML = `<div class="empty">${ico('mosque')}<p>تعذّر تحميل قائمة المساجد (تحتاج اتصالًا بالإنترنت). استخدم زر الخرائط.</p></div>`; });
+  });
+}
+
 /* ---------- Boot ---------- */
 load(); applySettings();
 try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => S.settings.theme === 'auto' && applySettings()); } catch (e) {}
@@ -1333,7 +1508,7 @@ setTimeout(scheduleNative, 800);
 // installable web app (iPhone / any browser)
 if (!NATIVE && 'serviceWorker' in navigator && location.protocol === 'https:') { try { navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {} }
 let start = (location.hash || '').slice(1); if (start === 'prefs') start = 'settings';
-go(SECTIONS[start] || ['favs', 'settings', 'adhan'].includes(start) ? start : 'home', false);
+go(SECTIONS[start] || ['favs', 'settings', 'adhan', 'qibla', 'mosques'].includes(start) ? start : 'home', false);
 try { history.replaceState({ view: current }, '', '#' + (current === 'settings' ? 'prefs' : current)); } catch (e) {}
 setTimeout(() => $('#splash').classList.add('hide'), 1300);
 document.addEventListener('visibilitychange', () => { if (!document.hidden && S.date !== todayKey()) { rollDay(); go(current, false); } });

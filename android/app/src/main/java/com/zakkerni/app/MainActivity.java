@@ -6,6 +6,11 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.view.Surface;
 import android.graphics.Insets;
 import android.net.Uri;
 import android.os.Build;
@@ -24,12 +29,17 @@ import android.widget.FrameLayout;
 
 import androidx.webkit.WebViewAssetLoader;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements SensorEventListener {
     private static final int REQ_GEO = 11;
     private static final int REQ_NOTIF = 12;
     static final String START_URL = "https://appassets.androidplatform.net/assets/www/index.html";
 
     static MainActivity current;
+    private SensorManager sensors;
+    private boolean compassWanted = false;
+    private int compassAcc = 3;
+    private long lastHeadingPush = 0;
+    private final float[] rot = new float[9], ori = new float[3], remapped = new float[9];
     private FrameLayout root;
     private WebView web;
     private GeolocationPermissions.Callback geoCallback;
@@ -142,6 +152,53 @@ public class MainActivity extends Activity {
         }
     }
 
+    /* ---------- Qibla compass (rotation-vector sensor) ---------- */
+    void startCompass() {
+        compassWanted = true;
+        if (sensors == null) sensors = (SensorManager) getSystemService(SENSOR_SERVICE);
+        if (sensors == null) return;
+        Sensor s = sensors.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
+        if (s == null) s = sensors.getDefaultSensor(Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR);
+        if (s != null) sensors.registerListener(this, s, SensorManager.SENSOR_DELAY_UI);
+        Sensor mag = sensors.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+        if (mag != null) sensors.registerListener(this, mag, SensorManager.SENSOR_DELAY_NORMAL);
+    }
+
+    void stopCompass() {
+        compassWanted = false;
+        if (sensors != null) sensors.unregisterListener(this);
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent e) {
+        int t = e.sensor.getType();
+        if (t == Sensor.TYPE_MAGNETIC_FIELD) return; // registered only to receive accuracy updates
+        long now = System.currentTimeMillis();
+        if (now - lastHeadingPush < 50) return;
+        lastHeadingPush = now;
+        SensorManager.getRotationMatrixFromVector(rot, e.values);
+        int r = getWindowManager().getDefaultDisplay().getRotation();
+        int ax = SensorManager.AXIS_X, ay = SensorManager.AXIS_Y;
+        if (r == Surface.ROTATION_90) { ax = SensorManager.AXIS_Y; ay = SensorManager.AXIS_MINUS_X; }
+        else if (r == Surface.ROTATION_180) { ax = SensorManager.AXIS_MINUS_X; ay = SensorManager.AXIS_MINUS_Y; }
+        else if (r == Surface.ROTATION_270) { ax = SensorManager.AXIS_MINUS_Y; ay = SensorManager.AXIS_X; }
+        SensorManager.remapCoordinateSystem(rot, ax, ay, remapped);
+        SensorManager.getOrientation(remapped, ori);
+        double deg = (Math.toDegrees(ori[0]) + 360) % 360;
+        if (web != null) web.evaluateJavascript("window.onHeading && window.onHeading(" + String.format(java.util.Locale.US, "%.1f", deg) + "," + compassAcc + ")", null);
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+        if (sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) compassAcc = accuracy;
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (sensors != null) sensors.unregisterListener(this);
+    }
+
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
@@ -170,6 +227,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        if (compassWanted) startCompass();
         AdhanScheduler.updatePinned(this);
         if (web != null) web.evaluateJavascript("window.onNativeResume && window.onNativeResume()", null);
     }
