@@ -44,10 +44,15 @@ public class ClockReceiver extends BroadcastReceiver {
     }
 
     static void ring(Context c, String kind, int id, String label) {
+        RingService.kind = kind; RingService.alarmId = id; RingService.label = label == null ? "" : label;
         Intent s = new Intent(c, RingService.class).putExtra("kind", kind).putExtra("id", id).putExtra("label", label == null ? "" : label);
         try {
             if (Build.VERSION.SDK_INT >= 26) c.startForegroundService(s);
             else c.startService(s);
+        } catch (Exception ignored) { }
+        // also try to open the ring screen directly (allowed while the alarm's grace window is open on most phones)
+        try {
+            c.startActivity(new Intent(c, RingActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_USER_ACTION));
         } catch (Exception ignored) { }
     }
 }

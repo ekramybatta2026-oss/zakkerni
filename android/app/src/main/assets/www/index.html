@@ -468,6 +468,7 @@ body.sec .toast.show{transform:translateX(-50%)}
 .wd b{width:70px;font-size:14px}.wd span{font-size:20px;width:28px;text-align:center}.wd small{width:34px;text-align:center;font-weight:700;color:var(--muted)}
 .wbar{flex:1;height:6px;border-radius:6px;background:var(--surface-2);position:relative}.wbar i{position:absolute;top:0;bottom:0;border-radius:6px;background:linear-gradient(90deg,#F28A32,#FFC27A)}
 .wx-src{text-align:center;font-size:11px;color:var(--muted);margin:12px 0 4px}
+.ck-note.warn{width:100%;text-align:right;background:#FFF0E2;color:#B04E0A;font-weight:700}[data-theme="dark"] .ck-note.warn{background:#3A2616;color:#FFB066}
 </style>
 </head>
 <body>
@@ -1960,7 +1961,7 @@ function paintWeather(d, stale) {
 function ckAlarm() {
   const st = ckState(), list = st.alarms || [];
   $('#ckBody').innerHTML = `
-    ${CB() ? '' : `<div class="ck-note">${ico('info')} المنبه يرن فقط في تطبيق الأندرويد. في هذه النسخة يمكنك تجهيز المنبهات فقط.</div>`}
+    ${CB() ? (() => { let fs = true; try { fs = !AndroidBridge.canFullScreen || AndroidBridge.canFullScreen(); } catch (e) {} return fs ? '' : `<button class="ck-note warn" id="alFs">${ico('info')} اسمح لذَكِّرني بالظهور بملء الشاشة حتى تظهر شاشة المنبه على قفل الجوال — اضغط هنا</button>`; })() : `<div class="ck-note">${ico('info')} المنبه يرن فقط في تطبيق الأندرويد. في هذه النسخة يمكنك تجهيز المنبهات فقط.</div>`}
     <div class="al-list">${list.length ? list.map((a, i) => `
       <div class="al ${a.on ? '' : 'off'}">
         <div class="al-main" data-edit="${i}"><div class="al-t">${alarmTime(a)}</div><div class="al-s">${esc(a.label || 'منبه')} · ${alarmDays(a)}${a.toneN ? ' · ♪ ' + esc(a.toneN) : ''}</div><div class="al-n">${nextIn(a)}</div></div>
@@ -1970,6 +1971,7 @@ function ckAlarm() {
   $('#ckBody').querySelectorAll('[data-tog]').forEach(b => b.onclick = () => { const L = ckState().alarms; L[+b.dataset.tog].on = !L[+b.dataset.tog].on; saveAlarms(L); ckAlarm(); const a = L[+b.dataset.tog]; toast(a.on ? (nextIn(a) || 'تم التفعيل') : 'تم إيقاف المنبه'); });
   $('#ckBody').querySelectorAll('[data-edit]').forEach(b => b.onclick = () => alarmEditor(+b.dataset.edit));
   $('#alAdd').onclick = () => alarmEditor(-1);
+  if ($('#alFs')) $('#alFs').onclick = () => { try { AndroidBridge.openFullScreenSettings(); } catch (e) {} };
 }
 function alarmEditor(idx) {
   const L = ckState().alarms || [];

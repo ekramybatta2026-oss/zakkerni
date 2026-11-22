@@ -74,7 +74,7 @@ public class RingActivity extends Activity {
     /** Launched by AlarmManager at ring time: update state and start the sound. False = nothing to ring. */
     private boolean fire(Intent i) {
         String f = i == null ? null : i.getStringExtra("fire");
-        if (f == null) return RingService.running;
+        if (f == null) return true; // opened by the ringing service / notification
         i.removeExtra("fire");
         if ("timer".equals(f)) {
             boolean was = ClockStore.p(this).getBoolean("t_run", false);
