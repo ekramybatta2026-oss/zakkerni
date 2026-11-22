@@ -196,6 +196,30 @@ public class Bridge {
         if (a != null) a.runOnUiThread(() -> a.applyBars(dark));
     }
 
+    /** Share a PNG rendered by the page (data: URL) through the system share sheet. */
+    @JavascriptInterface
+    public boolean shareImage(String dataUrl, String text) {
+        try {
+            String b64 = dataUrl.substring(dataUrl.indexOf(',') + 1);
+            byte[] bytes = android.util.Base64.decode(b64, android.util.Base64.DEFAULT);
+            java.io.File dir = new java.io.File(ctx.getCacheDir(), "share");
+            dir.mkdirs();
+            java.io.File[] old = dir.listFiles();
+            if (old != null) for (java.io.File o : old) o.delete();
+            java.io.File f = new java.io.File(dir, "zakkerni-" + System.currentTimeMillis() + ".png");
+            try (java.io.FileOutputStream os = new java.io.FileOutputStream(f)) { os.write(bytes); }
+            Uri u = androidx.core.content.FileProvider.getUriForFile(ctx, "com.zakkerni.app.files", f);
+            Intent s = new Intent(Intent.ACTION_SEND).setType("image/png").putExtra(Intent.EXTRA_STREAM, u)
+                    .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            if (text != null && !text.isEmpty()) s.putExtra(Intent.EXTRA_TEXT, text);
+            s.setClipData(android.content.ClipData.newRawUri("", u));
+            Intent ch = Intent.createChooser(s, "مشاركة").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            Context a = MainActivity.current != null ? MainActivity.current : ctx;
+            a.startActivity(ch);
+            return true;
+        } catch (Exception e) { return false; }
+    }
+
     @JavascriptInterface
     public void setImmersive(boolean on, String color) {
         MainActivity a = MainActivity.current;
