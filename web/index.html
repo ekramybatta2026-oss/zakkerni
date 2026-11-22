@@ -476,7 +476,7 @@ body.sec .toast.show{transform:translateX(-50%)}
 .q-home .ti{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:rgba(255,255,255,.16)}.q-home .ti svg.i{width:26px;height:26px}
 .q-home .qt{flex:1}.q-home b{display:block;font-size:17px}.q-home small{font-size:12.5px;opacity:.85}
 body.qfull .topbar,body.qfull .nav{display:none}
-#v-quran.active{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;background:#FFFDF6;padding:calc(6px + env(safe-area-inset-top)) 6px calc(6px + env(safe-area-inset-bottom))}
+#v-quran.active{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;background:#FDF8F0;padding:calc(6px + env(safe-area-inset-top)) 6px calc(6px + env(safe-area-inset-bottom))}
 [data-theme="dark"] #v-quran.active{background:#1B1524}
 .q-bar{position:absolute;top:0;left:0;right:0;z-index:5;display:flex;gap:4px;align-items:center;padding:calc(8px + env(safe-area-inset-top)) 8px 8px;background:var(--surface);box-shadow:0 6px 20px rgba(0,0,0,.15);transform:translateY(-110%);transition:transform .25s}
 .q-bar.show{transform:none}
@@ -484,30 +484,35 @@ body.qfull .topbar,body.qfull .nav{display:none}
 .q-bar .pb{flex:none;width:40px;height:40px;border-radius:50%;background:var(--surface-2);display:grid;place-items:center}
 .q-bar #qMark.on{color:var(--orange)}
 [data-theme="dark"] .q-bar button{color:#D9B8F5}
-.q-frame{flex:1;display:flex;flex-direction:column;min-height:0;padding:4px 6px;color:#1D1726;touch-action:pan-y;user-select:none;-webkit-user-select:none;overflow:hidden}
+.q-frame{flex:1;display:flex;flex-direction:column;min-height:0;padding:4px 8px;color:#1A1712;touch-action:pan-y;user-select:none;-webkit-user-select:none;overflow:hidden}
 [data-theme="dark"] .q-frame{color:#F1E8F8}
-.q-hd{display:flex;justify-content:space-between;align-items:center;padding:4px 10px 2px;font-size:13px}
-.q-hd b{color:#7137A8;font-weight:800}.q-hd span{color:#C2580C;font-weight:700;font-size:12px}
-[data-theme="dark"] .q-hd b{color:#D9B8F5}[data-theme="dark"] .q-hd span{color:#FFB066}
+.q-hd{display:flex;justify-content:space-between;align-items:center;padding:6px 12px 4px;font-size:14px;font-weight:500;color:#B39470}
+
+[data-theme="dark"] .q-hd{color:#B8A07E}
 .q-page{flex:1;min-height:0;position:relative;overflow:hidden}
 .q-ft{display:flex;justify-content:flex-start;padding:2px 14px}.q-ft.left{justify-content:flex-end}
-.q-no{position:relative;width:38px;height:50px;display:grid;place-items:center;color:#7137A8}.q-orn{position:absolute;inset:0;width:100%;height:100%;color:#C2580C}.q-no b{position:relative;font-size:12px;font-weight:800;line-height:1}
+.q-no{position:relative;width:64px;height:24px;display:grid;place-items:center;color:#7A5E3A}.q-orn{position:absolute;inset:0;width:100%;height:100%}.q-no b{position:relative;font-size:11.5px;font-weight:600;line-height:1}
 [data-theme="dark"] .q-no{color:#D9B8F5}
-.q-lines{position:absolute;inset:0;direction:rtl;font-size:20px;display:flex;flex-direction:column;justify-content:center;padding:0 2px;will-change:transform;background:#FFFDF6}
+.q-lines{position:absolute;inset:0;direction:rtl;font-size:20px;display:flex;flex-direction:column;justify-content:center;padding:0 2px;will-change:transform;background:#FDF8F0}
 [data-theme="dark"] .q-lines{background:#1B1524}
-.qr{display:flex;align-items:center;height:var(--lh,36px)}
-.qm{order:2;width:22px;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.qr{position:relative;display:flex;align-items:center;height:var(--lh,36px)}
+.qm{position:absolute;left:-3px;top:0;bottom:0;width:10px;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .qm b{writing-mode:vertical-rl;font-size:9px;line-height:1;font-weight:800;white-space:nowrap}
 .qm-q{color:#C2580C}.qm-s{color:#7137A8}[data-theme="dark"] .qm-s{color:#D9B8F5}[data-theme="dark"] .qm-q{color:#FFB066}
 .ql{flex:1;min-width:0;display:flex;justify-content:space-between;align-items:center;white-space:nowrap;height:100%}
 .ql i{font-style:normal;border-radius:6px;transition:background .15s}
 .ql i.sel{background:rgba(242,138,50,.3)}
-.qh{justify-content:center;font-family:QCF4_QBSML;font-size:1.32em;color:#7137A8}
-[data-theme="dark"] .qh{color:#D9B8F5}
+.qh{position:relative;justify-content:center;font-family:QCF4_QBSML;font-size:1.25em;color:#2B2116}
+.qh .q-ban{position:absolute;inset:6% 0;width:100%;height:88%}.qh span{position:relative}
+.q-ban .b0{fill:#E3D2B0;stroke:#A8875A;stroke-width:1.6}.q-ban .bl,.q-orn .bl{fill:none;stroke:#A8875A;stroke-width:1}.q-ban .b2,.q-orn .b2{fill:#F3E9D6;stroke:#A8875A;stroke-width:1.3}.q-ban .b1{fill:#A8875A}.q-ban .b3{fill:#FBF5EA;stroke:#A8875A;stroke-width:.8}.q-ban .sw{fill:none;stroke:#FBF5EA;stroke-width:2.2;stroke-linecap:round}
+.q-orn .b0{fill:#E8DABD;stroke:#A8875A;stroke-width:1.4}
+.ql i.e{color:#9C7A4A}
+.ql:not(.qh){-webkit-text-stroke:.35px currentColor}
+[data-theme="dark"] .qh{color:#2B2116}[data-theme="dark"] .ql i.e{color:#C9A97A}
 .qbs{justify-content:center}
 .q-open .ql{justify-content:center;gap:.28em}
 .q-page .empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-[data-theme="dark"] .q-orn{color:#FFB066}
+
 .measure .ql{flex:none;width:max-content;justify-content:flex-start}
 .q-sheet{position:fixed;inset:0;z-index:62;background:rgba(20,10,30,.35);display:none;align-items:flex-end}
 .q-sheet.show{display:flex}
@@ -2074,9 +2079,9 @@ function renderQuran() {
       <button id="qMark">${ico('bookmark')}<span>علّم الصفحة</span></button>
     </div>
     <div class="q-frame" id="qFrame">
-      <div class="q-hd"><b id="qSura"></b><b id="qJuz"></b></div>
+      <div class="q-hd"><span id="qJuz"></span><span id="qSura"></span></div>
       <div class="q-page" id="qPage"><div class="empty"><p>جارٍ تحميل المصحف…</p></div></div>
-      <div class="q-ft"><span class="q-no"><svg class="q-orn" viewBox="0 0 100 132" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><g id="qOrnCap"><path d="M2 30C22 26 36 14 50 2C64 14 78 26 98 30C90 35 84 31 78 33C72 29 64 27 57 31L50 36L43 31C36 27 28 29 22 33C16 31 10 35 2 30Z"/><path d="M27 23Q35 17 42 15.5M58 15.5Q65 17 73 23"/></g><use href="#qOrnCap" transform="matrix(1 0 0 -1 0 132)"/><ellipse cx="50" cy="66" rx="43" ry="33"/></g><circle cx="50" cy="17" r="5" fill="currentColor"/><circle cx="50" cy="115" r="5" fill="currentColor"/></svg><b id="qNum"></b></span></div>
+      <div class="q-ft"><span class="q-no">${QBADGE}<b id="qNum"></b></span></div>
     </div>
     <div class="q-panel" id="qPanel"></div>
     <div class="q-sheet" id="qSheet"></div>`;
@@ -2114,6 +2119,11 @@ function renderQuran() {
   qData().then(() => qShow(S.qpage || 1)).catch(() => { $('#qPage').innerHTML = `<div class="empty"><p>تعذّر تحميل بيانات المصحف.</p></div>`; });
 }
 const QFRAC = ['', '¼', '½', '¾'];
+const JUZW = ['الأول', 'الثاني', 'الثالث', 'الرابع', 'الخامس', 'السادس', 'السابع', 'الثامن', 'التاسع', 'العاشر', 'الحادي عشر', 'الثاني عشر', 'الثالث عشر', 'الرابع عشر', 'الخامس عشر', 'السادس عشر', 'السابع عشر', 'الثامن عشر', 'التاسع عشر', 'العشرون', 'الحادي والعشرون', 'الثاني والعشرون', 'الثالث والعشرون', 'الرابع والعشرون', 'الخامس والعشرون', 'السادس والعشرون', 'السابع والعشرون', 'الثامن والعشرون', 'التاسع والعشرون', 'الثلاثون'];
+const QROSE = (x) => `<g transform="translate(${x} 24)"><circle r="13" class="b2"/>${[0, 45, 90, 135, 180, 225, 270, 315].map(a => `<ellipse rx="3.2" ry="5.6" transform="rotate(${a}) translate(0 -7)" class="b3"/>`).join('')}<circle r="3.4" class="b1"/></g>`;
+const QSWIRL = (x, s) => `<g transform="translate(${x} 24) scale(${s} 1)" class="sw"><path d="M18 0C26-12 44-12 50-4C54 2 48 8 42 6M18 0C26 12 44 12 50 4C54-2 48-8 42-6"/><path d="M50 0H72M58 -9C64-14 72-12 74-6M58 9C64 14 72 12 74 6"/></g>`;
+const QBANNER = `<svg class="q-ban" viewBox="0 0 400 48" preserveAspectRatio="none" aria-hidden="true"><rect x="1" y="1" width="398" height="46" rx="4" class="b0"/><rect x="5" y="5" width="390" height="38" rx="2" class="bl"/>${QSWIRL(60, 1)}${QSWIRL(340, -1)}${QROSE(46)}${QROSE(354)}<path d="M118 24L136 7H264L282 24L264 41H136Z" class="b2"/><path d="M124 24L139 10H261L276 24L261 38H139Z" class="bl"/></svg>`;
+const QBADGE = `<svg class="q-orn" viewBox="0 0 120 44" aria-hidden="true"><path d="M3 22C14 8 30 4 60 4S106 8 117 22C106 36 90 40 60 40S14 36 3 22Z" class="b0"/><path d="M9 22C20 12 34 9 60 9S100 12 111 22C100 32 86 35 60 35S20 32 9 22Z" class="bl"/><ellipse cx="60" cy="22" rx="38" ry="11.5" class="b2"/><path d="M14 22H20M100 22H106" class="bl"/></svg>`;
 function qQuarter(v) { let q = 0; while (q + 1 < Q.hq.length && Q.hq[q + 1] <= v) q++; return q; }
 function qQuarterName(q, full) { const h = Math.floor(q / 4) + 1, part = q % 4; if (!part && full && h % 2 === 1) return `الجزء ${nd((h + 1) / 2)}`; return part ? `${QFRAC[part]} الحزب ${nd(h)}` : `الحزب ${nd(h)}`; }
 async function qShow(n, hv = -1, dir = 0) {
@@ -2129,8 +2139,8 @@ async function qShow(n, hv = -1, dir = 0) {
   const firstV = firstRun ? firstRun[0] : -1;
   const sura = firstV >= 0 ? vKey(firstV)[0] : (lines.find(l => l[0] === 0) || [0, 1])[1];
   let juz = 1; JUZ.forEach((p, i) => { if (n >= p) juz = i + 1; });
-  $('#qSura').textContent = 'سورة ' + Q.ch[sura - 1][0];
-  $('#qJuz').textContent = 'الجزء ' + nd(juz);
+  $('#qSura').textContent = Q.ch[sura - 1][0];
+  $('#qJuz').textContent = 'الجزء ' + JUZW[juz - 1];
   qMarkState();
   try { await Promise.all([qPageFont(fi), qHeadFont()]); }
   catch (e) {
@@ -2144,8 +2154,8 @@ async function qShow(n, hv = -1, dir = 0) {
   const html = lines.map((L, li) => {
     let note = '';
     let body;
-    if (L[0] === 0) body = `<div class="ql qh">${String.fromCharCode(0xF0FF + L[1])}</div>`;
-    else if (L[0] === 1) body = `<div class="ql qbs" style="font-family:${fam}">${String.fromCharCode(L[1])}</div>`;
+    if (L[0] === 0) body = `<div class="ql qh">${QBANNER}<span>${String.fromCharCode(0xF0FF + L[1])}</span></div>`;
+    else if (L[0] === 1) body = `<div class="ql qbs" style="font-family:${fam}">${String.fromCharCode(63709)}</div>`;   // standard basmala glyph (present in every QCF4 font)
     else if (L[0] === 3) body = '<div class="ql"></div>';
     else {
       const ch = [...L[1]]; let k = 0;
@@ -2153,7 +2163,8 @@ async function qShow(n, hv = -1, dir = 0) {
         if (v < 0) return;
         if (sajda.has(v) && lastLine[v] === li) note += '<b class="qm-s">۩ سجدة</b>';
       });
-      body = `<div class="ql" style="font-family:${fam}">` + L[2].map(([v, c]) => { const s = ch.slice(k, k + c).map(x => `<i data-v="${v}">${x}</i>`).join(''); k += c; return s; }).join('') + '</div>';
+      const ends = new Set(L[3] || []);
+      body = `<div class="ql" style="font-family:${fam}">` + L[2].map(([v, c]) => { const s = ch.slice(k, k + c).map((x, j) => `<i data-v="${v}"${ends.has(k + j) ? ' class="e"' : ''}>${x}</i>`).join(''); k += c; return s; }).join('') + '</div>';
     }
     return `<div class="qr"><div class="qm">${note}</div>${body}</div>`;
   }).join('');
@@ -2184,7 +2195,7 @@ function qFit(el, box, count) {
   let max = 0; box.querySelectorAll('.ql:not(.qh)').forEach(l => { max = Math.max(max, l.getBoundingClientRect().width); });
   box.classList.remove('measure');
   const byW = max ? 20 * (W - 2) / max : 20;
-  box.style.fontSize = Math.min(byW, lh * 0.62, open ? 30 : 40) + 'px';
+  box.style.fontSize = Math.min(byW, lh * 0.72, open ? 30 : 44) + 'px';
 }
 function qMarkState() { const b = $('#qMark'); if (b) b.classList.toggle('on', qMarks().some(m => m.p === (S.qpage || 1) && m.v < 0)); }
 function qSelect(v, open = true) {
