@@ -189,7 +189,7 @@ final class AdhanScheduler {
         PrayerWidget.updateAll(c);
         NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
         if (nm == null) return;
-        if (!prefs(c).getBoolean(KEY_PIN, true)) { nm.cancel(PIN_ID); return; }
+        if (!prefs(c).getBoolean(KEY_PIN, false)) { nm.cancel(PIN_ID); return; }
         createChannels(c);
         JSONArray a = list(c);
         JSONObject n = next(a, System.currentTimeMillis());

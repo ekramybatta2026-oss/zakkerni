@@ -654,7 +654,7 @@ const ar = (n) => Number(n).toLocaleString('ar-EG');
 const todayKey = () => { const d = new Date(); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; };
 
 /* ---------- Storage ---------- */
-const defaults = () => ({ date: todayKey(), counts: {}, celebrated: {}, favs: [], settings: { theme: 'auto', font: 17, sound: true, vib: true }, prayer: { city: 'auto', fallback: 'riyadh', loc: null, voice: 'ekramy', pin: true, vol: 80, pre: 5, silent: 0, full: true, method: '', asr: 1, on: true, per: { fajr: true, dhuhr: true, asr: true, maghrib: true, isha: true } }, played: {} });
+const defaults = () => ({ date: todayKey(), counts: {}, celebrated: {}, favs: [], settings: { theme: 'auto', font: 17, sound: true, vib: true }, prayer: { city: 'auto', fallback: 'riyadh', loc: null, voice: 'ekramy', pin: false, vol: 80, pre: 5, silent: 0, full: true, method: '', asr: 1, on: true, per: { fajr: true, dhuhr: true, asr: true, maghrib: true, isha: true } }, played: {} });
 let S;
 function load() {
   try { S = JSON.parse(localStorage.getItem(KEY)) || defaults(); } catch (e) { S = defaults(); }
@@ -664,6 +664,7 @@ function load() {
   if (!S.v3) { if (S.settings.font === 19 || S.settings.font === 22) S.settings.font = 17; S.v3 = 1; }
   S.prayer = { ...d.prayer, ...(S.prayer || {}) }; S.prayer.per = { ...d.prayer.per, ...(S.prayer.per || {}) }; S.played = S.played || {};
   if (!S.v4) { S.prayer.city = 'auto'; S.v4 = 1; }
+  if (!S.v5) { S.prayer.pin = false; S.v5 = 1; }
   S.counts = S.counts || {}; S.favs = S.favs || []; S.celebrated = S.celebrated || {};
   rollDay();
 }
