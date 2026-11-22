@@ -1075,7 +1075,7 @@ document.querySelectorAll('#nav button').forEach(b => b.onclick = () => go(b.dat
 $('#gearBtn').onclick = () => go('settings');
 window.zGo = (v) => go(v);
 window.zQ = (n) => qShow(n);
-window.zCv = async (k, a, b) => (k === 'p' ? qJoin(await Promise.all(Array.from({ length: b || 1 }, (_, i) => qPageCanvas(a + i, b > 1 ? 900 : 1080)))) : await qVersesCanvas(a, b)).toDataURL('image/png');
+window.zCv = async (k, a, b) => (k === 'p' ? qJoin(await Promise.all(Array.from({ length: b || 1 }, (_, i) => qPageCanvas(a + i, b > 1 ? 900 : 1080, !(b > 1))))) : await qVersesCanvas(a, b)).toDataURL('image/png');
 window.addEventListener('popstate', (e) => go((e.state && e.state.view) || 'home', false));
 
 /* shrink text until it fits on one line; wrap if it still can't */
@@ -2305,13 +2305,19 @@ const qImg = {};
 function qLoadImg(src) { return qImg[src] || (qImg[src] = new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = src; })); }
 const QC = { bg: '#FDF8F0', ink: '#1A1712', end: '#9C7A4A', head: '#B39470', bism: '#8B6A3E', title: '#2B2116' };
 function qGlyphs(ctx, chars, fam, fs) { ctx.font = `${fs}px ${fam}`; return chars.map(c => ctx.measureText(c).width); }
-async function qPageCanvas(n, W = 1080) {
+async function qPageCanvas(n, W = 1080, full = false) {
   const [fi, lines] = Q.pg[n - 1], fam = QF(fi);
   await Promise.all([qPageFont(fi), qHeadFont(), document.fonts.ready]);
   const [frame, badge] = await Promise.all([qLoadImg(IMG_FRAME), qLoadImg(IMG_BADGE)]);
   const pad = Math.round(W * 0.045), open = n <= 2, rows = open ? Math.max(lines.length, 11) : 15;
-  const lineH = Math.round(W * 0.098), headH = Math.round(W * 0.085), footH = Math.round(W * 0.11);
-  const H = headH + rows * lineH + footH;
+  let lineH = Math.round(W * 0.098), headH = Math.round(W * 0.085), footH = Math.round(W * 0.11);
+  let H = headH + rows * lineH + footH;
+  if (full) {   // match the phone screen so viewers show it edge to edge
+    const r = Math.max(1.6, Math.min(2.4, (screen.height || innerHeight) / (screen.width || innerWidth)));
+    H = Math.round(W * r); const sp = Math.round(W * 0.07);
+    headH = Math.round(W * 0.085) + sp; footH = Math.round(W * 0.11) + sp;
+    lineH = (H - headH - footH) / rows;
+  }
   const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
   const ctx = cv.getContext('2d'); ctx.fillStyle = QC.bg; ctx.fillRect(0, 0, W, H);
   ctx.textBaseline = 'alphabetic'; ctx.direction = 'ltr';
@@ -2324,8 +2330,9 @@ async function qPageCanvas(n, W = 1080) {
   const sura = firstRun ? vKey(firstRun[0])[0] : (lines.find(l => l[0] === 0) || [0, 1])[1];
   let juz = 1; JUZ.forEach((p, i) => { if (n >= p) juz = i + 1; });
   ctx.fillStyle = QC.head; ctx.font = `500 ${Math.round(W * 0.03)}px Cairo`; ctx.direction = 'rtl';
-  ctx.textAlign = 'right'; ctx.fillText('الجزء ' + JUZW[juz - 1], W - pad, headH * 0.7);
-  ctx.textAlign = 'left'; ctx.fillText(Q.ch[sura - 1][0], pad, headH * 0.7);
+  ctx.textAlign = 'right'; const hy = headH - W * 0.03 - (full ? W * 0.035 : 0);
+  ctx.fillText('الجزء ' + JUZW[juz - 1], W - pad, hy);
+  ctx.textAlign = 'left'; ctx.fillText(Q.ch[sura - 1][0], pad, hy);
   ctx.direction = 'ltr'; ctx.textAlign = 'left';
   const top = headH + (rows - lines.length) * lineH / 2;
   lines.forEach((L, i) => {
@@ -2345,7 +2352,7 @@ async function qPageCanvas(n, W = 1080) {
     }
   });
   // footer: page badge on the outer side, app name on the other
-  const bw = Math.round(W * 0.3), bh = Math.round(bw * badge.height / badge.width), by = H - footH / 2 - bh / 2;
+  const bw = Math.round(W * 0.3), bh = Math.round(bw * badge.height / badge.width), by = H - footH / 2 - bh / 2 - (full ? W * 0.0 : 0);
   const bx = n % 2 ? W - pad - bw : pad;
   ctx.drawImage(badge, bx, by, bw, bh);
   ctx.fillStyle = '#5A4630'; ctx.font = `700 ${Math.round(bh * 0.42)}px Cairo`; ctx.textAlign = 'center'; ctx.direction = 'rtl';
@@ -2407,7 +2414,7 @@ async function qShareCanvas(cv, text) {
   const a = document.createElement('a'); a.href = url; a.download = 'zakkerni.png'; document.body.appendChild(a); a.click(); a.remove();
 }
 async function qSharePages(n, count) {
-  try { const cvs = []; for (let i = 0; i < count && n + i <= 604; i++) cvs.push(await qPageCanvas(n + i, count > 1 ? 900 : 1080)); await qShareCanvas(qJoin(cvs), ''); }
+  try { const cvs = []; for (let i = 0; i < count && n + i <= 604; i++) cvs.push(await qPageCanvas(n + i, count > 1 ? 900 : 1080, count === 1)); await qShareCanvas(qJoin(cvs), ''); }
   catch (e) { toast('تعذّر تجهيز الصورة'); }
 }
 async function qShareVerses(v0, v1) {
