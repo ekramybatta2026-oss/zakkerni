@@ -24,6 +24,13 @@ public class AdhanReceiver extends BroadcastReceiver {
         if (AdhanScheduler.ACTION_FIRE.equals(action) && intent.getStringExtra("name") != null) {
             String name = intent.getStringExtra("name");
             boolean pre = intent.getBooleanExtra("pre", false);
+            long late = System.currentTimeMillis() - intent.getLongExtra("at", System.currentTimeMillis());
+            // the system delivered this alarm late (phone asleep under a battery manager): never play a stale adhan
+            if (late > (pre ? 3 : 10) * 60_000L) {
+                AdhanScheduler.updatePinned(c);
+                AdhanScheduler.scheduleNext(c);
+                return;
+            }
             if (pre) {
                 AdhanScheduler.showPre(c, name, intent.getStringExtra("time"));
             } else {

@@ -131,15 +131,27 @@ final class AdhanScheduler {
             i.putExtra("adhan", ev.optBoolean("a", true));
             i.putExtra("file", ev.optString("f", "adhan.mp3"));
             i.putExtra("pre", isPre);
+            i.putExtra("at", when);
         }
         PendingIntent pi = PendingIntent.getBroadcast(c, 1001, i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         if (ev == null) { am.cancel(pi); return; }
-        setAlarm(am, when, pi);
+        setClock(c, am, when, pi);
     }
 
     static void setAlarm(AlarmManager am, long when, PendingIntent pi) {
         if (Build.VERSION.SDK_INT >= 31 && !am.canScheduleExactAlarms()) am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, when, pi);
         else am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, when, pi);
+    }
+
+    /** Prayer alarms: alarm-clock alarms are the only kind OEM battery managers (vivo, Xiaomi...) never defer. */
+    static void setClock(Context c, AlarmManager am, long when, PendingIntent pi) {
+        if (Build.VERSION.SDK_INT >= 31 && !am.canScheduleExactAlarms()) { am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, when, pi); return; }
+        try {
+            PendingIntent show = PendingIntent.getActivity(c, 4, new Intent(c, MainActivity.class).putExtra("go", "adhan"), PendingIntent.FLAG_IMMUTABLE);
+            am.setAlarmClock(new AlarmManager.AlarmClockInfo(when, show), pi);
+        } catch (Exception e) {
+            am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, when, pi);
+        }
     }
 
     /** "Prayer is near" notification. */
