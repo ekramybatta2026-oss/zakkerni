@@ -44,49 +44,62 @@ public class AdhanActivity extends Activity {
         root.setLayoutDirection(android.view.View.LAYOUT_DIRECTION_RTL);
         int pad = dp(28);
         root.setPadding(pad, pad, pad, pad);
-        // orange brand background with a light arabesque
+        // dark night background (same as the app's dark mode) with the light arabesque
         GradientDrawable grad = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
-                new int[]{Color.parseColor("#FFAA5C"), Color.parseColor("#F28A32"), Color.parseColor("#E8761E")});
+                new int[]{Color.parseColor("#2A2236"), Color.parseColor("#1D1726"), Color.parseColor("#160F1F")});
         android.graphics.drawable.BitmapDrawable pat = new android.graphics.drawable.BitmapDrawable(getResources(),
-                android.graphics.Bitmap.createScaledBitmap(android.graphics.BitmapFactory.decodeResource(getResources(), R.drawable.adhan_pat), dp(260), dp(260), true));
-        pat.setTileModeXY(android.graphics.Shader.TileMode.MIRROR, android.graphics.Shader.TileMode.MIRROR);
-        pat.setAlpha(150);
+                android.graphics.Bitmap.createScaledBitmap(android.graphics.BitmapFactory.decodeResource(getResources(), R.drawable.adhan_pat_dark), dp(220), dp(220), true));
+        pat.setTileModeXY(android.graphics.Shader.TileMode.REPEAT, android.graphics.Shader.TileMode.REPEAT);
         root.setBackground(new android.graphics.drawable.LayerDrawable(new android.graphics.drawable.Drawable[]{grad, pat}));
-        getWindow().setStatusBarColor(Color.parseColor("#FFAA5C"));
-        getWindow().setNavigationBarColor(Color.parseColor("#E8761E"));
+        getWindow().setStatusBarColor(Color.parseColor("#2A2236"));
+        getWindow().setNavigationBarColor(Color.parseColor("#160F1F"));
 
+        int or = Color.parseColor("#F28A32"), orL = Color.parseColor("#FFB066");
         ImageView word = new ImageView(this);
         word.setImageResource(R.drawable.adhan_word);
         word.setScaleType(ImageView.ScaleType.FIT_CENTER);
-        root.addView(word, new LinearLayout.LayoutParams(dp(220), dp(139)));
+        root.addView(word, new LinearLayout.LayoutParams(dp(200), dp(126)));
 
-        int deep = Color.parseColor("#4A1C78");
-        TextView small = text("حان الآن موعد أذان", 18, false, deep);
-        small.setPadding(0, dp(30), 0, 0);
+        TextView small = text("حان الآن موعد أذان", 19, false, orL);
+        small.setPadding(0, dp(26), 0, 0);
         root.addView(small);
-        root.addView(text(AdhanService.curName.isEmpty() ? "الصلاة" : AdhanService.curName, 50, true, deep));
-        TextView time = text(AdhanService.curTime, 22, true, Color.WHITE);
-        root.addView(time);
+        root.addView(text(AdhanService.curName.isEmpty() ? "الصلاة" : AdhanService.curName, 52, true, or));
+
+        TextView time = text(AdhanService.curTime, 40, true, orL);
+        time.setPadding(dp(28), dp(2), dp(28), dp(2));
+        time.setBackground(frame(dp(22)));
+        LinearLayout.LayoutParams tl = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        tl.topMargin = dp(10);
+        root.addView(time, tl);
+
         String city = AdhanScheduler.prefs(this).getString(AdhanScheduler.KEY_CITY, "");
-        if (!city.isEmpty()) root.addView(text(city, 15, false, Color.parseColor("#5A2690")));
+        if (!city.isEmpty()) {
+            TextView c = text(city, 19, false, orL);
+            c.setPadding(dp(22), dp(4), dp(22), dp(4));
+            c.setBackground(frame(dp(30)));
+            LinearLayout.LayoutParams cl = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            cl.topMargin = dp(14);
+            root.addView(c, cl);
+        }
 
         Button stop = new Button(this);
         stop.setText("إيقاف الأذان");
         stop.setAllCaps(false);
-        stop.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
-        stop.setTypeface(Typeface.DEFAULT_BOLD);
-        stop.setTextColor(Color.parseColor("#FFB066"));
+        stop.setTextSize(TypedValue.COMPLEX_UNIT_SP, 21);
+        stop.setTypeface(font(true));
+        stop.setTextColor(orL);
         GradientDrawable bg = new GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT,
-                new int[]{Color.parseColor("#7137A8"), Color.parseColor("#4A1C78")});
+                new int[]{Color.parseColor("#8A4BC4"), Color.parseColor("#5A2690")});
         bg.setCornerRadius(dp(30));
+        bg.setStroke(dp(1), Color.parseColor("#66F28A32"));
         stop.setBackground(bg);
         stop.setElevation(dp(6));
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(dp(240), dp(60));
-        lp.topMargin = dp(44);
+        lp.topMargin = dp(40);
         root.addView(stop, lp);
         stop.setOnClickListener(v -> stopAdhan());
 
-        TextView hint = text("أو اضغط زر رفع/خفض الصوت", 14, false, Color.parseColor("#5A2690"));
+        TextView hint = text("أو اضغط زر رفع/خفض الصوت", 14, false, Color.parseColor("#B4A6C6"));
         hint.setPadding(0, dp(14), 0, 0);
         root.addView(hint);
 
@@ -121,8 +134,24 @@ public class AdhanActivity extends Activity {
         t.setTextSize(TypedValue.COMPLEX_UNIT_SP, sp);
         t.setTextColor(color);
         t.setGravity(Gravity.CENTER);
-        if (bold) t.setTypeface(Typeface.DEFAULT_BOLD);
+        t.setTypeface(font(bold));
+        t.setIncludeFontPadding(false);
+        t.setLineSpacing(0, 1.1f);
         return t;
+    }
+
+    private Typeface font(boolean bold) {
+        try { if (Build.VERSION.SDK_INT >= 26) return getResources().getFont(bold ? R.font.cairo_bold : R.font.cairo_semibold); }
+        catch (Exception ignored) { }
+        return bold ? Typeface.DEFAULT_BOLD : Typeface.DEFAULT;
+    }
+
+    private GradientDrawable frame(int radius) {
+        GradientDrawable g = new GradientDrawable();
+        g.setColor(Color.parseColor("#1FF28A32"));
+        g.setStroke(dp(2), Color.parseColor("#B3F28A32"));
+        g.setCornerRadius(radius);
+        return g;
     }
 
     private int dp(int v) { return Math.round(v * getResources().getDisplayMetrics().density); }
