@@ -45,7 +45,7 @@ public class PlayerService extends Service implements MediaPlayer.OnPreparedList
             A_NEXT = "z.player.NEXT", A_PREV = "z.player.PREV", A_STOP = "z.player.STOP", A_SEEK = "z.player.SEEK",
             A_SHUFFLE = "z.player.SHUFFLE", A_REPEAT = "z.player.REPEAT", A_SPEED = "z.player.SPEED", A_SLEEP = "z.player.SLEEP",
             A_EQ = "z.player.EQ", A_JUMP = "z.player.JUMP", A_SHUFFLE_T = "z.player.SHUFFLE_T", A_REPEAT_C = "z.player.REPEAT_C", A_SLEEP_C = "z.player.SLEEP_C";
-    static final String PREFS = "zakkerni_player", CH = "player";
+    static final String PREFS = "zakkerni_player", CH = "player_v2";
     static final int NID = 90;
 
     static PlayerService inst;
@@ -468,18 +468,15 @@ public class PlayerService extends Service implements MediaPlayer.OnPreparedList
                 .setDeleteIntent(action(A_STOP, 66))
                 .setOngoing(isPlaying())
                 .setShowWhen(false)
+                .setOnlyAlertOnce(true)
                 .setVisibility(Notification.VISIBILITY_PUBLIC)
                 .addAction(new Notification.Action.Builder(android.graphics.drawable.Icon.createWithResource(this, R.drawable.ic_p_prev), "السابق", action(A_PREV, 61)).build())
                 .addAction(new Notification.Action.Builder(android.graphics.drawable.Icon.createWithResource(this, isPlaying() ? R.drawable.ic_p_pause : R.drawable.ic_p_play), isPlaying() ? "إيقاف مؤقت" : "تشغيل", action(A_TOGGLE, 62)).build())
                 .addAction(new Notification.Action.Builder(android.graphics.drawable.Icon.createWithResource(this, R.drawable.ic_p_next), "التالي", action(A_NEXT, 63)).build());
-        if (Build.VERSION.SDK_INT >= 24) {
-            // looks like the wide player widget: track art behind, title + controls on top
-            b.setStyle(new Notification.DecoratedMediaCustomViewStyle().setMediaSession(ms.getSessionToken()).setShowActionsInCompactView(0, 1, 2));
-            b.setCustomContentView(notifView(72));
-            b.setCustomBigContentView(notifView(110));
-        } else {
-            b.setStyle(new Notification.MediaStyle().setMediaSession(ms.getSessionToken()).setShowActionsInCompactView(0, 1, 2));
-        }
+        // plain MediaStyle: this is what the lock screen / quick-settings media player is built from
+        b.setStyle(new Notification.MediaStyle().setMediaSession(ms.getSessionToken()).setShowActionsInCompactView(0, 1, 2));
+        b.setLargeIcon(art != null ? art : WidgetRenderer.fallbackArt(this));
+        b.setCategory(Notification.CATEGORY_TRANSPORT);
         return b.build();
     }
 
@@ -532,9 +529,13 @@ public class PlayerService extends Service implements MediaPlayer.OnPreparedList
         if (Build.VERSION.SDK_INT < 26) return;
         NotificationManager nm = (NotificationManager) c.getSystemService(NOTIFICATION_SERVICE);
         if (nm == null || nm.getNotificationChannel(CH) != null) return;
-        NotificationChannel ch = new NotificationChannel(CH, "المشغّل", NotificationManager.IMPORTANCE_LOW);
+        try { nm.deleteNotificationChannel("player"); } catch (Exception ignored) { }
+        // DEFAULT (not LOW) so launchers that hide "silent" notifications still show the player on the lock screen
+        NotificationChannel ch = new NotificationChannel(CH, "المشغّل", NotificationManager.IMPORTANCE_DEFAULT);
         ch.setShowBadge(false);
         ch.setSound(null, null);
+        ch.enableVibration(false);
+        ch.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
         nm.createNotificationChannel(ch);
     }
 
