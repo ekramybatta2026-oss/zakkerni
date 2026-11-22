@@ -41,6 +41,7 @@ final class WidgetRenderer {
         int design = 0;     // wide widget: 0 classic, 1 cards, 2 compact
         int wdp = 0;        // current widget width in dp (from the launcher)
         int hdp = 0;        // current widget height in dp (portrait)
+        int hmin = 0;       // smaller reported height (some launchers over-report the portrait one)
         int id = 0;
         boolean cd = true, city = true, hijri = true, weather = false;
 
@@ -50,7 +51,7 @@ final class WidgetRenderer {
             g.id = id;
             String k = "w" + id + "_";
             if (!p.contains(k + "style")) { int ty = typeOf(c, id); if (ty < T_PLAYER || ty >= T_ALARM) g.style = AUTO; if (ty == T_DAY) g.radius = 1; }
-            try { android.os.Bundle ob = AppWidgetManager.getInstance(c).getAppWidgetOptions(id); g.wdp = ob.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 0); g.hdp = ob.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 0); } catch (Exception ignored) { }
+            try { android.os.Bundle ob = AppWidgetManager.getInstance(c).getAppWidgetOptions(id); g.wdp = ob.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 0); g.hdp = ob.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 0); g.hmin = ob.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 0); } catch (Exception ignored) { }
             g.style = p.getInt(k + "style", g.style);
             g.opacity = p.getInt(k + "opacity", g.opacity);
             g.radius = p.getInt(k + "radius", g.radius);
@@ -213,8 +214,9 @@ final class WidgetRenderer {
         float timeDp = Math.min(19 * f, (colDp - 12) / 2.75f), nameDp = Math.min(14 * f, colDp / 3.4f);
         if (g.design == 2) { timeDp = Math.min(timeDp, 15 * f); nameDp = Math.min(nameDp, 12 * f); }
         if (type == T_DAY && g.hdp > 0) { // keep everything inside a short (1-row) widget
-            float head = g.design == 2 ? 0 : 26 * f, room = g.hdp - head - (g.design == 1 ? 14 : 8);
-            float need = 1.3f * (nameDp + timeDp) + 4;
+            int h = g.hmin > 0 ? Math.min(g.hmin, g.hdp) : g.hdp;
+            float head = g.design == 2 ? 0 : 24 * f, room = h - 17 /* launcher-frame insets */ - head - (g.design == 1 ? 14 : 8);
+            float need = 1.45f * (nameDp + timeDp) + 6;
             if (room < need) { float k = Math.max(0.55f, room / need); nameDp *= k; timeDp *= k; }
         }
         if (type == T_DAY) {
@@ -245,12 +247,12 @@ final class WidgetRenderer {
                         if (g.design == 1) {
                             int[] tiles = {R.id.c0, R.id.c1, R.id.c2, R.id.c3, R.id.c4};
                             v.setInt(tiles[i], "setBackgroundResource", isNext ? (auto ? R.drawable.w_tile_auto : purplePill ? R.drawable.w_tile_on_p : R.drawable.w_tile_on) : (dark ? R.drawable.w_tile_d : R.drawable.w_tile_l));
-                            setText(v, NAMES[i], o.optString("n"), isNext ? 0xFFFFFFFF : main, nameDp);
-                            setText(v, TIMES[i], fmtTime(c, o.optLong("t"), g.fmt), isNext ? 0xFFFFFFFF : main, timeDp);
+                            setText(v, NAMES[i], o.optString("n"), isNext ? (auto ? 0xFF2A1440 : 0xFFFFFFFF) : main, nameDp);
+                            setText(v, TIMES[i], fmtTime(c, o.optLong("t"), g.fmt), isNext ? (auto ? 0xFF2A1440 : 0xFFFFFFFF) : main, timeDp);
                             v.setInt(TIMES[i], "setBackgroundResource", 0);
                         } else {
                             setText(v, NAMES[i], o.optString("n"), isNext ? hi : main, nameDp);
-                            setText(v, TIMES[i], fmtTime(c, o.optLong("t"), g.fmt), isNext ? (purplePill || auto ? 0xFFFFFFFF : 0xFF1D1726) : main, timeDp);
+                            setText(v, TIMES[i], fmtTime(c, o.optLong("t"), g.fmt), isNext ? (auto ? 0xFF2A1440 : purplePill ? 0xFFFFFFFF : 0xFF1D1726) : main, timeDp);
                             v.setInt(TIMES[i], "setBackgroundResource", isNext ? (auto ? R.drawable.w_pill_auto : purplePill ? R.drawable.w_pill_purple : R.drawable.w_pill) : 0);
                         }
                     } else {
