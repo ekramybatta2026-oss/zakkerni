@@ -295,19 +295,7 @@ final class WidgetRenderer {
     static RemoteViews buildPlayer(Context c, Cfg g, int type) {
         int layout = type == T_PLAYER_S ? R.layout.widget_player_s : type == T_PLAYER_L ? R.layout.widget_player_l : R.layout.widget_player;
         RemoteViews v = new RemoteViews(c.getPackageName(), layout);
-        int side = 0;
-        if (type == T_PLAYER_S && g.wdp > 0) { // same footprint as the launcher's own 2x2 tiles (e.g. vivo weather)
-            side = Math.max(48, g.wdp - 10);
-            if (android.os.Build.VERSION.SDK_INT >= 31) {
-                v.setViewLayoutWidth(R.id.p_box, side, TypedValue.COMPLEX_UNIT_DIP);
-                v.setViewLayoutHeight(R.id.p_box, side, TypedValue.COMPLEX_UNIT_DIP);
-                v.setViewLayoutMargin(R.id.p_box, RemoteViews.MARGIN_TOP, 6, TypedValue.COMPLEX_UNIT_DIP);
-            } else if (g.hdp > 0) {
-                float d = c.getResources().getDisplayMetrics().density;
-                int ph = Math.round((g.wdp - side) / 2f * d), pv = Math.max(0, Math.round((g.hdp - side) / 2f * d));
-                v.setViewPadding(R.id.widget_root, ph, pv, ph, pv);
-            }
-        }
+        int side = type == T_PLAYER_S ? 150 : 0; // small player fills its 2x2 frame (the launcher already sizes it like its own tiles)
         Intent open = new Intent(c, MainActivity.class).putExtra("go", "player").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         v.setOnClickPendingIntent(R.id.widget_root, PendingIntent.getActivity(c, 70, open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
         PlayerService p = PlayerService.inst;
