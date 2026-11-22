@@ -12,7 +12,7 @@
     <string name="wl_player">المشغّل (عريض)</string>
     <string name="wl_player_s">المشغّل (صغير)</string>
     <string name="wl_player_l">المشغّل (كبير)</string>
-    <string name="wd_player_s">زر تشغيل كبير وصورة الملف</string>
+    <string name="wd_player_s">مربع صغير: صورة الملف وزر تشغيل</string>
     <string name="wd_player_l">تحكم كامل: عشوائي، تكرار، مؤقت النوم وشريط التقدم</string>
     <string name="wd_player">تحكّم في التشغيل من الشاشة الرئيسية</string>
 </resources>

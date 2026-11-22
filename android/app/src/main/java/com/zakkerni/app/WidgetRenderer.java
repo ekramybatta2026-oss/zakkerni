@@ -295,6 +295,13 @@ final class WidgetRenderer {
     static RemoteViews buildPlayer(Context c, Cfg g, int type) {
         int layout = type == T_PLAYER_S ? R.layout.widget_player_s : type == T_PLAYER_L ? R.layout.widget_player_l : R.layout.widget_player;
         RemoteViews v = new RemoteViews(c.getPackageName(), layout);
+        int side = 0;
+        if (type == T_PLAYER_S && g.wdp > 0 && g.hdp > 0) { // square tile inset like the launcher's own 2x2 widgets
+            float d = c.getResources().getDisplayMetrics().density;
+            side = Math.max(48, Math.min(g.wdp, g.hdp) - 12);
+            int ph = Math.round((g.wdp - side) / 2f * d), pv = Math.round((g.hdp - side) / 2f * d);
+            v.setViewPadding(R.id.widget_root, ph, pv, ph, pv);
+        }
         Intent open = new Intent(c, MainActivity.class).putExtra("go", "player").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         v.setOnClickPendingIntent(R.id.widget_root, PendingIntent.getActivity(c, 70, open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
         PlayerService p = PlayerService.inst;
@@ -305,7 +312,8 @@ final class WidgetRenderer {
             boolean real = p != null && p.art != null;
             int bw = type == T_PLAYER_S ? 360 : 720, bh = type == T_PLAYER_S ? 360 : type == T_PLAYER_L ? 380 : 200;
             float dpw = type == T_PLAYER_S ? 170f : 340f;
-            if (g.wdp > 0 && g.hdp > 0) { // match the real cell shape so nothing is stretched
+            if (side > 0) dpw = side;
+            else if (g.wdp > 0 && g.hdp > 0) { // match the real cell shape so nothing is stretched
                 bh = Math.max(120, Math.min(1200, Math.round(bw * g.hdp / (float) g.wdp)));
                 dpw = g.wdp;
             }
@@ -334,9 +342,9 @@ final class WidgetRenderer {
         String artist = p != null ? p.artist : sp.getString("artist", "");
         boolean playing = p != null && p.isPlaying();
         if (title == null || title.isEmpty()) { title = "مشغّل ذَكِّرني"; artist = "اضغط لاختيار الملفات"; }
-        float ts = type == T_PLAYER_L ? 17 : type == T_PLAYER_S ? 14 : 15;
+        float ts = type == T_PLAYER_L ? 17 : type == T_PLAYER_S ? 13 : 15;
         setText(v, R.id.p_title, title, main, ts * f);
-        setText(v, R.id.p_artist, artist == null ? "" : artist, sub, (type == T_PLAYER_S ? 11 : 12.5f) * f);
+        setText(v, R.id.p_artist, artist == null ? "" : artist, sub, (type == T_PLAYER_S ? 10.5f : 12.5f) * f);
         String sl = "";
         if (p != null && p.sleepEnd) sl = "⏱ يتوقف بعد هذا المقطع";
         else if (p != null && p.sleepAt > 0) sl = digits(c, "⏱ يتوقف بعد " + Math.max(1, (p.sleepAt - System.currentTimeMillis() + 59_999) / 60_000) + " د");
