@@ -247,12 +247,17 @@ final class WidgetRenderer {
                         if (g.design == 1) {
                             int[] tiles = {R.id.c0, R.id.c1, R.id.c2, R.id.c3, R.id.c4};
                             v.setInt(tiles[i], "setBackgroundResource", isNext ? (auto ? R.drawable.w_tile_auto : purplePill ? R.drawable.w_tile_on_p : R.drawable.w_tile_on) : (dark ? R.drawable.w_tile_d : R.drawable.w_tile_l));
-                            setText(v, NAMES[i], o.optString("n"), isNext ? (auto ? 0xFF2A1440 : 0xFFFFFFFF) : main, nameDp);
-                            setText(v, TIMES[i], fmtTime(c, o.optLong("t"), g.fmt), isNext ? (auto ? 0xFF2A1440 : 0xFFFFFFFF) : main, timeDp);
+                            tc(v, NAMES[i], o.optString("n"), isNext ? (auto ? 0xFF2A1440 : 0xFFFFFFFF) : main);
+                            tc(v, TIMES[i], fmtTime(c, o.optLong("t"), g.fmt), isNext ? (auto ? 0xFF2A1440 : 0xFFFFFFFF) : main);
                             v.setInt(TIMES[i], "setBackgroundResource", 0);
                         } else {
-                            setText(v, NAMES[i], o.optString("n"), isNext ? hi : main, nameDp);
-                            setText(v, TIMES[i], fmtTime(c, o.optLong("t"), g.fmt), isNext ? (auto ? 0xFF2A1440 : purplePill ? 0xFFFFFFFF : 0xFF1D1726) : main, timeDp);
+                            if (g.design == 2) {
+                                setText(v, NAMES[i], o.optString("n"), isNext ? hi : main, nameDp);
+                                setText(v, TIMES[i], fmtTime(c, o.optLong("t"), g.fmt), isNext ? (auto ? 0xFF2A1440 : purplePill ? 0xFFFFFFFF : 0xFF1D1726) : main, timeDp);
+                            } else { // classic: autosize fills the cell
+                                tc(v, NAMES[i], o.optString("n"), isNext ? hi : main);
+                                tc(v, TIMES[i], fmtTime(c, o.optLong("t"), g.fmt), isNext ? (auto ? 0xFF2A1440 : purplePill ? 0xFFFFFFFF : 0xFF1D1726) : main);
+                            }
                             v.setInt(TIMES[i], "setBackgroundResource", isNext ? (auto ? R.drawable.w_pill_auto : purplePill ? R.drawable.w_pill_purple : R.drawable.w_pill) : 0);
                         }
                     } else {
@@ -383,6 +388,11 @@ final class WidgetRenderer {
             v.setProgressBar(R.id.p_prog, 1000, dur > 0 ? (int) (pos * 1000 / dur) : 0, false);
         }
         return v;
+    }
+
+    private static void tc(RemoteViews v, int id, String s, int color) {
+        v.setTextViewText(id, s);
+        v.setTextColor(id, color);
     }
 
     private static void setText(RemoteViews v, int id, String s, int color, float sp) {
