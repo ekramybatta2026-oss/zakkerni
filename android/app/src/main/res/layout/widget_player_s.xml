@@ -3,7 +3,7 @@
     <!-- vivo draws its widget frame inset inside the host view (~3% sides, ~4% top, ~10% bottom); match it with weights -->
     <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical">
         <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="37" />
-        <LinearLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="858" android:orientation="horizontal">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="820" android:orientation="horizontal">
             <FrameLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="32" />
             <FrameLayout android:id="@+id/p_box" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="936">
                 <ImageView android:id="@+id/wbg" android:layout_width="match_parent" android:layout_height="match_parent" android:clipToOutline="true" android:scaleType="fitXY" android:src="@drawable/wbg_grad_2" android:contentDescription="@null" />
@@ -22,6 +22,6 @@
             </FrameLayout>
             <FrameLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="32" />
         </LinearLayout>
-        <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="105" />
+        <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="143" />
     </LinearLayout>
 </FrameLayout>

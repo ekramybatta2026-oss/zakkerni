@@ -304,19 +304,30 @@ final class WidgetRenderer {
         if (artBg) {
             android.graphics.Bitmap src = p != null && p.art != null ? p.art : fallbackArt(c);
             boolean real = p != null && p.art != null;
-            int bw = type == T_PLAYER_S ? 360 : 720, bh = type == T_PLAYER_S ? 360 : type == T_PLAYER_L ? 380 : 200;
+            int bw = type == T_PLAYER_S ? 360 : 720, bh = type == T_PLAYER_S ? 343 : type == T_PLAYER_L ? 380 : 200;
             float dpw = type == T_PLAYER_S ? 170f : 340f;
             if (side > 0) dpw = side;
             else if (g.wdp > 0 && g.hdp > 0) { // match the real cell shape so nothing is stretched
                 bh = Math.max(120, Math.min(1200, Math.round(bw * g.hdp / (float) g.wdp)));
                 dpw = g.wdp;
             }
-            float rr = new float[]{0, 16, 28}[Math.max(0, Math.min(2, g.radius))] * (bw / dpw);
+            float[] radii = type == T_PLAYER_S ? new float[]{0, 11, 19} : new float[]{0, 16, 28};
+            float rr = radii[Math.max(0, Math.min(2, g.radius))] * (bw / dpw);
+            if (type == T_PLAYER_S) { // scrim baked into the bitmap so its corners match exactly
+                if (src != null) {
+                    android.graphics.Bitmap b = roundedCrop(src, bw, bh, rr);
+                    new android.graphics.Canvas(b).drawColor(((real ? 128 : 56) << 24), android.graphics.PorterDuff.Mode.SRC_ATOP);
+                    v.setImageViewBitmap(R.id.wbg, b);
+                }
+                v.setInt(R.id.wbg, "setImageAlpha", alpha);
+                v.setViewVisibility(R.id.wscrim, View.GONE);
+            } else {
             if (src != null) v.setImageViewBitmap(R.id.wbg, roundedCrop(src, bw, bh, rr));
             v.setInt(R.id.wbg, "setImageAlpha", alpha);
             v.setImageViewResource(R.id.wscrim, bgRes(3, g.radius));
             v.setInt(R.id.wscrim, "setImageAlpha", Math.round(alpha * (real ? 0.5f : 0.22f)));
             v.setViewVisibility(R.id.wscrim, View.VISIBLE);
+            }
             v.setViewVisibility(R.id.p_art, View.GONE);
         } else {
             v.setImageViewResource(R.id.wbg, bgRes(g.style, g.radius));
