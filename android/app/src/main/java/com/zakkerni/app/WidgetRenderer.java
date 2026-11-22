@@ -214,10 +214,10 @@ final class WidgetRenderer {
         float timeDp = Math.min(19 * f, (colDp - 12) / 2.75f), nameDp = Math.min(14 * f, colDp / 3.4f);
         if (g.design == 2) { timeDp = Math.min(timeDp, 15 * f); nameDp = Math.min(nameDp, 12 * f); }
         if (type == T_DAY && g.hdp > 0) { // keep everything inside a short (1-row) widget
-            int h = g.hmin > 0 ? Math.min(g.hmin, g.hdp) : g.hdp;
+            int h = g.hmin > 0 ? (g.hmin + g.hdp) / 2 : g.hdp; // vivo: portrait height over-reported, landscape under-reported
             float head = g.design == 2 ? 0 : 24 * f, room = h - 17 /* launcher-frame insets */ - head - (g.design == 1 ? 14 : 8);
-            float need = 1.45f * (nameDp + timeDp) + 6;
-            if (room < need) { float k = Math.max(0.55f, room / need); nameDp *= k; timeDp *= k; }
+            float need = 1.4f * (nameDp + timeDp) + 4;
+            if (room < need) { float k = Math.max(0.8f, room / need); nameDp *= k; timeDp *= k; }
         }
         if (type == T_DAY) {
             int[][] heads = {{R.drawable.whead_dark_0, R.drawable.whead_dark_1, R.drawable.whead_dark_2}, {R.drawable.whead_light_0, R.drawable.whead_light_1, R.drawable.whead_light_2}};
