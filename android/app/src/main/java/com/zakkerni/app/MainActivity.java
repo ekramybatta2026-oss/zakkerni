@@ -115,7 +115,7 @@ public class MainActivity extends Activity implements SensorEventListener {
         if (savedInstanceState != null) web.restoreState(savedInstanceState);
         else {
             String go = getIntent().getStringExtra("go");
-            web.loadUrl(START_URL + ("adhan".equals(go) || "player".equals(go) ? "#" + go : ""));
+            web.loadUrl(START_URL + (goOk(go) ? "#" + go : ""));
         }
 
         if (Build.VERSION.SDK_INT >= 33
@@ -231,7 +231,7 @@ public class MainActivity extends Activity implements SensorEventListener {
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         String go = intent.getStringExtra("go");
-        if (web != null && ("adhan".equals(go) || "player".equals(go)))
+        if (web != null && goOk(go))
             web.evaluateJavascript("window.zGo && window.zGo('" + go + "')", null);
     }
 
@@ -253,5 +253,9 @@ public class MainActivity extends Activity implements SensorEventListener {
     public void onBackPressed() {
         if (web != null && web.canGoBack()) web.goBack();
         else super.onBackPressed();
+    }
+
+    static boolean goOk(String g) {
+        return g != null && java.util.Arrays.asList("adhan", "player", "alarm", "timer", "stopwatch", "calendar").contains(g);
     }
 }

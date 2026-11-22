@@ -31,6 +31,18 @@ public class Bridge {
 
     /** json: [{"t": epochMillis, "n": "الظهر", "s": "١١:٣٩ ص", "a": true, "f": "adhan.mp3"}, ...] */
     @JavascriptInterface
+    public String clockState() { return ClockStore.state(ctx); }
+
+    @JavascriptInterface
+    public void setAlarms(String json) { ClockStore.setAlarms(ctx, json); }
+
+    @JavascriptInterface
+    public void timerCmd(String cmd, double arg) { ClockStore.timerCmd(ctx, cmd, (long) arg); }
+
+    @JavascriptInterface
+    public void swCmd(String cmd) { ClockStore.swCmd(ctx, cmd); }
+
+    @JavascriptInterface
     public void setLocation(double lat, double lng) {
         Weather.setLocation(ctx, lat, lng);
     }

@@ -19,15 +19,15 @@ import java.util.List;
 
 /** Draws every Zakkerni widget type from the saved prayer times and each widget's own settings. */
 final class WidgetRenderer {
-    static final int T_NEXT = 0, T_DAY = 1, T_FULL = 2, T_LIST = 3, T_PLAYER = 4, T_PLAYER_S = 5, T_PLAYER_L = 6;
+    static final int T_NEXT = 0, T_DAY = 1, T_FULL = 2, T_LIST = 3, T_PLAYER = 4, T_PLAYER_S = 5, T_PLAYER_L = 6, T_ALARM = 7, T_TIMER = 8, T_SW = 9, T_CAL = 10;
     static final String WPREFS = "zakkerni_widgets";
     static final String ACTION_TICK = "com.zakkerni.app.WIDGET_TICK";
 
     static final String[] STYLES = {"grad", "purple", "orange", "dark", "light", "deep", "lav", "soft", "sunset", "auto"};
     static final String[] STYLE_NAMES = {"متدرّج", "بنفسجي", "برتقالي", "داكن", "فاتح", "ليلي", "لافندر", "مشمشي", "غروب", "أرابيسك"};
     static final String[] DESIGNS = {"كلاسيكي", "بطاقات", "مدمج"};
-    static final Class<?>[] PROVIDERS = {WidgetNext.class, WidgetDay.class, PrayerWidget.class, WidgetList.class, PlayerWidget.class, PlayerWidgetSmall.class, PlayerWidgetLarge.class};
-    static final int[] LAYOUTS = {R.layout.widget_next, R.layout.widget_day, R.layout.widget_prayer, R.layout.widget_list, R.layout.widget_player, R.layout.widget_player_s, R.layout.widget_player_l};
+    static final Class<?>[] PROVIDERS = {WidgetNext.class, WidgetDay.class, PrayerWidget.class, WidgetList.class, PlayerWidget.class, PlayerWidgetSmall.class, PlayerWidgetLarge.class, WidgetAlarm.class, WidgetTimer.class, WidgetStopwatch.class, WidgetCalendar.class};
+    static final int[] LAYOUTS = {R.layout.widget_next, R.layout.widget_day, R.layout.widget_prayer, R.layout.widget_list, R.layout.widget_player, R.layout.widget_player_s, R.layout.widget_player_l, R.layout.widget_alarm, R.layout.widget_timer, R.layout.widget_sw, R.layout.widget_cal};
 
     private static final int[] NAMES = {R.id.n0, R.id.n1, R.id.n2, R.id.n3, R.id.n4};
     private static final int[] TIMES = {R.id.t0, R.id.t1, R.id.t2, R.id.t3, R.id.t4};
@@ -41,13 +41,15 @@ final class WidgetRenderer {
         int design = 0;     // wide widget: 0 classic, 1 cards, 2 compact
         int wdp = 0;        // current widget width in dp (from the launcher)
         int hdp = 0;        // current widget height in dp (portrait)
+        int id = 0;
         boolean cd = true, city = true, hijri = true, weather = false;
 
         static Cfg load(Context c, int id) {
             SharedPreferences p = c.getSharedPreferences(WPREFS, Context.MODE_PRIVATE);
             Cfg g = new Cfg();
+            g.id = id;
             String k = "w" + id + "_";
-            if (!p.contains(k + "style")) { int ty = typeOf(c, id); if (ty < T_PLAYER) g.style = AUTO; if (ty == T_DAY) g.radius = 1; }
+            if (!p.contains(k + "style")) { int ty = typeOf(c, id); if (ty < T_PLAYER || ty >= T_ALARM) g.style = AUTO; if (ty == T_DAY) g.radius = 1; }
             try { android.os.Bundle ob = AppWidgetManager.getInstance(c).getAppWidgetOptions(id); g.wdp = ob.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 0); g.hdp = ob.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 0); } catch (Exception ignored) { }
             g.style = p.getInt(k + "style", g.style);
             g.opacity = p.getInt(k + "opacity", g.opacity);
@@ -143,24 +145,8 @@ final class WidgetRenderer {
     /** orange-ish backgrounds get a purple highlight, everything else orange */
     static boolean orangeBg(int style) { return style == 2 || style == 7; }
 
-    static boolean darkText(Cfg g) {
-        if (g.text == 1) return false;
-        if (g.text == 2) return true;
-        return lightBg(g.style) || g.opacity < 35; // light styles, or nearly transparent
-    }
-
-    /* ---------- build ---------- */
-    static RemoteViews build(Context c, int type, Cfg g) {
-        if (type >= T_PLAYER) return buildPlayer(c, g, type);
-        int lay = LAYOUTS[type];
-        if (type == T_DAY) lay = g.design == 1 ? R.layout.widget_day_cards : g.design == 2 ? R.layout.widget_day_compact : R.layout.widget_day;
-        RemoteViews v = new RemoteViews(c.getPackageName(), lay);
-        Intent open = new Intent(c, MainActivity.class).putExtra("go", "adhan").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        v.setOnClickPendingIntent(R.id.widget_root, PendingIntent.getActivity(c, 50 + type, open,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
-
-        boolean auto = g.style == AUTO;
-        if (auto) { // drawn as the view background so the arabesque tiles instead of stretching; -night resources follow the phone theme
+    static void applyBg(RemoteViews v, Cfg g) {
+        if (g.style == AUTO) { // drawn as the view background so the arabesque tiles instead of stretching
             v.setImageViewResource(R.id.wbg, android.R.color.transparent);
             v.setInt(R.id.wbg, "setBackgroundResource", bgRes(g.style, g.radius));
             v.setFloat(R.id.wbg, "setAlpha", g.opacity / 100f);
@@ -170,6 +156,27 @@ final class WidgetRenderer {
             v.setImageViewResource(R.id.wbg, bgRes(g.style, g.radius));
             v.setInt(R.id.wbg, "setImageAlpha", Math.round(255 * g.opacity / 100f));
         }
+    }
+
+    static boolean darkText(Cfg g) {
+        if (g.text == 1) return false;
+        if (g.text == 2) return true;
+        return lightBg(g.style) || g.opacity < 35; // light styles, or nearly transparent
+    }
+
+    /* ---------- build ---------- */
+    static RemoteViews build(Context c, int type, Cfg g) {
+        if (type >= T_ALARM) return ClockWidgets.build(c, g, type, g.id);
+        if (type >= T_PLAYER) return buildPlayer(c, g, type);
+        int lay = LAYOUTS[type];
+        if (type == T_DAY) lay = g.design == 1 ? R.layout.widget_day_cards : g.design == 2 ? R.layout.widget_day_compact : R.layout.widget_day;
+        RemoteViews v = new RemoteViews(c.getPackageName(), lay);
+        Intent open = new Intent(c, MainActivity.class).putExtra("go", "adhan").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        v.setOnClickPendingIntent(R.id.widget_root, PendingIntent.getActivity(c, 50 + type, open,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
+
+        applyBg(v, g);
+        boolean auto = g.style == AUTO;
 
         boolean dark = darkText(g);
         int main = dark ? 0xFF2A1F36 : 0xFFFFFFFF;

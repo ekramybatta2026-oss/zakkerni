@@ -359,6 +359,68 @@ body.sec .toast{bottom:auto;top:calc(84px + env(safe-area-inset-top));transform:
 body.sec .toast.show{transform:translateX(-50%)}
 @media (min-width:700px){ main{padding:22px} }
 @media (prefers-reduced-motion:reduce){ *{animation:none!important;transition:none!important} }
+
+/* ---- time tools ---- */
+.tools.t4{grid-template-columns:repeat(4,minmax(0,1fr));margin-top:8px}
+.tools.t4 .tool{padding:9px 4px}.tools.t4 .ti{width:36px;height:36px}.tools.t4 b{font-size:12px}
+.ck-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:-4px 0 16px}
+.ck-tabs button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 2px;border-radius:16px;background:var(--surface);box-shadow:var(--shadow);font-size:12px;font-weight:700;color:var(--muted)}
+.ck-tabs button.on{background:var(--grad);color:#fff}
+.ck-tabs svg.i{width:22px;height:22px}
+.ck-note{display:flex;gap:8px;align-items:center;font-size:12.5px;color:var(--muted);background:var(--surface);border-radius:14px;padding:10px 12px;margin-bottom:12px}
+.al-list{display:flex;flex-direction:column;gap:10px}
+.al{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:20px;background:var(--surface);box-shadow:var(--shadow)}
+.al.off{opacity:.55}
+.al-main{flex:1;cursor:pointer}
+.al-t{font-size:32px;font-weight:800;line-height:1.1;color:var(--text)}.al-t small{font-size:15px;font-weight:700;color:var(--muted)}
+.al-s{font-size:13px;color:var(--muted);font-weight:600}.al-n{font-size:12px;color:var(--orange);font-weight:700}
+.ck-add{width:100%;margin-top:14px;padding:13px}
+.al-ed input[type=time]{width:100%;font:800 40px Cairo,sans-serif;text-align:center;border:0;border-radius:18px;background:var(--surface-2);color:var(--text);padding:8px;margin:6px 0 12px}
+.al-ed input[type=text]{width:100%;font:600 15px Cairo,sans-serif;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--text);padding:10px 12px;margin:10px 0 14px;text-align:right}
+.al-days{display:flex;justify-content:space-between;gap:4px}
+.al-days button{width:38px;height:38px;border-radius:50%;background:var(--surface-2);font-weight:800;color:var(--muted)}
+.al-days button.on{background:var(--purple);color:#fff}
+.al-quick{display:flex;gap:6px;justify-content:center;margin-top:10px}
+.al-quick button{font-size:12px;font-weight:700;padding:5px 10px;border-radius:999px;background:var(--surface-2);color:var(--muted)}
+.row-btns{display:flex;gap:8px}.btn.danger{background:#FDE7E7;color:#C0392B}[data-theme="dark"] .btn.danger{background:#4A2328;color:#FFB4B4}
+.ck-face{position:relative;width:min(78vw,280px);aspect-ratio:1;margin:4px auto 14px}
+.ck-face svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ck-face circle{fill:none;stroke-width:12}.ck-face .track{stroke:var(--surface-2)}
+.ck-face .bar{stroke:var(--orange);stroke-linecap:round;transition:stroke-dashoffset .25s linear}
+.ck-face.sw{aspect-ratio:auto;padding:46px 0;border-radius:28px;background:var(--surface);box-shadow:var(--shadow)}
+.ck-face.sw .ck-read{position:static}
+.ck-read{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ck-read b{font-size:46px;font-weight:800;direction:ltr;letter-spacing:.5px;color:var(--text)}
+.ck-face.sw .ck-read b{font-size:44px}
+.ck-read small{font-size:13px;color:var(--muted);font-weight:700}
+.ck-ctl{display:flex;justify-content:center;align-items:center;gap:22px;margin:6px 0 16px}
+.ck-ctl .pb{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;background:var(--surface);box-shadow:var(--shadow);color:var(--purple);font-size:17px}
+.ck-ctl .pb.big{width:74px;height:74px;background:var(--grad-or);color:#fff}
+.ck-ctl .pb:disabled{opacity:.4}
+.ck-ctl svg.i{width:26px;height:26px}
+.tm-set.hide{display:none}
+.tm-pick{display:flex;justify-content:center;gap:14px;margin-bottom:12px}
+.tm-pick label{display:flex;flex-direction:column;align-items:center;gap:4px}
+.tm-pick input{width:72px;font:800 30px Cairo,sans-serif;text-align:center;border:0;border-radius:14px;background:var(--surface);color:var(--text);padding:4px;box-shadow:var(--shadow)}
+.tm-pick button{width:44px;height:30px;border-radius:10px;background:var(--surface-2);font-size:20px;font-weight:800;color:var(--purple)}
+.tm-pick span{font-size:12px;color:var(--muted);font-weight:700}
+.tm-quick{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:6px}
+.tm-quick button{padding:6px 12px;border-radius:999px;background:var(--surface);box-shadow:var(--shadow);font-size:13px;font-weight:700;color:var(--purple)}
+.laps{display:flex;flex-direction:column;gap:6px}
+.lap{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:14px;background:var(--surface);font-size:14px}
+.lap span{flex:1;color:var(--muted);font-weight:700}.lap b{direction:ltr}.lap small{direction:ltr;color:var(--muted);min-width:84px;text-align:left}
+.lap.best b{color:#2E9E6A}.lap.worst b{color:#D9534F}
+.cal{background:var(--surface);border-radius:24px;box-shadow:var(--shadow);padding:12px}
+.cal-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.cal-head .pb{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:var(--surface-2);color:var(--purple)}
+.cal-t{flex:1;text-align:center}.cal-t b{display:block;font-size:18px}.cal-t small{color:var(--orange);font-weight:700;font-size:13px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cw{text-align:center;font-size:12px;font-weight:800;color:var(--muted);padding:4px 0}.cw.fri,.cd.fri b{color:var(--orange)}
+.cd{display:flex;flex-direction:column;align-items:center;padding:6px 0;border-radius:12px;min-height:46px}
+.cd b{font-size:16px}.cd small{font-size:11px;color:var(--muted);font-weight:700}
+.cd.today{background:var(--grad-or)}.cd.today b,.cd.today small{color:#fff}
+.cd.pick{outline:2px solid var(--purple)}
+.cal-sel{display:flex;align-items:center;gap:8px;margin-top:12px;padding:12px 14px;border-radius:16px;background:var(--surface);box-shadow:var(--shadow);font-weight:700;font-size:14px}
 </style>
 </head>
 <body>
@@ -391,6 +453,12 @@ body.sec .toast.show{transform:translateX(-50%)}
   <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5 10 17.5 19 7"/></symbol>
   <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1"/><path d="M3.5 4v4.5H8"/></symbol>
   <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 7.6v.2"/></symbol>
+  <symbol id="i-alarm" viewBox="0 0 24 24"><circle cx="12" cy="13" r="7.5"/><path d="M12 9.5V13l2.3 1.6M4 5.5 6.5 3M20 5.5 17.5 3"/></symbol>
+  <symbol id="i-hourglass" viewBox="0 0 24 24"><path d="M6.5 3h11M6.5 21h11M7.5 3v3.2a4.5 4.5 0 0 0 2 3.7L12 12l2.5-2.1a4.5 4.5 0 0 0 2-3.7V3M7.5 21v-3.2a4.5 4.5 0 0 1 2-3.7L12 12l2.5 2.1a4.5 4.5 0 0 1 2 3.7V21"/></symbol>
+  <symbol id="i-stopwatch" viewBox="0 0 24 24"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 13.5V9.5M9.5 2.5h5M12 2.5v3.5M18.5 6.5l1.3-1.3"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5.5 21V4M5.5 4h11l-2 4 2 4h-11"/></symbol>
+  <symbol id="i-chev-r" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+  <symbol id="i-chev-l" viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></symbol>
   <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
   <symbol id="i-done-all" viewBox="0 0 24 24"><path d="M2 12.5 6.5 17 15 7.5M9.5 16l1 1L22 7"/></symbol>
   <symbol id="i-sound" viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></symbol>
@@ -425,6 +493,7 @@ body.sec .toast.show{transform:translateX(-50%)}
     <section class="view" id="v-qibla"></section>
     <section class="view" id="v-mosques"></section>
     <section class="view" id="v-player"></section>
+    <section class="view" id="v-clock"></section>
   </main>
 </div>
 
@@ -444,6 +513,7 @@ body.sec .toast.show{transform:translateX(-50%)}
   <p>تقبّل الله ذكرك، وجعل يومك مليئًا بالخير والبركة</p>
   <button class="btn primary" id="mClose" style="width:100%">آمين</button>
 </div></div>
+<div class="modal" id="alModal"></div>
 <div class="modal" id="cfm"><div class="modal-card" style="padding-top:24px">
   <h3 id="cfmMsg"></h3><p style="font-family:Cairo;font-size:14px;color:var(--muted)">لا يمكن التراجع عن هذه الخطوة.</p>
   <div class="actions"><button class="btn primary" id="cfmYes">نعم، أعد التعيين</button><button class="btn ghost" id="cfmNo">إلغاء</button></div>
@@ -854,6 +924,7 @@ function go(view, push = true) {
   else if (view === 'player') { renderPlayer(); $('#v-player').classList.add('active'); }
   else if (view === 'qibla') { renderQibla(); $('#v-qibla').classList.add('active'); }
   else if (view === 'mosques') { renderMosques(); $('#v-mosques').classList.add('active'); }
+  else if (['alarm', 'timer', 'stopwatch', 'calendar'].includes(view)) { renderClock(view); $('#v-clock').classList.add('active'); }
   window.scrollTo({ top: 0 });
   if (push) { try { history.pushState({ view }, '', '#' + (view === 'settings' ? 'prefs' : view)); } catch (e) {} }
 }
@@ -907,6 +978,9 @@ function renderHome() {
       <button class="tool" data-open="qibla"><span class="ti">${ico('compass')}</span><span><b>القبلة</b><small>اتجاه الكعبة من موقعك</small></span></button>
       <button class="tool" data-open="mosques"><span class="ti">${ico('mosque')}</span><span><b>مساجد قريبة</b><small>حسب موقعك</small></span></button>
       <button class="tool" data-open="player"><span class="ti">${ico('music')}</span><span><b>المشغّل</b><small>صوتيات الجوال</small></span></button>
+    </div>
+    <div class="tools t4">
+      ${CK_TABS.map(([k, l, i]) => `<button class="tool" data-open="${k}"><span class="ti">${ico(i)}</span><span><b>${l}</b></span></button>`).join('')}
     </div>
     <div class="overall">
       <div class="ring"><svg viewBox="0 0 80 80"><circle class="track" cx="40" cy="40" r="34" fill="none" stroke-width="9"/><circle class="bar" cx="40" cy="40" r="34" fill="none" stroke-width="9" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - pct / 100)}"/></svg><span>${ar(pct)}٪</span></div>
@@ -1663,6 +1737,215 @@ function eqSheet() {
 }
 
 /* ---------- Boot ---------- */
+
+/* ---------- Time tools: alarm / timer / stopwatch / calendar ---------- */
+const CB = () => window.AndroidBridge && AndroidBridge.clockState;
+const CK_TABS = [['alarm', 'المنبه', 'alarm'], ['timer', 'المؤقت', 'hourglass'], ['stopwatch', 'ساعة الإيقاف', 'stopwatch'], ['calendar', 'التقويم', 'cal']];
+const WD = ['ح', 'ن', 'ث', 'ر', 'خ', 'ج', 'س'], WDL = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+let ckLoop = null, calOff = 0, calPick = null, timerSet = { h: 0, m: 5, s: 0 };
+function ckWeb() { return S.clock || (S.clock = { alarms: [], t: { run: false, end: 0, left: 0, total: 0 }, s: { run: false, start: 0, acc: 0, laps: [] } }); }
+function ckState() {
+  if (CB()) { try { return JSON.parse(AndroidBridge.clockState()); } catch (e) {} }
+  const c = ckWeb(), now = Date.now();
+  return { alarms: c.alarms, timer: { run: c.t.run, left: c.t.run ? Math.max(0, c.t.end - now) : c.t.left, total: c.t.total }, sw: { run: c.s.run, el: c.s.run ? c.s.acc + now - c.s.start : c.s.acc, laps: c.s.laps } };
+}
+function saveAlarms(list) {
+  if (CB()) { try { AndroidBridge.setAlarms(JSON.stringify(list)); } catch (e) {} } else { ckWeb().alarms = list; save(); }
+}
+function tCmd(cmd, arg = 0) {
+  if (CB()) { try { AndroidBridge.timerCmd(cmd, arg); } catch (e) {} return; }
+  const t = ckWeb().t, now = Date.now();
+  if (cmd === 'start') Object.assign(t, { total: arg, end: now + arg, left: arg, run: true });
+  else if (cmd === 'toggle') { if (t.run) Object.assign(t, { left: Math.max(0, t.end - now), run: false }); else { const l = t.left > 0 ? t.left : t.total; if (l > 0) Object.assign(t, { end: now + l, run: true }); } }
+  else if (cmd === 'reset' || cmd === 'done') Object.assign(t, { run: false, left: t.total });
+  else if (cmd === 'add') { if (t.run) t.end += arg; else t.left += arg; }
+  save();
+}
+function sCmd(cmd) {
+  if (CB()) { try { AndroidBridge.swCmd(cmd); } catch (e) {} return; }
+  const s = ckWeb().s, now = Date.now(), el = s.run ? s.acc + now - s.start : s.acc;
+  if (cmd === 'toggle') { if (s.run) Object.assign(s, { acc: el, run: false }); else Object.assign(s, { start: now, run: true }); }
+  else if (cmd === 'reset') Object.assign(s, { run: false, acc: 0, laps: [] });
+  else if (cmd === 'lap' && s.run) s.laps.push(el);
+  save();
+}
+const two = (n) => String(n).padStart(2, '0');
+function hms(ms, cs = false) {
+  ms = Math.max(0, ms); const t = Math.floor(ms / 1000), h = Math.floor(t / 3600), m = Math.floor(t / 60) % 60, s = t % 60;
+  let out = (h ? h + ':' + two(m) : two(m)) + ':' + two(s);
+  if (cs) out += '.' + two(Math.floor(ms / 10) % 100);
+  return nd(out);
+}
+function alarmTime(a) { const h12 = a.h % 12 || 12; return nd(`${h12}:${two(a.m)}`) + ` <small>${a.h < 12 ? 'ص' : 'م'}</small>`; }
+function alarmDays(a) {
+  const d = (a.days || []).slice().sort();
+  if (!d.length) return 'مرة واحدة';
+  if (d.length === 7) return 'كل يوم';
+  if (d.join() === '0,1,2,3,4') return 'من الأحد إلى الخميس';
+  if (d.join() === '5,6') return 'الجمعة والسبت';
+  return d.map(i => WDL[i]).join('، ');
+}
+function nextIn(a) {
+  if (!a.on) return '';
+  const now = new Date();
+  for (let i = 0; i < 8; i++) {
+    const t = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i, a.h, a.m, 0);
+    if (t > now && (!(a.days || []).length || a.days.includes(t.getDay()))) {
+      const min = Math.round((t - now) / 60000), h = Math.floor(min / 60), m = min % 60;
+      return 'يرن بعد ' + (h ? nd(h) + ' س ' : '') + nd(m) + ' د';
+    }
+  }
+  return '';
+}
+function renderClock(tab) {
+  const v = $('#v-clock');
+  v.innerHTML = `<div class="sec-head" style="position:static"><h2>أدوات الوقت</h2></div>
+    <div class="ck-tabs">${CK_TABS.map(([k, l, i]) => `<button data-ck="${k}" class="${k === tab ? 'on' : ''}">${ico(i)}<span>${l}</span></button>`).join('')}</div>
+    <div id="ckBody"></div>`;
+  v.querySelectorAll('[data-ck]').forEach(b => b.onclick = () => go(b.dataset.ck));
+  ({ alarm: ckAlarm, timer: ckTimer, stopwatch: ckSw, calendar: ckCal })[tab]();
+  clearInterval(ckLoop);
+  if (tab === 'timer' || tab === 'stopwatch') ckLoop = setInterval(() => { if (current !== tab) { clearInterval(ckLoop); return; } ckPaint(tab); }, tab === 'stopwatch' ? 50 : 250);
+}
+function ckAlarm() {
+  const st = ckState(), list = st.alarms || [];
+  $('#ckBody').innerHTML = `
+    ${CB() ? '' : `<div class="ck-note">${ico('info')} المنبه يرن فقط في تطبيق الأندرويد. في هذه النسخة يمكنك تجهيز المنبهات فقط.</div>`}
+    <div class="al-list">${list.length ? list.map((a, i) => `
+      <div class="al ${a.on ? '' : 'off'}">
+        <div class="al-main" data-edit="${i}"><div class="al-t">${alarmTime(a)}</div><div class="al-s">${esc(a.label || 'منبه')} · ${alarmDays(a)}</div><div class="al-n">${nextIn(a)}</div></div>
+        <button class="switch ${a.on ? 'on' : ''}" data-tog="${i}" aria-label="تفعيل"></button>
+      </div>`).join('') : `<div class="empty">${ico('alarm')}<p>لا توجد منبهات بعد</p></div>`}</div>
+    <button class="btn primary ck-add" id="alAdd">${ico('alarm')} إضافة منبه</button>`;
+  $('#ckBody').querySelectorAll('[data-tog]').forEach(b => b.onclick = () => { const L = ckState().alarms; L[+b.dataset.tog].on = !L[+b.dataset.tog].on; saveAlarms(L); ckAlarm(); const a = L[+b.dataset.tog]; toast(a.on ? (nextIn(a) || 'تم التفعيل') : 'تم إيقاف المنبه'); });
+  $('#ckBody').querySelectorAll('[data-edit]').forEach(b => b.onclick = () => alarmEditor(+b.dataset.edit));
+  $('#alAdd').onclick = () => alarmEditor(-1);
+}
+function alarmEditor(idx) {
+  const L = ckState().alarms || [];
+  const now = new Date();
+  const a = idx >= 0 ? Object.assign({}, L[idx]) : { id: Date.now() % 1e9, h: now.getHours(), m: now.getMinutes(), days: [], label: '', on: true };
+  const m = $('#alModal');
+  m.innerHTML = `<div class="modal-card al-ed">
+    <h3>${idx >= 0 ? 'تعديل المنبه' : 'منبه جديد'}</h3>
+    <input type="time" id="alTime" value="${two(a.h)}:${two(a.m)}">
+    <div class="al-days">${[0, 1, 2, 3, 4, 5, 6].map(d => `<button data-d="${d}" class="${(a.days || []).includes(d) ? 'on' : ''}">${WD[d]}</button>`).join('')}</div>
+    <div class="al-quick"><button data-q="0,1,2,3,4">الأحد–الخميس</button><button data-q="0,1,2,3,4,5,6">كل يوم</button><button data-q="">مرة واحدة</button></div>
+    <input type="text" id="alLabel" placeholder="اسم المنبه (اختياري)" value="${esc(a.label)}" maxlength="30">
+    <div class="row-btns"><button class="btn primary" id="alSave">حفظ</button>${idx >= 0 ? '<button class="btn danger" id="alDel">حذف</button>' : ''}<button class="btn" id="alCancel">إلغاء</button></div>
+  </div>`;
+  m.classList.add('show');
+  const days = new Set(a.days || []);
+  const paint = () => m.querySelectorAll('[data-d]').forEach(b => b.classList.toggle('on', days.has(+b.dataset.d)));
+  m.querySelectorAll('[data-d]').forEach(b => b.onclick = () => { const d = +b.dataset.d; days.has(d) ? days.delete(d) : days.add(d); paint(); });
+  m.querySelectorAll('[data-q]').forEach(b => b.onclick = () => { days.clear(); b.dataset.q.split(',').filter(Boolean).forEach(x => days.add(+x)); paint(); });
+  $('#alCancel').onclick = () => m.classList.remove('show');
+  if ($('#alDel')) $('#alDel').onclick = () => { L.splice(idx, 1); saveAlarms(L); m.classList.remove('show'); ckAlarm(); toast('تم حذف المنبه'); };
+  $('#alSave').onclick = () => {
+    const [h, mi] = ($('#alTime').value || '07:00').split(':').map(Number);
+    Object.assign(a, { h, m: mi, days: [...days].sort(), label: $('#alLabel').value.trim(), on: true });
+    if (idx >= 0) L[idx] = a; else L.push(a);
+    L.sort((x, y) => x.h * 60 + x.m - (y.h * 60 + y.m));
+    saveAlarms(L); m.classList.remove('show'); ckAlarm(); toast(nextIn(a) || 'تم الحفظ');
+  };
+}
+function ckTimer() {
+  const st = ckState().timer;
+  const showSet = !st.run && !(st.left > 0 && st.left < st.total);
+  if (showSet && st.total > 0 && !ckTimer.touched) { const s = Math.round(st.total / 1000); timerSet = { h: Math.floor(s / 3600), m: Math.floor(s / 60) % 60, s: s % 60 }; }
+  $('#ckBody').innerHTML = `
+    <div class="ck-face"><svg viewBox="0 0 220 220"><circle class="track" cx="110" cy="110" r="96"/><circle class="bar" id="tmBar" cx="110" cy="110" r="96" stroke-dasharray="${2 * Math.PI * 96}"/></svg>
+      <div class="ck-read"><b id="tmRead">${hms(st.left || 0)}</b><small id="tmSub">${st.run ? 'يعمل' : st.left > 0 && st.left < st.total ? 'متوقف مؤقتًا' : 'المؤقت'}</small></div></div>
+    <div class="tm-set ${showSet ? '' : 'hide'}" id="tmSet">
+      <div class="tm-pick">${[['h', 'ساعة', 23], ['m', 'دقيقة', 59], ['s', 'ثانية', 59]].map(([k, l, mx]) => `<label><button data-inc="${k}" data-mx="${mx}">+</button><input type="number" min="0" max="${mx}" data-f="${k}" value="${timerSet[k]}"><button data-dec="${k}" data-mx="${mx}">−</button><span>${l}</span></label>`).join('')}</div>
+      <div class="tm-quick">${[1, 3, 5, 10, 15, 20, 30, 60].map(n => `<button data-pre="${n}">${nd(n === 60 ? 'ساعة' : n + ' د')}</button>`).join('')}</div>
+    </div>
+    <div class="ck-ctl"><button class="pb" id="tmReset" aria-label="إعادة">${ico('reset')}</button><button class="pb big" id="tmGo" aria-label="تشغيل">${ico(st.run ? 'pause' : 'play')}</button><button class="pb" id="tmAdd" aria-label="زيادة دقيقة"><b>+١</b></button></div>`;
+  const fields = () => $('#ckBody').querySelectorAll('[data-f]');
+  fields().forEach(i => i.oninput = () => { ckTimer.touched = true; timerSet[i.dataset.f] = Math.max(0, Math.min(+i.max, +i.value || 0)); });
+  $('#ckBody').querySelectorAll('[data-inc],[data-dec]').forEach(b => b.onclick = () => { const k = b.dataset.inc || b.dataset.dec, mx = +b.dataset.mx; ckTimer.touched = true; timerSet[k] = (timerSet[k] + (b.dataset.inc ? 1 : mx)) % (mx + 1); $(`[data-f="${k}"]`).value = timerSet[k]; });
+  $('#ckBody').querySelectorAll('[data-pre]').forEach(b => b.onclick = () => { tCmd('start', +b.dataset.pre * 60000); ckTimer(); });
+  $('#tmGo').onclick = () => {
+    const s = ckState().timer;
+    if (!s.run && !(s.left > 0 && s.left < s.total)) { ckTimer.touched = false; const ms = ((timerSet.h * 60 + timerSet.m) * 60 + timerSet.s) * 1000; if (!ms) { toast('حدّد المدة أولاً'); return; } tCmd('start', ms); }
+    else tCmd('toggle');
+    ckTimer();
+  };
+  $('#tmReset').onclick = () => { tCmd('reset'); ckTimer(); };
+  $('#tmAdd').onclick = () => { tCmd('add', 60000); ckPaint('timer'); };
+  ckPaint('timer');
+}
+let beepCtx = null;
+function beep() { try { beepCtx = beepCtx || new (window.AudioContext || window.webkitAudioContext)(); [0, .35, .7, 1.05].forEach(d => { const o = beepCtx.createOscillator(), g = beepCtx.createGain(); o.frequency.value = 880; o.connect(g); g.connect(beepCtx.destination); g.gain.setValueAtTime(.25, beepCtx.currentTime + d); g.gain.exponentialRampToValueAtTime(.001, beepCtx.currentTime + d + .3); o.start(beepCtx.currentTime + d); o.stop(beepCtx.currentTime + d + .3); }); } catch (e) {} }
+function ckPaint(tab) {
+  const st = ckState();
+  if (tab === 'timer') {
+    const t = st.timer;
+    if (!CB() && t.run && t.left <= 0) { tCmd('done'); beep(); tick('done'); toast('انتهى المؤقت'); ckTimer(); return; }
+    if ($('#tmRead')) $('#tmRead').textContent = hms(t.left);
+    const C = 2 * Math.PI * 96, bar = $('#tmBar');
+    if (bar) bar.style.strokeDashoffset = t.total ? C * (1 - t.left / t.total) : C;
+    const goB = $('#tmGo'); if (goB) goB.innerHTML = ico(t.run ? 'pause' : 'play');
+    if ($('#tmSub')) $('#tmSub').textContent = t.run ? 'يعمل' : t.left > 0 && t.left < t.total ? 'متوقف مؤقتًا' : 'المؤقت';
+  } else if (tab === 'stopwatch') {
+    const s = st.sw;
+    if ($('#swRead')) $('#swRead').textContent = hms(s.el, true);
+    const goB = $('#swGo'); if (goB) goB.innerHTML = ico(s.run ? 'pause' : 'play');
+    const lap = $('#swLap'); if (lap) lap.disabled = !s.run;
+    if ((s.laps || []).length !== +($('#swLaps') || {}).dataset?.n) paintLaps(s);
+  }
+}
+function paintLaps(s) {
+  const el = $('#swLaps'); if (!el) return;
+  const L = s.laps || []; el.dataset.n = L.length;
+  const diffs = L.map((t, i) => t - (i ? L[i - 1] : 0));
+  const mn = Math.min(...diffs), mx = Math.max(...diffs);
+  el.innerHTML = L.map((t, i) => [i, t, diffs[i]]).reverse().map(([i, t, d]) => `<div class="lap ${L.length > 2 && d === mn ? 'best' : ''} ${L.length > 2 && d === mx ? 'worst' : ''}"><span>لفة ${nd(i + 1)}</span><b>${hms(d, true)}</b><small>${hms(t, true)}</small></div>`).join('');
+}
+function ckSw() {
+  const s = ckState().sw;
+  $('#ckBody').innerHTML = `
+    <div class="ck-face sw"><div class="ck-read"><b id="swRead">${hms(s.el, true)}</b><small>ساعة الإيقاف</small></div></div>
+    <div class="ck-ctl"><button class="pb" id="swReset" aria-label="تصفير">${ico('reset')}</button><button class="pb big" id="swGo" aria-label="تشغيل">${ico(s.run ? 'pause' : 'play')}</button><button class="pb" id="swLap" aria-label="لفة">${ico('flag')}</button></div>
+    <div class="laps" id="swLaps" data-n="-1"></div>`;
+  $('#swGo').onclick = () => { sCmd('toggle'); ckPaint('stopwatch'); };
+  $('#swReset').onclick = () => { sCmd('reset'); ckSw(); };
+  $('#swLap').onclick = () => { sCmd('lap'); tick(); ckPaint('stopwatch'); };
+  paintLaps(s); ckPaint('stopwatch');
+}
+const hijriParts = (d) => { try { const f = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura', { day: 'numeric', month: 'numeric', year: 'numeric' }).formatToParts(d); const g = (t) => +(f.find(p => p.type === t) || {}).value; return { d: g('day'), m: g('month'), y: parseInt((f.find(p => p.type === 'year') || {}).value) }; } catch (e) { return null; } };
+const HM = ['محرم', 'صفر', 'ربيع الأول', 'ربيع الآخر', 'جمادى الأولى', 'جمادى الآخرة', 'رجب', 'شعبان', 'رمضان', 'شوال', 'ذو القعدة', 'ذو الحجة'];
+const GM = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+function fullDates(d) { const h = hijriParts(d); return `${WDL[d.getDay()]} ${nd(d.getDate())} ${GM[d.getMonth()]} ${nd(d.getFullYear())}م` + (h ? ` · ${nd(h.d)} ${HM[h.m - 1]} ${nd(h.y)}هـ` : ''); }
+function ckCal() {
+  const now = new Date(), base = new Date(now.getFullYear(), now.getMonth() + calOff, 1);
+  const days = new Date(base.getFullYear(), base.getMonth() + 1, 0).getDate(), lead = base.getDay();
+  const h1 = hijriParts(base), h2 = hijriParts(new Date(base.getFullYear(), base.getMonth(), days));
+  const hTitle = h1 && h2 ? (h1.m === h2.m ? `${HM[h1.m - 1]} ${nd(h1.y)}` : `${HM[h1.m - 1]}${h1.y !== h2.y ? ' ' + nd(h1.y) : ''} – ${HM[h2.m - 1]} ${nd(h2.y)}`) + 'هـ' : '';
+  let cells = '';
+  for (let i = 0; i < Math.ceil((lead + days) / 7) * 7; i++) {
+    const dn = i - lead + 1;
+    if (dn < 1 || dn > days) { cells += '<div class="cd empty"></div>'; continue; }
+    const d = new Date(base.getFullYear(), base.getMonth(), dn), h = hijriParts(d);
+    const today = d.toDateString() === now.toDateString(), pick = calPick && d.toDateString() === calPick.toDateString();
+    cells += `<button class="cd ${today ? 'today' : ''} ${pick ? 'pick' : ''} ${d.getDay() === 5 ? 'fri' : ''}" data-day="${dn}"><b>${nd(dn)}</b><small>${h ? nd(h.d) : ''}</small></button>`;
+  }
+  const sel = calPick || now;
+  $('#ckBody').innerHTML = `
+    <div class="cal">
+      <div class="cal-head"><button class="pb sm" id="calPrev" aria-label="السابق">${ico('chev-r')}</button>
+        <div class="cal-t" id="calToday"><b>${GM[base.getMonth()]} ${nd(base.getFullYear())}</b><small>${hTitle}</small></div>
+        <button class="pb sm" id="calNext" aria-label="التالي">${ico('chev-l')}</button></div>
+      <div class="cal-grid">${WD.map((w, i) => `<div class="cw ${i === 5 ? 'fri' : ''}">${w}</div>`).join('')}${cells}</div>
+    </div>
+    <div class="cal-sel">${ico('cal')}<span>${fullDates(sel)}</span></div>
+    ${calOff ? '<button class="btn ck-add" id="calBack">العودة لليوم</button>' : ''}`;
+  $('#calPrev').onclick = () => { calOff--; ckCal(); };
+  $('#calNext').onclick = () => { calOff++; ckCal(); };
+  if ($('#calBack')) $('#calBack').onclick = () => { calOff = 0; calPick = null; ckCal(); };
+  $('#ckBody').querySelectorAll('[data-day]').forEach(b => b.onclick = () => { calPick = new Date(base.getFullYear(), base.getMonth(), +b.dataset.day); ckCal(); });
+}
+
 load(); applySettings();
 try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => S.settings.theme === 'auto' && applySettings()); } catch (e) {}
 window.onSystemTheme = () => { if (S.settings.theme === 'auto') applySettings(); };
@@ -1671,7 +1954,7 @@ setTimeout(scheduleNative, 800);
 // installable web app (iPhone / any browser)
 if (!NATIVE && 'serviceWorker' in navigator && location.protocol === 'https:') { try { navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {} }
 let start = (location.hash || '').slice(1); if (start === 'prefs') start = 'settings';
-go(SECTIONS[start] || ['favs', 'settings', 'adhan', 'qibla', 'mosques', 'player'].includes(start) ? start : 'home', false);
+go(SECTIONS[start] || ['favs', 'settings', 'adhan', 'qibla', 'mosques', 'player', 'alarm', 'timer', 'stopwatch', 'calendar'].includes(start) ? start : 'home', false);
 try { history.replaceState({ view: current }, '', '#' + (current === 'settings' ? 'prefs' : current)); } catch (e) {}
 setTimeout(() => $('#splash').classList.add('hide'), 1300);
 document.addEventListener('visibilitychange', () => { if (!document.hidden && S.date !== todayKey()) { rollDay(); go(current, false); } });
