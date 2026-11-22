@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/widget_root" android:layout_width="match_parent" android:layout_height="match_parent" android:paddingStart="3.5dp" android:paddingEnd="3.5dp" android:paddingTop="4.5dp" android:paddingBottom="12.5dp">
+    <StackView android:id="@+id/stack" android:layout_width="match_parent" android:layout_height="match_parent" android:loopViews="true" />
+    <TextView android:id="@+id/stack_empty" android:layout_width="match_parent" android:layout_height="match_parent" android:gravity="center" android:text="ذَكِّرني" android:textColor="#FFFFFF" android:textSize="16dp" android:background="@drawable/wbg_auto_2" />
+</FrameLayout>

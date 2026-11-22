@@ -19,15 +19,15 @@ import java.util.List;
 
 /** Draws every Zakkerni widget type from the saved prayer times and each widget's own settings. */
 final class WidgetRenderer {
-    static final int T_NEXT = 0, T_DAY = 1, T_FULL = 2, T_LIST = 3, T_PLAYER = 4, T_PLAYER_S = 5, T_PLAYER_L = 6, T_ALARM = 7, T_TIMER = 8, T_SW = 9, T_CAL = 10, T_CLOCK = 11;
+    static final int T_NEXT = 0, T_DAY = 1, T_FULL = 2, T_LIST = 3, T_PLAYER = 4, T_PLAYER_S = 5, T_PLAYER_L = 6, T_ALARM = 7, T_TIMER = 8, T_SW = 9, T_CAL = 10, T_CLOCK = 11, T_STACK = 12;
     static final String WPREFS = "zakkerni_widgets";
     static final String ACTION_TICK = "com.zakkerni.app.WIDGET_TICK";
 
     static final String[] STYLES = {"grad", "purple", "orange", "dark", "light", "deep", "lav", "soft", "sunset", "auto"};
     static final String[] STYLE_NAMES = {"متدرّج", "بنفسجي", "برتقالي", "داكن", "فاتح", "ليلي", "لافندر", "مشمشي", "غروب", "أرابيسك"};
     static final String[] DESIGNS = {"كلاسيكي", "بطاقات", "مدمج"};
-    static final Class<?>[] PROVIDERS = {WidgetNext.class, WidgetDay.class, PrayerWidget.class, WidgetList.class, PlayerWidget.class, PlayerWidgetSmall.class, PlayerWidgetLarge.class, WidgetAlarm.class, WidgetTimer.class, WidgetStopwatch.class, WidgetCalendar.class, WidgetClock.class};
-    static final int[] LAYOUTS = {R.layout.widget_next, R.layout.widget_day, R.layout.widget_prayer, R.layout.widget_list, R.layout.widget_player, R.layout.widget_player_s, R.layout.widget_player_l, R.layout.widget_alarm, R.layout.widget_timer, R.layout.widget_sw, R.layout.widget_cal, R.layout.widget_clock};
+    static final Class<?>[] PROVIDERS = {WidgetNext.class, WidgetDay.class, PrayerWidget.class, WidgetList.class, PlayerWidget.class, PlayerWidgetSmall.class, PlayerWidgetLarge.class, WidgetAlarm.class, WidgetTimer.class, WidgetStopwatch.class, WidgetCalendar.class, WidgetClock.class, WidgetStack.class};
+    static final int[] LAYOUTS = {R.layout.widget_next, R.layout.widget_day, R.layout.widget_prayer, R.layout.widget_list, R.layout.widget_player, R.layout.widget_player_s, R.layout.widget_player_l, R.layout.widget_alarm, R.layout.widget_timer, R.layout.widget_sw, R.layout.widget_cal, R.layout.widget_clock, R.layout.widget_stack};
 
     private static final int[] NAMES = {R.id.n0, R.id.n1, R.id.n2, R.id.n3, R.id.n4};
     private static final int[] TIMES = {R.id.t0, R.id.t1, R.id.t2, R.id.t3, R.id.t4};
@@ -167,6 +167,7 @@ final class WidgetRenderer {
 
     /* ---------- build ---------- */
     static RemoteViews build(Context c, int type, Cfg g) {
+        if (type == T_STACK) return buildStack(c, g.id);
         if (type >= T_ALARM) return ClockWidgets.build(c, g, type, g.id);
         if (type >= T_PLAYER) return buildPlayer(c, g, type);
         int lay = LAYOUTS[type];
@@ -402,6 +403,18 @@ final class WidgetRenderer {
     }
 
     /* ---------- refresh ---------- */
+    static RemoteViews buildStack(Context c, int id) {
+        RemoteViews v = new RemoteViews(c.getPackageName(), R.layout.widget_stack);
+        Intent svc = new Intent(c, StackService.class).putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, id);
+        svc.setData(android.net.Uri.parse(svc.toUri(Intent.URI_INTENT_SCHEME)));
+        v.setRemoteAdapter(R.id.stack, svc);
+        v.setEmptyView(R.id.stack, R.id.stack_empty);
+        Intent open = new Intent(c, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        int fl = PendingIntent.FLAG_UPDATE_CURRENT | (android.os.Build.VERSION.SDK_INT >= 31 ? PendingIntent.FLAG_MUTABLE : 0);
+        v.setPendingIntentTemplate(R.id.stack, PendingIntent.getActivity(c, 800, open, fl));
+        return v;
+    }
+
     static void updateAll(Context c) {
         boolean any = false;
         Weather.maybeRefresh(c);
@@ -410,7 +423,10 @@ final class WidgetRenderer {
             for (int t = 0; t < PROVIDERS.length; t++) {
                 int[] ids = m.getAppWidgetIds(new ComponentName(c, PROVIDERS[t]));
                 if (ids == null) continue;
-                for (int id : ids) { m.updateAppWidget(id, build(c, t, Cfg.load(c, id))); any = true; }
+                for (int id : ids) {
+                    if (t == T_STACK) { m.notifyAppWidgetViewDataChanged(id, R.id.stack); any = true; continue; }
+                    m.updateAppWidget(id, build(c, t, Cfg.load(c, id))); any = true;
+                }
             }
         } catch (Exception ignored) { }
         scheduleTick(c, any);
