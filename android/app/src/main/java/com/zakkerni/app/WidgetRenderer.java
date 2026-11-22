@@ -23,8 +23,8 @@ final class WidgetRenderer {
     static final String WPREFS = "zakkerni_widgets";
     static final String ACTION_TICK = "com.zakkerni.app.WIDGET_TICK";
 
-    static final String[] STYLES = {"grad", "purple", "orange", "dark", "light", "deep", "lav", "soft", "sunset"};
-    static final String[] STYLE_NAMES = {"متدرّج", "بنفسجي", "برتقالي", "داكن", "فاتح", "ليلي", "لافندر", "مشمشي", "غروب"};
+    static final String[] STYLES = {"grad", "purple", "orange", "dark", "light", "deep", "lav", "soft", "sunset", "auto"};
+    static final String[] STYLE_NAMES = {"متدرّج", "بنفسجي", "برتقالي", "داكن", "فاتح", "ليلي", "لافندر", "مشمشي", "غروب", "تلقائي"};
     static final String[] DESIGNS = {"كلاسيكي", "بطاقات", "مدمج"};
     static final Class<?>[] PROVIDERS = {WidgetNext.class, WidgetDay.class, PrayerWidget.class, WidgetList.class, PlayerWidget.class, PlayerWidgetSmall.class, PlayerWidgetLarge.class};
     static final int[] LAYOUTS = {R.layout.widget_next, R.layout.widget_day, R.layout.widget_prayer, R.layout.widget_list, R.layout.widget_player, R.layout.widget_player_s, R.layout.widget_player_l};
@@ -41,13 +41,13 @@ final class WidgetRenderer {
         int design = 0;     // wide widget: 0 classic, 1 cards, 2 compact
         int wdp = 0;        // current widget width in dp (from the launcher)
         int hdp = 0;        // current widget height in dp (portrait)
-        boolean cd = true, city = true, hijri = true;
+        boolean cd = true, city = true, hijri = true, weather = true;
 
         static Cfg load(Context c, int id) {
             SharedPreferences p = c.getSharedPreferences(WPREFS, Context.MODE_PRIVATE);
             Cfg g = new Cfg();
             String k = "w" + id + "_";
-            if (!p.contains(k + "style") && typeOf(c, id) == T_DAY) { g.radius = 1; }
+            if (!p.contains(k + "style")) { int ty = typeOf(c, id); if (ty < T_PLAYER) g.style = AUTO; if (ty == T_DAY) g.radius = 1; }
             try { android.os.Bundle ob = AppWidgetManager.getInstance(c).getAppWidgetOptions(id); g.wdp = ob.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 0); g.hdp = ob.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 0); } catch (Exception ignored) { }
             g.style = p.getInt(k + "style", g.style);
             g.opacity = p.getInt(k + "opacity", g.opacity);
@@ -60,6 +60,7 @@ final class WidgetRenderer {
             g.hijri = p.getBoolean(k + "hijri", g.hijri);
             g.art = p.getBoolean(k + "art", g.art);
             g.design = p.getInt(k + "design", g.design);
+            g.weather = p.getBoolean(k + "weather", g.weather);
             return g;
         }
 
@@ -68,7 +69,7 @@ final class WidgetRenderer {
             c.getSharedPreferences(WPREFS, Context.MODE_PRIVATE).edit()
                     .putInt(k + "style", style).putInt(k + "opacity", opacity).putInt(k + "radius", radius)
                     .putInt(k + "text", text).putInt(k + "font", font).putInt(k + "fmt", fmt)
-                    .putBoolean(k + "cd", cd).putBoolean(k + "city", city).putBoolean(k + "hijri", hijri).putBoolean(k + "art", art).putInt(k + "design", design).apply();
+                    .putBoolean(k + "cd", cd).putBoolean(k + "city", city).putBoolean(k + "hijri", hijri).putBoolean(k + "art", art).putInt(k + "design", design).putBoolean(k + "weather", weather).apply();
         }
 
         static void delete(Context c, int id) {
@@ -133,10 +134,12 @@ final class WidgetRenderer {
                 {R.drawable.wbg_deep_0, R.drawable.wbg_deep_1, R.drawable.wbg_deep_2},
                 {R.drawable.wbg_lav_0, R.drawable.wbg_lav_1, R.drawable.wbg_lav_2},
                 {R.drawable.wbg_soft_0, R.drawable.wbg_soft_1, R.drawable.wbg_soft_2},
-                {R.drawable.wbg_sunset_0, R.drawable.wbg_sunset_1, R.drawable.wbg_sunset_2}};
+                {R.drawable.wbg_sunset_0, R.drawable.wbg_sunset_1, R.drawable.wbg_sunset_2},
+                {R.drawable.wbg_auto_0, R.drawable.wbg_auto_1, R.drawable.wbg_auto_2}};
         return r[Math.max(0, Math.min(r.length - 1, style))][Math.max(0, Math.min(2, radius))];
     }
 
+    static final int AUTO = 9; // app identity: orange + arabesque by day, night theme by night (follows the phone)
     static boolean lightBg(int style) { return style == 4 || style == 6 || style == 7; }
     /** orange-ish backgrounds get a purple highlight, everything else orange */
     static boolean orangeBg(int style) { return style == 2 || style == 7; }
@@ -157,13 +160,22 @@ final class WidgetRenderer {
         v.setOnClickPendingIntent(R.id.widget_root, PendingIntent.getActivity(c, 50 + type, open,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
 
-        v.setImageViewResource(R.id.wbg, bgRes(g.style, g.radius));
-        v.setInt(R.id.wbg, "setImageAlpha", Math.round(255 * g.opacity / 100f));
+        boolean auto = g.style == AUTO;
+        if (auto) { // drawn as the view background so the arabesque tiles instead of stretching; -night resources follow the phone theme
+            v.setImageViewResource(R.id.wbg, android.R.color.transparent);
+            v.setInt(R.id.wbg, "setBackgroundResource", bgRes(g.style, g.radius));
+            v.setFloat(R.id.wbg, "setAlpha", g.opacity / 100f);
+        } else {
+            v.setInt(R.id.wbg, "setBackgroundResource", 0);
+            v.setFloat(R.id.wbg, "setAlpha", 1f);
+            v.setImageViewResource(R.id.wbg, bgRes(g.style, g.radius));
+            v.setInt(R.id.wbg, "setImageAlpha", Math.round(255 * g.opacity / 100f));
+        }
 
         boolean dark = darkText(g);
         int main = dark ? 0xFF2A1F36 : 0xFFFFFFFF;
-        int sub = dark ? 0xFF6B5E7B : 0xDDF1E8F8;
-        int hi = orangeBg(g.style) ? (dark ? 0xFF7137A8 : 0xFF4A1C78) : (g.style == 6 ? 0xFF7137A8 : dark ? 0xFFC2580C : 0xFFFFB066);
+        int sub = dark ? 0xFF6B5E7B : 0xEEFFF0E2;
+        int hi = auto ? 0xFFFFFFFF : orangeBg(g.style) ? (dark ? 0xFF7137A8 : 0xFF4A1C78) : (g.style == 6 ? 0xFF7137A8 : dark ? 0xFFC2580C : 0xFFFFB066);
         float f = g.font == 0 ? 0.85f : g.font == 2 ? 1.2f : 1f;
 
         JSONArray a = AdhanScheduler.list(c);
@@ -176,6 +188,9 @@ final class WidgetRenderer {
         v.setViewVisibility(R.id.w_city, g.city && !city.isEmpty() ? View.VISIBLE : View.GONE);
         setText(v, R.id.w_hijri, g.hijri ? hijri(c) : "", sub, 11 * f);
         v.setViewVisibility(R.id.w_hijri, g.hijri ? View.VISIBLE : View.GONE);
+        String wx = g.weather ? Weather.text(c) : "";
+        setText(v, R.id.w_weather, wx, main, (type == T_DAY && g.design != 2 ? 12 : 11) * f);
+        v.setViewVisibility(R.id.w_weather, wx.isEmpty() ? View.GONE : View.VISIBLE);
 
         if (n == null) {
             setText(v, R.id.w_next, "افتح ذَكِّرني لتحديث المواقيت", main, 14 * f);
@@ -191,20 +206,25 @@ final class WidgetRenderer {
         float colDp = (g.wdp > 0 ? g.wdp : 330) / 5f - (g.design == 1 ? 8 : 4);
         float timeDp = Math.min(19 * f, (colDp - 12) / 2.75f), nameDp = Math.min(14 * f, colDp / 3.4f);
         if (g.design == 2) { timeDp = Math.min(timeDp, 15 * f); nameDp = Math.min(nameDp, 12 * f); }
+        if (type == T_DAY && g.hdp > 0) { // keep everything inside a short (1-row) widget
+            float head = g.design == 2 ? 0 : 26 * f, room = g.hdp - head - (g.design == 1 ? 14 : 8);
+            float need = 1.3f * (nameDp + timeDp) + 4;
+            if (room < need) { float k = Math.max(0.55f, room / need); nameDp *= k; timeDp *= k; }
+        }
         if (type == T_DAY) {
             int[][] heads = {{R.drawable.whead_dark_0, R.drawable.whead_dark_1, R.drawable.whead_dark_2}, {R.drawable.whead_light_0, R.drawable.whead_light_1, R.drawable.whead_light_2}};
             if (g.design == 0) v.setInt(R.id.w_head, "setBackgroundResource", heads[dark ? 1 : 0][Math.max(0, Math.min(2, g.radius))]);
-            setText(v, R.id.w_next, n.optString("n") + (g.design == 2 ? "" : " بعد"), main, (g.design == 2 ? 20 : 17) * f);
+            setText(v, R.id.w_next, n.optString("n") + (g.design == 2 ? "" : " بعد"), main, (g.design == 2 ? 18 : 14) * f);
             v.setChronometer(R.id.w_chrono, SystemClock.elapsedRealtime() + (n.optLong("t") - now), null, true);
             if (android.os.Build.VERSION.SDK_INT >= 24) v.setChronometerCountDown(R.id.w_chrono, true);
             v.setTextColor(R.id.w_chrono, g.design == 2 ? hi : main);
-            v.setTextViewTextSize(R.id.w_chrono, TypedValue.COMPLEX_UNIT_DIP, (g.design == 2 ? 16 : 17) * f);
+            v.setTextViewTextSize(R.id.w_chrono, TypedValue.COMPLEX_UNIT_DIP, (g.design == 2 ? 15 : 14) * f);
             v.setViewVisibility(R.id.w_chrono, g.cd ? View.VISIBLE : View.GONE);
             v.setViewVisibility(R.id.w_cd, View.GONE);
-            v.setTextViewTextSize(R.id.w_hijri, TypedValue.COMPLEX_UNIT_DIP, (g.design == 2 ? 10.5f : 14) * f);
+            v.setTextViewTextSize(R.id.w_hijri, TypedValue.COMPLEX_UNIT_DIP, (g.design == 2 ? 10.5f : 12) * f);
             v.setTextColor(R.id.w_hijri, g.design == 2 ? sub : main);
             if (g.design == 2) setText(v, R.id.w_label, "الصلاة القادمة", sub, 11 * f);
-            if (!g.cd && g.design != 2) setText(v, R.id.w_next, n.optString("n") + "  " + fmtTime(c, n.optLong("t"), g.fmt), main, 17 * f);
+            if (!g.cd && g.design != 2) setText(v, R.id.w_next, n.optString("n") + "  " + fmtTime(c, n.optLong("t"), g.fmt), main, 14 * f);
         }
         if (type != T_NEXT) {
             List<JSONObject> day = AdhanScheduler.dayOf(a, n);
@@ -218,14 +238,14 @@ final class WidgetRenderer {
                         boolean purplePill = orangeBg(g.style);
                         if (g.design == 1) {
                             int[] tiles = {R.id.c0, R.id.c1, R.id.c2, R.id.c3, R.id.c4};
-                            v.setInt(tiles[i], "setBackgroundResource", isNext ? (purplePill ? R.drawable.w_tile_on_p : R.drawable.w_tile_on) : (dark ? R.drawable.w_tile_d : R.drawable.w_tile_l));
+                            v.setInt(tiles[i], "setBackgroundResource", isNext ? (auto ? R.drawable.w_tile_auto : purplePill ? R.drawable.w_tile_on_p : R.drawable.w_tile_on) : (dark ? R.drawable.w_tile_d : R.drawable.w_tile_l));
                             setText(v, NAMES[i], o.optString("n"), isNext ? 0xFFFFFFFF : main, nameDp);
                             setText(v, TIMES[i], fmtTime(c, o.optLong("t"), g.fmt), isNext ? 0xFFFFFFFF : main, timeDp);
                             v.setInt(TIMES[i], "setBackgroundResource", 0);
                         } else {
                             setText(v, NAMES[i], o.optString("n"), isNext ? hi : main, nameDp);
-                            setText(v, TIMES[i], fmtTime(c, o.optLong("t"), g.fmt), isNext ? (purplePill ? 0xFFFFFFFF : 0xFF1D1726) : main, timeDp);
-                            v.setInt(TIMES[i], "setBackgroundResource", isNext ? (purplePill ? R.drawable.w_pill_purple : R.drawable.w_pill) : 0);
+                            setText(v, TIMES[i], fmtTime(c, o.optLong("t"), g.fmt), isNext ? (purplePill || auto ? 0xFFFFFFFF : 0xFF1D1726) : main, timeDp);
+                            v.setInt(TIMES[i], "setBackgroundResource", isNext ? (auto ? R.drawable.w_pill_auto : purplePill ? R.drawable.w_pill_purple : R.drawable.w_pill) : 0);
                         }
                     } else {
                         float fit = type == T_LIST ? sz : Math.min(sz, Math.min(timeDp, (colDp - 6) / 3.3f));
@@ -353,6 +373,7 @@ final class WidgetRenderer {
     /* ---------- refresh ---------- */
     static void updateAll(Context c) {
         boolean any = false;
+        Weather.maybeRefresh(c);
         try {
             AppWidgetManager m = AppWidgetManager.getInstance(c);
             for (int t = 0; t < PROVIDERS.length; t++) {

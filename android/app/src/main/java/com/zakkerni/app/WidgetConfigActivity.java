@@ -116,6 +116,7 @@ public class WidgetConfigActivity extends Activity {
             box2.addView(toggle("العدّ التنازلي للصلاة القادمة", cfg.cd, v -> cfg.cd = v));
             box2.addView(toggle("اسم المدينة", cfg.city, v -> cfg.city = v));
             box2.addView(toggle("التاريخ الهجري", cfg.hijri, v -> cfg.hijri = v));
+            box2.addView(toggle("الطقس", cfg.weather, v -> cfg.weather = v));
         }
 
         Button save = new Button(this);

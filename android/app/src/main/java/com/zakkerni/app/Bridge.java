@@ -31,6 +31,11 @@ public class Bridge {
 
     /** json: [{"t": epochMillis, "n": "الظهر", "s": "١١:٣٩ ص", "a": true, "f": "adhan.mp3"}, ...] */
     @JavascriptInterface
+    public void setLocation(double lat, double lng) {
+        Weather.setLocation(ctx, lat, lng);
+    }
+
+    @JavascriptInterface
     public void scheduleAdhans(String json, boolean pinned, String city) {
         AdhanScheduler.save(ctx, json, pinned, city == null ? "" : city);
         AdhanScheduler.updatePinned(ctx);

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/widget_root" android:layout_width="match_parent" android:layout_height="match_parent" android:layoutDirection="rtl">
-    <ImageView android:id="@+id/wbg" android:layout_width="match_parent" android:layout_height="match_parent" android:scaleType="fitXY" android:src="@drawable/wbg_grad_1" android:contentDescription="@null" />
-    <LinearLayout android:id="@+id/w_head" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="horizontal" android:gravity="center_vertical" android:padding="10dp">
+    <ImageView android:id="@+id/wbg" android:layout_width="match_parent" android:layout_height="match_parent" android:clipToOutline="true" android:scaleType="fitXY" android:src="@drawable/wbg_grad_1" android:contentDescription="@null" />
+    <LinearLayout android:id="@+id/w_head" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="horizontal" android:gravity="center_vertical" android:padding="6dp">
         <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="vertical" android:gravity="center" android:paddingStart="6dp" android:paddingEnd="10dp">
             <TextView android:id="@+id/w_label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="الصلاة القادمة" android:textColor="#E6D6F5" android:textSize="11dp" android:maxLines="1" />
             <TextView android:id="@+id/w_next" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="الظهر" android:textColor="#FFFFFF" android:textSize="20dp" android:textStyle="bold" android:maxLines="1" />
@@ -9,6 +9,7 @@
             <TextView android:id="@+id/w_cd" android:layout_width="wrap_content" android:layout_height="wrap_content" android:visibility="gone" />
             <TextView android:id="@+id/w_hijri" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#E6D6F5" android:textSize="10.5dp" android:maxLines="1" />
             <TextView android:id="@+id/w_city" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#E6D6F5" android:textSize="10dp" android:maxLines="1" />
+            <TextView android:id="@+id/w_weather" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#FFFFFF" android:textSize="11dp" android:maxLines="1" android:visibility="gone" />
         </LinearLayout>
         <ImageView android:layout_width="1dp" android:layout_height="match_parent" android:layout_marginTop="8dp" android:layout_marginBottom="8dp" android:src="@drawable/w_tile_l" android:scaleType="fitXY" android:contentDescription="@null" />
         <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="horizontal" android:gravity="center_vertical">

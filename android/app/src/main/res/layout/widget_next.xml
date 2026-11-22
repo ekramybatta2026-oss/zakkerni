@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/widget_root" android:layout_width="match_parent" android:layout_height="match_parent" android:layoutDirection="rtl">
-    <ImageView android:id="@+id/wbg" android:layout_width="match_parent" android:layout_height="match_parent" android:scaleType="fitXY" android:src="@drawable/wbg_grad_2" android:contentDescription="@null" />
+    <ImageView android:id="@+id/wbg" android:layout_width="match_parent" android:layout_height="match_parent" android:clipToOutline="true" android:scaleType="fitXY" android:src="@drawable/wbg_grad_2" android:contentDescription="@null" />
     <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:gravity="center" android:padding="10dp">
             <TextView android:id="@+id/w_label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="الصلاة القادمة" android:textColor="#E6D6F5" android:textSize="11dp" android:maxLines="1" android:ellipsize="end"  />
             <TextView android:id="@+id/w_next" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="العصر  ٢:٤٣ م" android:textColor="#FFFFFF" android:textSize="18dp" android:maxLines="1" android:ellipsize="end" android:textStyle="bold" />
             <TextView android:id="@+id/w_cd" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="بعد ٢ س ١٥ د" android:textColor="#FFB066" android:textSize="14dp" android:maxLines="1" android:ellipsize="end" android:textStyle="bold" />
             <TextView android:id="@+id/w_city" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="الرياض" android:textColor="#E6D6F5" android:textSize="10dp" android:maxLines="1" android:ellipsize="end"  />
+            <TextView android:id="@+id/w_weather" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#FFFFFF" android:textSize="11dp" android:maxLines="1" android:visibility="gone" />
             <TextView android:id="@+id/w_hijri" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="" android:textColor="#E6D6F5" android:textSize="11dp" android:maxLines="1" android:ellipsize="end"  android:visibility="gone"/>
     </LinearLayout>
 </FrameLayout>

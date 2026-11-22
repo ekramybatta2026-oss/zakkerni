@@ -1314,6 +1314,7 @@ function scheduleNative() {
   });
   try { AndroidBridge.setAdhanSettings && AndroidBridge.setAdhanSettings(JSON.stringify({ dig: S.settings.digits || 'ar', tz: city().tz, vol: S.prayer.vol, pre: S.prayer.pre, silent: S.prayer.silent, sdelay: S.prayer.sdelay ?? 5, full: S.prayer.full, city: city().name })); } catch (e) {}
   try { AndroidBridge.scheduleAdhans(JSON.stringify(list), !!S.prayer.pin, city().name); } catch (e) {}
+  try { const C = city(); if (AndroidBridge.setLocation && C.lat != null) AndroidBridge.setLocation(+C.lat, +C.lng); } catch (e) {}
 }
 window.onNativeResume = () => { rollDay(); scheduleNative(); if (current === 'adhan') renderAdhan(); };
 function checkAdhan() {
