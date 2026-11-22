@@ -77,8 +77,12 @@ public class WidgetConfigActivity extends Activity {
         col.addView(wall, wl);
 
         LinearLayout box = section(col);
+        if (type == WidgetRenderer.T_DAY) {
+            box.addView(head("التصميم"));
+            box.addView(segment(WidgetRenderer.DESIGNS, cfg.design, i -> cfg.design = i, false));
+        }
         box.addView(head("اللون"));
-        box.addView(segment(WidgetRenderer.STYLE_NAMES, cfg.style, i -> cfg.style = i, true));
+        colourGrid(box);
 
         box.addView(head("الشفافية"));
         TextView opL = label(digits(cfg.opacity + "٪ ظاهر"), 13, false, muted);
@@ -204,6 +208,49 @@ public class WidgetConfigActivity extends Activity {
             int tc = colours ? (i == 4 ? 0xFF2A1F36 : 0xFFFFFFFF) : (i == sel ? 0xFFFFFFFF : ink);
             bs[i].setTextColor(tc);
             bs[i].setTypeface(i == sel ? Typeface.DEFAULT_BOLD : Typeface.DEFAULT);
+        }
+    }
+
+    /** 9 colour swatches in rows of 5, previewing each style's real colours. */
+    private void colourGrid(LinearLayout box) {
+        String[] n = WidgetRenderer.STYLE_NAMES;
+        Button[] bs = new Button[n.length];
+        LinearLayout row = null;
+        for (int i = 0; i < n.length; i++) {
+            if (i % 5 == 0) {
+                row = new LinearLayout(this);
+                row.setOrientation(LinearLayout.HORIZONTAL);
+                LinearLayout.LayoutParams rl = new LinearLayout.LayoutParams(-1, -2);
+                rl.topMargin = i == 0 ? 0 : dp(6);
+                box.addView(row, rl);
+            }
+            final int idx = i;
+            Button b = new Button(this);
+            b.setText(n[i]);
+            b.setAllCaps(false);
+            b.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
+            b.setPadding(0, 0, 0, 0);
+            bs[i] = b;
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, dp(42), 1);
+            lp.setMarginStart(i % 5 == 0 ? 0 : dp(6));
+            row.addView(b, lp);
+            b.setOnClickListener(v -> { cfg.style = idx; paintSwatches(bs); render(); });
+        }
+        if (n.length % 5 != 0) for (int k = n.length % 5; k < 5; k++) { View sp = new View(this); LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, 1, 1); lp.setMarginStart(dp(6)); row.addView(sp, lp); }
+        paintSwatches(bs);
+    }
+
+    private void paintSwatches(Button[] bs) {
+        for (int i = 0; i < bs.length; i++) {
+            bs[i].setBackgroundResource(WidgetRenderer.bgRes(i, 1));
+            android.graphics.drawable.Drawable d = bs[i].getBackground();
+            GradientDrawable ring = new GradientDrawable();
+            ring.setCornerRadius(dp(12));
+            ring.setColor(Color.TRANSPARENT);
+            ring.setStroke(i == cfg.style ? dp(3) : dp(1), i == cfg.style ? 0xFFF28A32 : 0x33000000);
+            bs[i].setBackground(new android.graphics.drawable.LayerDrawable(new android.graphics.drawable.Drawable[]{d, ring}));
+            bs[i].setTextColor(WidgetRenderer.lightBg(i) ? 0xFF2A1F36 : 0xFFFFFFFF);
+            bs[i].setTypeface(i == cfg.style ? Typeface.DEFAULT_BOLD : Typeface.DEFAULT);
         }
     }
 
