@@ -257,6 +257,10 @@ body.sec .shbar{flex:none;position:relative;top:0}
 input[type=range]{width:100%;accent-color:var(--orange)}
 .preview{font-family:'Cairo',sans-serif;font-weight:700;font-size:var(--zfont);text-align:center;padding:4px 16px 14px;line-height:1.9}
 .danger{color:#C2410C}
+.seg{flex-wrap:wrap;justify-content:flex-end;gap:2px}
+.wgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 14px 14px}
+.wbtn{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:12px;border-radius:16px;background:linear-gradient(135deg,#7137A8,#B04E0A);color:#fff;text-align:right}
+.wbtn b{font-size:14px}.wbtn small{font-size:11.5px;opacity:.85}
 .about{font-size:13px;color:var(--muted);line-height:1.9;padding:16px}
 .about ul{padding-right:18px;margin:6px 0}
 
@@ -650,11 +654,14 @@ const KEY = 'zakkerni_v1';
 const $ = (s, r = document) => r.querySelector(s);
 const clean = (s) => String(s).replace(/[\u06D6-\u06DC]/g, '').replace(/ {2,}/g, ' ').replace(/ \n/g, '\n');
 const ico = (n) => `<svg class="i"><use href="#i-${n}"/></svg>`;
-const ar = (n) => Number(n).toLocaleString('ar-EG');
+const DIGITS = { ar: '٠١٢٣٤٥٦٧٨٩', hi: '۰۱۲۳۴۵۶۷۸۹', en: '0123456789' };
+const nd = (s) => { const set = DIGITS[(typeof S !== 'undefined' && S && S.settings && S.settings.digits) || 'ar'] || DIGITS.ar;
+  return String(s).replace(/[0-9٠-٩۰-۹]/g, ch => { const c = ch.charCodeAt(0); const v = c <= 57 ? c - 48 : c >= 0x6F0 ? c - 0x6F0 : c - 0x660; return set[v]; }); };
+const ar = (n) => nd(String(Number(n)));
 const todayKey = () => { const d = new Date(); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; };
 
 /* ---------- Storage ---------- */
-const defaults = () => ({ date: todayKey(), counts: {}, celebrated: {}, favs: [], settings: { theme: 'auto', font: 17, sound: true, vib: true }, prayer: { city: 'auto', fallback: 'riyadh', loc: null, voice: 'ekramy', pin: false, vol: 80, pre: 5, silent: 0, full: true, method: '', asr: 1, on: true, per: { fajr: true, dhuhr: true, asr: true, maghrib: true, isha: true } }, played: {} });
+const defaults = () => ({ date: todayKey(), counts: {}, celebrated: {}, favs: [], settings: { theme: 'auto', digits: 'ar', font: 17, sound: true, vib: true }, prayer: { city: 'auto', fallback: 'riyadh', loc: null, voice: 'ekramy', pin: false, vol: 80, pre: 5, silent: 0, full: true, method: '', asr: 1, on: true, per: { fajr: true, dhuhr: true, asr: true, maghrib: true, isha: true } }, played: {} });
 let S;
 function load() {
   try { S = JSON.parse(localStorage.getItem(KEY)) || defaults(); } catch (e) { S = defaults(); }
@@ -762,6 +769,7 @@ function go(view, push = true) {
 }
 document.querySelectorAll('#nav button').forEach(b => b.onclick = () => go(b.dataset.go));
 $('#gearBtn').onclick = () => go('settings');
+window.zGo = (v) => go(v);
 window.addEventListener('popstate', (e) => go((e.state && e.state.view) || 'home', false));
 
 /* shrink text until it fits on one line; wrap if it still can't */
@@ -777,8 +785,8 @@ window.addEventListener('resize', () => { if (current === 'home') document.query
 function dates() {
   const d = new Date();
   let hijri = '', greg = '', day = '';
-  try { hijri = new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura-nu-arab', { day: 'numeric', month: 'long', year: 'numeric' }).format(d); } catch (e) {}
-  try { greg = new Intl.DateTimeFormat('ar-EG', { day: 'numeric', month: 'long', year: 'numeric' }).format(d); } catch (e) { greg = d.toLocaleDateString(); }
+  try { hijri = nd(new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura-nu-arab', { day: 'numeric', month: 'long', year: 'numeric' }).format(d)); } catch (e) {}
+  try { greg = nd(new Intl.DateTimeFormat('ar-EG', { day: 'numeric', month: 'long', year: 'numeric' }).format(d)); } catch (e) { greg = d.toLocaleDateString(); }
   try { day = new Intl.DateTimeFormat('ar-EG', { weekday: 'long' }).format(d); } catch (e) {}
   return { hijri, greg, day };
 }
@@ -927,7 +935,7 @@ function playPage(page) {
   const id = page.querySelector('.zcard').dataset.id;
   playZikr(id);
 }
-const mmss = (s) => { s = Math.max(0, Math.floor(s || 0)); return ar(Math.floor(s / 60)) + ':' + String(s % 60).padStart(2, '0').replace(/\d/g, x => '٠١٢٣٤٥٦٧٨٩'[x]); };
+const mmss = (s) => { s = Math.max(0, Math.floor(s || 0)); return ar(Math.floor(s / 60)) + ':' + String(s % 60).padStart(2, '0').replace(/\d/g, x => nd(x)); };
 
 /* ---------- Zikr recordings ---------- */
 const zAudio = new Audio(); let zPlaying = null;
@@ -1094,6 +1102,8 @@ function renderSettings() {
     <div class="set-group">
       <div class="set-row"><div class="ic2">${ico('theme')}</div><div class="lbl"><b>المظهر</b><small>نهاري، ليلي، أو حسب مظهر الجوال</small></div>
         <div class="seg"><button data-th="light" class="${s.theme === 'light' ? 'on' : ''}">نهاري</button><button data-th="dark" class="${s.theme === 'dark' ? 'on' : ''}">ليلي</button><button data-th="auto" class="${s.theme === 'auto' ? 'on' : ''}">مثل الجوال</button></div></div>
+      <div class="set-row"><div class="ic2">${ico('cal')}</div><div class="lbl"><b>نمط الأرقام</b><small>في التطبيق والويدجت</small></div>
+        <div class="seg">${[['ar', 'عربية ١٢٣'], ['hi', 'هندية ۱۲۳'], ['en', 'إنجليزية 123']].map(([k, l]) => `<button data-dig="${k}" class="${(s.digits || 'ar') === k ? 'on' : ''}">${l}</button>`).join('')}</div></div>
       <div class="set-row" style="flex-wrap:wrap"><div class="ic2">${ico('font')}</div><div class="lbl"><b>حجم خط الأذكار</b><small id="fsz">${ar(s.font)} بكسل</small></div>
         <input type="range" id="fRange" min="14" max="30" step="1" value="${s.font}"></div>
       <div class="preview">سُبْحَانَ اللَّهِ وَبِحَمْدِهِ</div>
@@ -1102,6 +1112,10 @@ function renderSettings() {
       <div class="set-row"><div class="ic2">${ico('sound')}</div><div class="lbl"><b>صوت النقر</b><small>صوت خفيف عند كل ضغطة</small></div><button class="switch ${s.sound ? 'on' : ''}" data-sw="sound" aria-label="الصوت"></button></div>
       <div class="set-row"><div class="ic2">${ico('vib')}</div><div class="lbl"><b>الاهتزاز</b><small>اهتزاز خفيف إن كان الجهاز يدعمه</small></div><button class="switch ${s.vib ? 'on' : ''}" data-sw="vib" aria-label="الاهتزاز"></button></div>
     </div>
+    ${NATIVE && AndroidBridge.pinWidget ? `<div class="set-group">
+      <div class="set-row"><div class="ic2">${ico('home')}</div><div class="lbl"><b>ويدجت الشاشة الرئيسية</b><small>اختر الشكل، ثم خصّص الألوان والشفافية والحجم</small></div></div>
+      <div class="wgrid">${[[0, 'الصلاة القادمة', 'صغير'], [1, 'مواقيت اليوم', 'عريض'], [2, 'مواقيت الصلاة', 'كبير'], [3, 'قائمة الصلوات', 'طولي']].map(([t, n, z]) => `<button class="wbtn" data-wid="${t}"><b>${n}</b><small>${z}</small></button>`).join('')}</div>
+    </div>` : ''}
     <div class="set-group">
       <button class="set-row" id="rDay" style="width:100%;text-align:right"><div class="ic2">${ico('reset')}</div><div class="lbl"><b class="danger">إعادة تعيين التقدم اليومي</b><small>تصفير عدادات الصباح والمساء والنوم لهذا اليوم</small></div></button>
     </div>
@@ -1111,6 +1125,8 @@ function renderSettings() {
       <b>ملاحظات للمراجعة:</b>
       <ul>${REVIEW_NOTES.map(n => `<li>${n}</li>`).join('')}</ul>
     </div>`;
+  v.querySelectorAll('[data-dig]').forEach(b => b.onclick = () => { S.settings.digits = b.dataset.dig; save(); renderSettings(); scheduleNative(); toast(ar(123) + ' ✓'); });
+  v.querySelectorAll('[data-wid]').forEach(b => b.onclick = () => { let ok = false; try { ok = AndroidBridge.pinWidget(+b.dataset.wid); } catch (e) {} if (!ok) toast('اضغط مطولًا على الشاشة الرئيسية ← الأدوات ← ذَكِّرني'); });
   v.querySelectorAll('[data-th]').forEach(b => b.onclick = () => { S.settings.theme = b.dataset.th; save(); applySettings(); renderSettings(); });
   v.querySelectorAll('[data-sw]').forEach(b => b.onclick = () => { const k = b.dataset.sw; S.settings[k] = !S.settings[k]; save(); b.classList.toggle('on', S.settings[k]); if (S.settings[k]) tick('tap'); });
   $('#fRange').oninput = (e) => { S.settings.font = +e.target.value; applySettings(); $('#fsz').textContent = ar(S.settings.font) + ' بكسل'; save(); };
@@ -1161,7 +1177,7 @@ function dayTimes(addDays = 0) {
   const base = Date.UTC(y, m - 1, d);
   return PRAYERS.map(p => ({ ...p, at: new Date(base + Math.round(h[p.k] * 60) * 60000), key: `${y}-${m}-${d}-${p.k}` }));
 }
-const fmtTime = (dt) => new Intl.DateTimeFormat('ar-EG', { timeZone: city().tz, hour: 'numeric', minute: '2-digit' }).format(dt);
+const fmtTime = (dt) => nd(new Intl.DateTimeFormat('ar-EG', { timeZone: city().tz, hour: 'numeric', minute: '2-digit' }).format(dt));
 function nextPrayer() {
   const now = Date.now();
   const n = dayTimes(0).find(p => p.k !== 'sunrise' && p.at > now);
@@ -1169,7 +1185,7 @@ function nextPrayer() {
 }
 function countdown(ms) {
   const s = Math.max(0, Math.floor(ms / 1000)), h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), sec = s % 60;
-  return [h, m, sec].map(v => String(v).padStart(2, '0')).join(':').replace(/\d/g, x => '٠١٢٣٤٥٦٧٨٩'[x]);
+  return nd([h, m, sec].map(v => String(v).padStart(2, '0')).join(':'));
 }
 function updateClock() {
   const n = nextPrayer(); if (!n) return;
@@ -1202,7 +1218,7 @@ function scheduleNative() {
     if (p.k === 'sunrise') return;
     list.push({ t: p.at.getTime(), n: p.name, s: fmtTime(p.at), a: !!(S.prayer.on && p.adhan && S.prayer.per[p.k]), f: voiceFile(p.k) });
   });
-  try { AndroidBridge.setAdhanSettings && AndroidBridge.setAdhanSettings(JSON.stringify({ vol: S.prayer.vol, pre: S.prayer.pre, silent: S.prayer.silent, full: S.prayer.full, city: city().name })); } catch (e) {}
+  try { AndroidBridge.setAdhanSettings && AndroidBridge.setAdhanSettings(JSON.stringify({ dig: S.settings.digits || 'ar', vol: S.prayer.vol, pre: S.prayer.pre, silent: S.prayer.silent, full: S.prayer.full, city: city().name })); } catch (e) {}
   try { AndroidBridge.scheduleAdhans(JSON.stringify(list), !!S.prayer.pin, city().name); } catch (e) {}
 }
 window.onNativeResume = () => { rollDay(); scheduleNative(); if (current === 'adhan') renderAdhan(); };

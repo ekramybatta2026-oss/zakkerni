@@ -58,6 +58,7 @@ final class AdhanScheduler {
                     .putInt(KEY_SILENT, o.optInt("silent", 0))
                     .putBoolean(KEY_FULL, o.optBoolean("full", true))
                     .putString(KEY_CITY, o.optString("city", prefs(c).getString(KEY_CITY, "")))
+                    .putString("dig", o.optString("dig", "ar"))
                     .apply();
         } catch (Exception ignored) { }
     }
@@ -146,7 +147,7 @@ final class AdhanScheduler {
                 : new Notification.Builder(c).setPriority(Notification.PRIORITY_HIGH).setDefaults(Notification.DEFAULT_ALL);
         b.setSmallIcon(R.drawable.ic_stat_mosque).setColor(Color.parseColor("#F28A32"))
                 .setContentTitle("اقترب موعد صلاة " + name)
-                .setContentText("باقي " + pre + " دقائق على الأذان — " + time)
+                .setContentText(WidgetRenderer.digits(c, "باقي " + pre + " دقائق على الأذان — " + time))
                 .setContentIntent(open).setAutoCancel(true)
                 .setTimeoutAfter(pre * 60_000L)
                 .setCategory(Notification.CATEGORY_REMINDER);
@@ -186,7 +187,7 @@ final class AdhanScheduler {
 
     /** The always-on notification: next prayer, live countdown, and the day's times. */
     static void updatePinned(Context c) {
-        PrayerWidget.updateAll(c);
+        WidgetRenderer.updateAll(c);
         NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
         if (nm == null) return;
         if (!prefs(c).getBoolean(KEY_PIN, false)) { nm.cancel(PIN_ID); return; }

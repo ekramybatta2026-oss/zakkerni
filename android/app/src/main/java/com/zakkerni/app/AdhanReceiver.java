@@ -9,6 +9,10 @@ public class AdhanReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context c, Intent intent) {
         String action = intent.getAction();
+        if (WidgetRenderer.ACTION_TICK.equals(action)) {
+            WidgetRenderer.updateAll(c);
+            return;
+        }
         if (AdhanScheduler.ACTION_RESTORE.equals(action)) {
             AdhanScheduler.restoreRinger(c);
             return;

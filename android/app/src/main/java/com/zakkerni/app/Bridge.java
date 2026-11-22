@@ -2,6 +2,8 @@ package com.zakkerni.app;
 
 import android.app.AlarmManager;
 import android.app.NotificationManager;
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.res.Configuration;
 import android.os.PowerManager;
 import android.content.Context;
@@ -106,6 +108,16 @@ public class Bridge {
     public void setDarkBars(boolean dark) {
         MainActivity a = MainActivity.current;
         if (a != null) a.runOnUiThread(() -> a.applyBars(dark));
+    }
+
+    /** Ask the launcher to add a widget: 0 small, 1 wide, 2 large, 3 list. */
+    @JavascriptInterface
+    public boolean pinWidget(int type) {
+        if (Build.VERSION.SDK_INT < 26) return false;
+        AppWidgetManager m = AppWidgetManager.getInstance(ctx);
+        if (!m.isRequestPinAppWidgetSupported()) return false;
+        try { return m.requestPinAppWidget(new ComponentName(ctx, WidgetRenderer.PROVIDERS[Math.max(0, Math.min(3, type))]), null, null); }
+        catch (Exception e) { return false; }
     }
 
     private void open(Intent i) {

@@ -102,7 +102,7 @@ public class MainActivity extends Activity {
         web.addJavascriptInterface(new Bridge(this), "AndroidBridge");
 
         if (savedInstanceState != null) web.restoreState(savedInstanceState);
-        else web.loadUrl(START_URL);
+        else web.loadUrl(START_URL + ("adhan".equals(getIntent().getStringExtra("go")) ? "#adhan" : ""));
 
         if (Build.VERSION.SDK_INT >= 33
                 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
@@ -152,6 +152,13 @@ public class MainActivity extends Activity {
     protected void onDestroy() {
         if (current == this) current = null;
         super.onDestroy();
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        if (web != null && "adhan".equals(intent.getStringExtra("go")))
+            web.evaluateJavascript("window.zGo && window.zGo('adhan')", null);
     }
 
     @Override

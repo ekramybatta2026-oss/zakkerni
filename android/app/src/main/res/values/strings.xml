@@ -2,5 +2,11 @@
 <resources>
     <string name="app_name">ذَكِّرني</string>
     <string name="widget_desc">مواقيت الصلاة والصلاة القادمة مع عدّاد تنازلي</string>
-    <string name="widget_label">مواقيت الصلاة — ذَكِّرني</string>
+    <string name="widget_label">مواقيت الصلاة (كبير)</string>
+    <string name="wl_next">الصلاة القادمة (صغير)</string>
+    <string name="wl_day">مواقيت اليوم (عريض)</string>
+    <string name="wl_list">مواقيت الصلاة (قائمة)</string>
+    <string name="wd_next">الصلاة القادمة مع العدّ التنازلي</string>
+    <string name="wd_day">الصلوات الخمس في سطر واحد</string>
+    <string name="wd_list">قائمة رأسية بالصلوات الخمس</string>
 </resources>
