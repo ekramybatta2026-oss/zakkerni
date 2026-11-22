@@ -34,7 +34,7 @@ public class AdhanReceiver extends BroadcastReceiver {
             if (pre) {
                 AdhanScheduler.showPre(c, name, intent.getStringExtra("time"));
             } else {
-                AdhanScheduler.scheduleSilence(c); // silent mode N minutes after the prayer time
+                AdhanScheduler.scheduleSilence(c, name); // silent mode N minutes after the prayer time
             }
             if (!pre && intent.getBooleanExtra("adhan", true)) {
                 Intent s = new Intent(c, AdhanService.class)

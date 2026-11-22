@@ -59,6 +59,7 @@ final class AdhanScheduler {
                     .putInt(KEY_PRE, o.optInt("pre", 5))
                     .putInt(KEY_SILENT, o.optInt("silent", 0))
                     .putInt(KEY_SILENT_DELAY, o.optInt("sdelay", 5))
+                    .putString("silmap", o.optJSONObject("sil") != null ? o.optJSONObject("sil").toString() : "")
                     .putBoolean(KEY_FULL, o.optBoolean("full", true))
                     .putString(KEY_CITY, o.optString("city", prefs(c).getString(KEY_CITY, "")))
                     .putString("dig", o.optString("dig", "ar"))
@@ -172,8 +173,21 @@ final class AdhanScheduler {
     }
 
     /** At a prayer time: arm silent mode to start after the chosen delay (default 5 minutes). */
-    static void scheduleSilence(Context c) {
+    static int silenceFor(Context c, String name) {
+        String k = name == null ? "" : name.contains("فجر") ? "fajr" : name.contains("ظهر") || name.contains("جمعة") ? "dhuhr"
+                : name.contains("عصر") ? "asr" : name.contains("مغرب") ? "maghrib" : name.contains("عشاء") ? "isha" : "";
+        if (k.isEmpty()) return 0;
+        int def = k.equals("maghrib") ? 20 : 30;
+        try { String m = prefs(c).getString("silmap", ""); if (!m.isEmpty()) return new JSONObject(m).optInt(k, def); } catch (Exception ignored) { }
+        int old = prefs(c).getInt(KEY_SILENT, 0);
+        return old > 1 ? old : def;
+    }
+
+    static void scheduleSilence(Context c, String name) {
         if (prefs(c).getInt(KEY_SILENT, 0) <= 0) return;
+        int mins = silenceFor(c, name);
+        if (mins <= 0) return;
+        prefs(c).edit().putInt("sil_now", mins).apply();
         int delay = prefs(c).getInt(KEY_SILENT_DELAY, 5);
         if (delay <= 0) { applySilence(c); return; }
         AlarmManager am = (AlarmManager) c.getSystemService(Context.ALARM_SERVICE);
@@ -185,7 +199,7 @@ final class AdhanScheduler {
 
     /** Silent mode for the user-chosen minutes, then restore. Needs Do-Not-Disturb access. */
     static void applySilence(Context c) {
-        int min = prefs(c).getInt(KEY_SILENT, 0);
+        int min = prefs(c).getInt("sil_now", 0);
         if (min <= 0) return;
         NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
         AudioManager au = (AudioManager) c.getSystemService(Context.AUDIO_SERVICE);

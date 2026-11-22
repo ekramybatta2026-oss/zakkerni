@@ -65,8 +65,8 @@ public class AdhanActivity extends Activity {
         root.addView(small);
         root.addView(text(AdhanService.curName.isEmpty() ? "الصلاة" : AdhanService.curName, 52, true, or));
 
-        TextView time = text(AdhanService.curTime, 40, true, orL);
-        time.setPadding(dp(28), dp(2), dp(28), dp(2));
+        TextView time = text(AdhanService.curTime, 32, true, orL);
+        time.setPadding(dp(24), dp(2), dp(24), dp(2));
         time.setBackground(frame(dp(22)));
         LinearLayout.LayoutParams tl = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         tl.topMargin = dp(10);
