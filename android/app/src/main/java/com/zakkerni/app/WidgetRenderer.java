@@ -24,7 +24,7 @@ final class WidgetRenderer {
     static final String ACTION_TICK = "com.zakkerni.app.WIDGET_TICK";
 
     static final String[] STYLES = {"grad", "purple", "orange", "dark", "light", "deep", "lav", "soft", "sunset", "auto"};
-    static final String[] STYLE_NAMES = {"متدرّج", "بنفسجي", "برتقالي", "داكن", "فاتح", "ليلي", "لافندر", "مشمشي", "غروب", "تلقائي"};
+    static final String[] STYLE_NAMES = {"متدرّج", "بنفسجي", "برتقالي", "داكن", "فاتح", "ليلي", "لافندر", "مشمشي", "غروب", "أرابيسك"};
     static final String[] DESIGNS = {"كلاسيكي", "بطاقات", "مدمج"};
     static final Class<?>[] PROVIDERS = {WidgetNext.class, WidgetDay.class, PrayerWidget.class, WidgetList.class, PlayerWidget.class, PlayerWidgetSmall.class, PlayerWidgetLarge.class};
     static final int[] LAYOUTS = {R.layout.widget_next, R.layout.widget_day, R.layout.widget_prayer, R.layout.widget_list, R.layout.widget_player, R.layout.widget_player_s, R.layout.widget_player_l};
@@ -41,7 +41,7 @@ final class WidgetRenderer {
         int design = 0;     // wide widget: 0 classic, 1 cards, 2 compact
         int wdp = 0;        // current widget width in dp (from the launcher)
         int hdp = 0;        // current widget height in dp (portrait)
-        boolean cd = true, city = true, hijri = true, weather = true;
+        boolean cd = true, city = true, hijri = true, weather = false;
 
         static Cfg load(Context c, int id) {
             SharedPreferences p = c.getSharedPreferences(WPREFS, Context.MODE_PRIVATE);
@@ -60,7 +60,6 @@ final class WidgetRenderer {
             g.hijri = p.getBoolean(k + "hijri", g.hijri);
             g.art = p.getBoolean(k + "art", g.art);
             g.design = p.getInt(k + "design", g.design);
-            g.weather = p.getBoolean(k + "weather", g.weather);
             return g;
         }
 
@@ -373,7 +372,6 @@ final class WidgetRenderer {
     /* ---------- refresh ---------- */
     static void updateAll(Context c) {
         boolean any = false;
-        Weather.maybeRefresh(c);
         try {
             AppWidgetManager m = AppWidgetManager.getInstance(c);
             for (int t = 0; t < PROVIDERS.length; t++) {

@@ -23,7 +23,7 @@ final class Weather {
         SharedPreferences p = c.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
         boolean moved = Math.abs(p.getFloat("lat", 999) - lat) > 0.05 || Math.abs(p.getFloat("lng", 999) - lng) > 0.05;
         p.edit().putFloat("lat", (float) lat).putFloat("lng", (float) lng).apply();
-        if (moved) { p.edit().putLong("try", 0).apply(); maybeRefresh(c); }
+        if (moved) p.edit().putLong("try", 0).apply();
     }
 
     /** Fetch in the background if the cache is stale; widgets update when it arrives. */
