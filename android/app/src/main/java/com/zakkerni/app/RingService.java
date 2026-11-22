@@ -91,27 +91,32 @@ public class RingService extends Service {
         return START_NOT_STICKY;
     }
 
-    private void startSound() {
-        try {
-            Uri u = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+    /** "" = default alarm tone, "asset:file.mp3" = app sound, otherwise a content:// uri. */
+    static MediaPlayer player(Context c, String tone, boolean loop) throws Exception {
+        MediaPlayer mp = new MediaPlayer();
+        mp.setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build());
+        if (tone != null && tone.startsWith("asset:")) {
+            String f = tone.substring(6);
+            if (f.contains("..")) f = "adhan.mp3";
+            android.content.res.AssetFileDescriptor afd = c.getAssets().openFd("www/" + f);
+            mp.setDataSource(afd.getFileDescriptor(), afd.getStartOffset(), afd.getLength());
+            afd.close();
+        } else {
+            Uri u = tone == null || tone.isEmpty() ? RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM) : Uri.parse(tone);
             if (u == null) u = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
-            player = new MediaPlayer();
-            player.setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build());
-            player.setDataSource(this, u);
-            player.setLooping(true);
-            player.prepare();
-            player.start();
-        } catch (Exception e) {
-            try {
-                player = new MediaPlayer();
-                player.setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM).build());
-                android.content.res.AssetFileDescriptor afd = getAssets().openFd("www/adhan.mp3");
-                player.setDataSource(afd.getFileDescriptor(), afd.getStartOffset(), afd.getLength());
-                afd.close();
-                player.prepare();
-                player.start();
-            } catch (Exception ignored) { }
+            mp.setDataSource(c, u);
+        }
+        mp.setLooping(loop);
+        mp.prepare();
+        return mp;
+    }
+
+    private void startSound() {
+        String tone = ClockStore.toneFor(this, kind, alarmId);
+        try { player = player(this, tone, true); player.start(); }
+        catch (Exception e) {
+            try { player = player(this, "", true); player.start(); } catch (Exception ignored) { }
         }
     }
 

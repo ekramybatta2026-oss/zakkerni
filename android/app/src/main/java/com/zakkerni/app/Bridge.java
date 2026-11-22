@@ -30,6 +30,53 @@ public class Bridge {
     }
 
     /** json: [{"t": epochMillis, "n": "الظهر", "s": "١١:٣٩ ص", "a": true, "f": "adhan.mp3"}, ...] */
+    private static android.media.MediaPlayer tonePlayer;
+    private static final android.os.Handler toneH = new android.os.Handler(android.os.Looper.getMainLooper());
+
+    /** System alarm / ringtone / notification sounds: [{u,t,k}] */
+    @JavascriptInterface
+    public String tones() {
+        org.json.JSONArray out = new org.json.JSONArray();
+        int[] types = {android.media.RingtoneManager.TYPE_ALARM, android.media.RingtoneManager.TYPE_RINGTONE, android.media.RingtoneManager.TYPE_NOTIFICATION};
+        String[] kinds = {"alarm", "ring", "notif"};
+        java.util.HashSet<String> seen = new java.util.HashSet<>();
+        for (int k = 0; k < types.length; k++) {
+            try {
+                android.media.RingtoneManager rm = new android.media.RingtoneManager(ctx);
+                rm.setType(types[k]);
+                android.database.Cursor cu = rm.getCursor();
+                while (cu.moveToNext()) {
+                    String u = cu.getString(android.media.RingtoneManager.URI_COLUMN_INDEX) + "/" + cu.getString(android.media.RingtoneManager.ID_COLUMN_INDEX);
+                    if (!seen.add(u)) continue;
+                    out.put(new org.json.JSONObject().put("u", u).put("t", cu.getString(android.media.RingtoneManager.TITLE_COLUMN_INDEX)).put("k", kinds[k]));
+                }
+            } catch (Exception ignored) { }
+        }
+        return out.toString();
+    }
+
+    @JavascriptInterface
+    public void previewTone(String u) {
+        toneH.post(() -> {
+            stopToneNow();
+            try {
+                tonePlayer = RingService.player(ctx, u, false);
+                if (tonePlayer != null) { tonePlayer.start(); toneH.postDelayed(Bridge::stopToneNow, 7000); }
+            } catch (Exception ignored) { }
+        });
+    }
+
+    @JavascriptInterface
+    public void stopTone() { toneH.post(Bridge::stopToneNow); }
+
+    private static void stopToneNow() {
+        toneH.removeCallbacksAndMessages(null);
+        if (tonePlayer != null) { try { tonePlayer.stop(); } catch (Exception ignored) { } tonePlayer.release(); tonePlayer = null; }
+    }
+
+    @JavascriptInterface
+    public void setTimerTone(String u, String name) { ClockStore.p(ctx).edit().putString("t_tone", u).putString("t_tone_n", name).apply(); }
+
     @JavascriptInterface
     public String clockState() { return ClockStore.state(ctx); }
 

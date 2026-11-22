@@ -125,6 +125,13 @@ final class ClockStore {
         scheduleAlarms(c);
     }
 
+    static String toneFor(Context c, String kind, int id) {
+        if ("timer".equals(kind)) return p(c).getString("t_tone", "");
+        JSONArray a = alarms(c);
+        for (int i = 0; i < a.length(); i++) { JSONObject o = a.optJSONObject(i); if (o != null && o.optInt("id") == id) return o.optString("tone", ""); }
+        return "";
+    }
+
     /* ---------------- timer ---------------- */
     static long timerLeft(Context c) {
         SharedPreferences s = p(c);
@@ -230,7 +237,7 @@ final class ClockStore {
             o.put("now", System.currentTimeMillis());
             o.put("alarms", alarms(c));
             JSONObject t = new JSONObject();
-            t.put("run", s.getBoolean("t_run", false)).put("left", timerLeft(c)).put("total", s.getLong("t_total", 0));
+            t.put("run", s.getBoolean("t_run", false)).put("left", timerLeft(c)).put("total", s.getLong("t_total", 0)).put("tone", s.getString("t_tone", "")).put("toneN", s.getString("t_tone_n", ""));
             o.put("timer", t);
             JSONObject w = new JSONObject();
             w.put("run", s.getBoolean("s_run", false)).put("el", swElapsed(c)).put("laps", laps(c));

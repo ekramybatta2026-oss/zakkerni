@@ -421,6 +421,13 @@ body.sec .toast.show{transform:translateX(-50%)}
 .cd.today{background:var(--grad-or)}.cd.today b,.cd.today small{color:#fff}
 .cd.pick{outline:2px solid var(--purple)}
 .cal-sel{display:flex;align-items:center;gap:8px;margin-top:12px;padding:12px 14px;border-radius:16px;background:var(--surface);box-shadow:var(--shadow);font-weight:700;font-size:14px}
+.al-tone{display:flex;align-items:center;gap:8px;width:100%;padding:11px 14px;border-radius:14px;background:var(--surface-2);margin:0 0 14px;font-size:14px;font-weight:700;color:var(--text)}
+.al-tone span{flex:1;text-align:right}.al-tone b{color:var(--purple);font-size:13px;max-width:55%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+[data-theme="dark"] .al-tone b{color:#D9B8F5}
+.tm-tone{max-width:340px;margin:0 auto 10px;background:var(--surface);box-shadow:var(--shadow)}
+#shList{max-height:60vh;overflow-y:auto}
+.shi small{color:var(--muted);font-weight:600}
+#sheet{z-index:65}
 </style>
 </head>
 <body>
@@ -1747,7 +1754,7 @@ function ckWeb() { return S.clock || (S.clock = { alarms: [], t: { run: false, e
 function ckState() {
   if (CB()) { try { return JSON.parse(AndroidBridge.clockState()); } catch (e) {} }
   const c = ckWeb(), now = Date.now();
-  return { alarms: c.alarms, timer: { run: c.t.run, left: c.t.run ? Math.max(0, c.t.end - now) : c.t.left, total: c.t.total }, sw: { run: c.s.run, el: c.s.run ? c.s.acc + now - c.s.start : c.s.acc, laps: c.s.laps } };
+  return { alarms: c.alarms, timer: { run: c.t.run, left: c.t.run ? Math.max(0, c.t.end - now) : c.t.left, total: c.t.total, tone: c.t.tone || '', toneN: c.t.toneN || '' }, sw: { run: c.s.run, el: c.s.run ? c.s.acc + now - c.s.start : c.s.acc, laps: c.s.laps } };
 }
 function saveAlarms(list) {
   if (CB()) { try { AndroidBridge.setAlarms(JSON.stringify(list)); } catch (e) {} } else { ckWeb().alarms = list; save(); }
@@ -1797,6 +1804,28 @@ function nextIn(a) {
   }
   return '';
 }
+
+let TONES = null;
+function toneList() {
+  const L = [['', 'نغمة المنبه الافتراضية'], ['asset:adhan.mp3', 'الأذان — صوت ذَكِّرني'], ['asset:adhan-fajr.mp3', 'أذان الفجر — صوت ذَكِّرني']];
+  if (CB() && AndroidBridge.tones) {
+    if (!TONES) { try { TONES = JSON.parse(AndroidBridge.tones() || '[]'); } catch (e) { TONES = []; } }
+    const lab = { alarm: 'منبه', ring: 'رنين', notif: 'إشعار' };
+    TONES.forEach(x => L.push([x.u, `${esc(x.t)} <small>· ${lab[x.k] || ''}</small>`]));
+    try { if (AndroidBridge.hasAudioPermission && AndroidBridge.hasAudioPermission()) { if (!LIB) LIB = JSON.parse(AndroidBridge.getLibrary() || '[]'); (LIB || []).slice(0, 300).forEach(s => L.push(['content://media/external/audio/media/' + s.i, `${esc(s.t)} <small>· من ملفاتك</small>`])); } } catch (e) {}
+  }
+  return L;
+}
+let webTone = null;
+function previewTone(u) {
+  if (CB() && AndroidBridge.previewTone) { try { AndroidBridge.previewTone(u); } catch (e) {} return; }
+  try { if (webTone) webTone.pause(); if (u.startsWith('asset:')) { webTone = new Audio(u.slice(6)); webTone.play(); setTimeout(() => webTone && webTone.pause(), 7000); } else beep(); } catch (e) {}
+}
+function stopPreview() { try { CB() && AndroidBridge.stopTone && AndroidBridge.stopTone(); } catch (e) {} if (webTone) webTone.pause(); }
+function tonePicker(cur, cb) {
+  const L = toneList();
+  sheet('نغمة التنبيه', L.map(([u, l]) => [u, l, (cur || '') === u]), (u) => { const it = L.find(x => x[0] === u); const name = it ? it[1].replace(/<[^>]+>/g, '').replace(/ · .*/, '').trim() : ''; previewTone(u); cb(u, name); });
+}
 function renderClock(tab) {
   const v = $('#v-clock');
   v.innerHTML = `<div class="sec-head" style="position:static"><h2>أدوات الوقت</h2></div>
@@ -1813,7 +1842,7 @@ function ckAlarm() {
     ${CB() ? '' : `<div class="ck-note">${ico('info')} المنبه يرن فقط في تطبيق الأندرويد. في هذه النسخة يمكنك تجهيز المنبهات فقط.</div>`}
     <div class="al-list">${list.length ? list.map((a, i) => `
       <div class="al ${a.on ? '' : 'off'}">
-        <div class="al-main" data-edit="${i}"><div class="al-t">${alarmTime(a)}</div><div class="al-s">${esc(a.label || 'منبه')} · ${alarmDays(a)}</div><div class="al-n">${nextIn(a)}</div></div>
+        <div class="al-main" data-edit="${i}"><div class="al-t">${alarmTime(a)}</div><div class="al-s">${esc(a.label || 'منبه')} · ${alarmDays(a)}${a.toneN ? ' · ♪ ' + esc(a.toneN) : ''}</div><div class="al-n">${nextIn(a)}</div></div>
         <button class="switch ${a.on ? 'on' : ''}" data-tog="${i}" aria-label="تفعيل"></button>
       </div>`).join('') : `<div class="empty">${ico('alarm')}<p>لا توجد منبهات بعد</p></div>`}</div>
     <button class="btn primary ck-add" id="alAdd">${ico('alarm')} إضافة منبه</button>`;
@@ -1832,6 +1861,7 @@ function alarmEditor(idx) {
     <div class="al-days">${[0, 1, 2, 3, 4, 5, 6].map(d => `<button data-d="${d}" class="${(a.days || []).includes(d) ? 'on' : ''}">${WD[d]}</button>`).join('')}</div>
     <div class="al-quick"><button data-q="0,1,2,3,4">الأحد–الخميس</button><button data-q="0,1,2,3,4,5,6">كل يوم</button><button data-q="">مرة واحدة</button></div>
     <input type="text" id="alLabel" placeholder="اسم المنبه (اختياري)" value="${esc(a.label)}" maxlength="30">
+    <button class="al-tone" id="alTone">${ico('sound')}<span>النغمة</span><b id="alToneN">${esc(a.toneN || 'الافتراضية')}</b></button>
     <div class="row-btns"><button class="btn primary" id="alSave">حفظ</button>${idx >= 0 ? '<button class="btn danger" id="alDel">حذف</button>' : ''}<button class="btn" id="alCancel">إلغاء</button></div>
   </div>`;
   m.classList.add('show');
@@ -1839,10 +1869,12 @@ function alarmEditor(idx) {
   const paint = () => m.querySelectorAll('[data-d]').forEach(b => b.classList.toggle('on', days.has(+b.dataset.d)));
   m.querySelectorAll('[data-d]').forEach(b => b.onclick = () => { const d = +b.dataset.d; days.has(d) ? days.delete(d) : days.add(d); paint(); });
   m.querySelectorAll('[data-q]').forEach(b => b.onclick = () => { days.clear(); b.dataset.q.split(',').filter(Boolean).forEach(x => days.add(+x)); paint(); });
-  $('#alCancel').onclick = () => m.classList.remove('show');
+  $('#alTone').onclick = () => tonePicker(a.tone, (u, n) => { a.tone = u; a.toneN = u ? n : ''; $('#alToneN').textContent = a.toneN || 'الافتراضية'; });
+  $('#alCancel').onclick = () => { stopPreview(); m.classList.remove('show'); };
   if ($('#alDel')) $('#alDel').onclick = () => { L.splice(idx, 1); saveAlarms(L); m.classList.remove('show'); ckAlarm(); toast('تم حذف المنبه'); };
   $('#alSave').onclick = () => {
     const [h, mi] = ($('#alTime').value || '07:00').split(':').map(Number);
+    stopPreview();
     Object.assign(a, { h, m: mi, days: [...days].sort(), label: $('#alLabel').value.trim(), on: true });
     if (idx >= 0) L[idx] = a; else L.push(a);
     L.sort((x, y) => x.h * 60 + x.m - (y.h * 60 + y.m));
@@ -1860,7 +1892,8 @@ function ckTimer() {
       <div class="tm-pick">${[['h', 'ساعة', 23], ['m', 'دقيقة', 59], ['s', 'ثانية', 59]].map(([k, l, mx]) => `<label><button data-inc="${k}" data-mx="${mx}">+</button><input type="number" min="0" max="${mx}" data-f="${k}" value="${timerSet[k]}"><button data-dec="${k}" data-mx="${mx}">−</button><span>${l}</span></label>`).join('')}</div>
       <div class="tm-quick">${[1, 3, 5, 10, 15, 20, 30, 60].map(n => `<button data-pre="${n}">${nd(n === 60 ? 'ساعة' : n + ' د')}</button>`).join('')}</div>
     </div>
-    <div class="ck-ctl"><button class="pb" id="tmReset" aria-label="إعادة">${ico('reset')}</button><button class="pb big" id="tmGo" aria-label="تشغيل">${ico(st.run ? 'pause' : 'play')}</button><button class="pb" id="tmAdd" aria-label="زيادة دقيقة"><b>+١</b></button></div>`;
+    <div class="ck-ctl"><button class="pb" id="tmReset" aria-label="إعادة">${ico('reset')}</button><button class="pb big" id="tmGo" aria-label="تشغيل">${ico(st.run ? 'pause' : 'play')}</button><button class="pb" id="tmAdd" aria-label="زيادة دقيقة"><b>+١</b></button></div>
+    <button class="al-tone tm-tone" id="tmTone">${ico('sound')}<span>نغمة المؤقت</span><b>${esc(st.toneN || 'الافتراضية')}</b></button>`;
   const fields = () => $('#ckBody').querySelectorAll('[data-f]');
   fields().forEach(i => i.oninput = () => { ckTimer.touched = true; timerSet[i.dataset.f] = Math.max(0, Math.min(+i.max, +i.value || 0)); });
   $('#ckBody').querySelectorAll('[data-inc],[data-dec]').forEach(b => b.onclick = () => { const k = b.dataset.inc || b.dataset.dec, mx = +b.dataset.mx; ckTimer.touched = true; timerSet[k] = (timerSet[k] + (b.dataset.inc ? 1 : mx)) % (mx + 1); $(`[data-f="${k}"]`).value = timerSet[k]; });
@@ -1873,6 +1906,7 @@ function ckTimer() {
   };
   $('#tmReset').onclick = () => { tCmd('reset'); ckTimer(); };
   $('#tmAdd').onclick = () => { tCmd('add', 60000); ckPaint('timer'); };
+  $('#tmTone').onclick = () => tonePicker(st.tone, (u, n) => { if (CB() && AndroidBridge.setTimerTone) AndroidBridge.setTimerTone(u, u ? n : ''); else { const w = ckWeb().t; w.tone = u; w.toneN = u ? n : ''; save(); } ckTimer(); });
   ckPaint('timer');
 }
 let beepCtx = null;
