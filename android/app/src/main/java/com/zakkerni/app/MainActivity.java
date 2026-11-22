@@ -62,7 +62,8 @@ public class MainActivity extends Activity implements SensorEventListener {
         if (Build.VERSION.SDK_INT >= 30) {
             root.setOnApplyWindowInsetsListener((v, insets) -> {
                 Insets b = insets.getInsets(WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout());
-                v.setPadding(b.left, b.top, b.right, b.bottom);
+                // mushaf reading: draw right up to the top edge (under the hidden status bar and the camera cut-out)
+                v.setPadding(b.left, immersive ? 0 : b.top, b.right, b.bottom);
                 return WindowInsets.CONSUMED;
             });
         }
@@ -144,7 +145,17 @@ public class MainActivity extends Activity implements SensorEventListener {
 
     /** Status/navigation bar colours that match the app theme (light or dark). */
     /** Mushaf reading: hide the status bar (swipe down shows it briefly) and paint the cut-out area like the page. */
+    boolean immersive = false;
+
     void setImmersive(boolean on, String color) {
+        immersive = on;
+        if (Build.VERSION.SDK_INT >= 28) {
+            android.view.WindowManager.LayoutParams lp = getWindow().getAttributes();
+            lp.layoutInDisplayCutoutMode = on ? (Build.VERSION.SDK_INT >= 30 ? android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS : android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES)
+                    : android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT;
+            getWindow().setAttributes(lp);
+        }
+        if (root != null) root.requestApplyInsets();
         if (Build.VERSION.SDK_INT >= 30) {
             WindowInsetsController c = getWindow().getInsetsController();
             if (c != null) {
