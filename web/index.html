@@ -478,10 +478,11 @@ body.sec .toast.show{transform:translateX(-50%)}
 body.qfull .topbar,body.qfull .nav{display:none}
 #v-quran.active{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;background:#FDF8F0;padding:calc(2px + env(safe-area-inset-top)) 4px calc(2px + env(safe-area-inset-bottom))}
 [data-theme="dark"] #v-quran.active{background:#1B1524}
-.q-bar{position:absolute;top:0;left:0;right:0;z-index:5;display:flex;gap:4px;align-items:center;padding:calc(8px + env(safe-area-inset-top)) 8px 8px;background:var(--surface);box-shadow:none;transform:translateY(-120%);visibility:hidden;transition:transform .25s,visibility 0s .25s}
-.q-bar.show{transform:none;visibility:visible;box-shadow:0 6px 20px rgba(0,0,0,.15);transition:transform .25s}
+.q-bar{position:absolute;bottom:0;left:0;right:0;z-index:5;display:flex;gap:4px;align-items:center;padding:8px 8px calc(10px + env(safe-area-inset-bottom));background:var(--surface);border-radius:20px 20px 0 0;box-shadow:none;transform:translateY(120%);visibility:hidden;transition:transform .25s,visibility 0s .25s}
+.q-bar.show{transform:none;visibility:visible;box-shadow:0 -6px 20px rgba(0,0,0,.15);transition:transform .25s}
 .q-bar button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;font-weight:700;color:var(--purple);padding:4px 0}
 .q-bar .pb{flex:none;width:40px;height:40px;border-radius:50%;background:var(--surface-2);display:grid;place-items:center}
+.q-frame{-webkit-touch-callout:none}
 .q-bar #qMark.on{color:var(--orange)}
 [data-theme="dark"] .q-bar button{color:#D9B8F5}
 .q-frame{flex:1;display:flex;flex-direction:column;min-height:0;padding:4px 8px;color:#1A1712;touch-action:pan-y;user-select:none;-webkit-user-select:none;overflow:hidden}
@@ -2096,10 +2097,15 @@ function renderQuran() {
   $('#qBack').onclick = () => go('home');
   $('#qMark').onclick = () => { const p = S.qpage || 1, M = qMarks(), k = M.findIndex(m => m.p === p && m.v < 0); if (k >= 0) { M.splice(k, 1); toast('أُزيلت العلامة'); } else { M.unshift({ p, v: -1, t: Date.now() }); toast('حُفظت علامة على الصفحة'); } save(); qMarkState(); };
   const fr = $('#qFrame');
-  fr.addEventListener('click', (e) => {
-    if (Date.now() - (qTouchEnd || 0) < 350) return;
-    const w = e.target.closest('i[data-v]');
-    if (w && +w.dataset.v >= 0) { qSelect(+w.dataset.v); return; }
+  // short tap anywhere = show/hide the toolbar; long press on a verse = tafsir
+  let lp = null, lpFired = 0;
+  const pressStart = (x, y, target) => { clearTimeout(lp); const w = target.closest && target.closest('i[data-v]'); if (!w || +w.dataset.v < 0) return; lp = setTimeout(() => { lpFired = Date.now(); try { navigator.vibrate && navigator.vibrate(15); } catch (e) {} qSelect(+w.dataset.v); }, 450); };
+  fr.addEventListener('touchstart', (e) => pressStart(0, 0, e.target), { passive: true });
+  fr.addEventListener('touchmove', () => clearTimeout(lp), { passive: true });
+  fr.addEventListener('touchend', () => clearTimeout(lp), { passive: true });
+  fr.addEventListener('contextmenu', (e) => { e.preventDefault(); const w = e.target.closest('i[data-v]'); if (w && +w.dataset.v >= 0 && Date.now() - lpFired > 600) { lpFired = Date.now(); qSelect(+w.dataset.v); } });
+  fr.addEventListener('click', () => {
+    if (Date.now() - (qTouchEnd || 0) < 350 || Date.now() - lpFired < 700) return;
     $('#qBar').classList.toggle('show');
   });
   const cur = () => $('#qPage').querySelector('.q-lines:not(.old)');
