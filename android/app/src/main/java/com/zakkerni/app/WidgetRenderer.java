@@ -368,7 +368,7 @@ final class WidgetRenderer {
             v.setViewVisibility(R.id.wscrim, View.GONE);
             if (type != T_PLAYER_S) v.setViewVisibility(R.id.p_art, View.VISIBLE);
             if (p != null && p.art != null) v.setImageViewBitmap(R.id.p_art, android.graphics.Bitmap.createScaledBitmap(p.art, 144, 144, true));
-            else v.setImageViewResource(R.id.p_art, R.mipmap.ic_launcher);
+            else v.setImageViewResource(R.id.p_art, R.mipmap.ic_zakkerni);
         }
         boolean dark = !artBg && darkText(g);
         int main = dark ? 0xFF2A1F36 : 0xFFFFFFFF, sub = dark ? 0xFF6B5E7B : 0xDDF1E8F8;

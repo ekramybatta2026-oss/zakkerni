@@ -48,7 +48,7 @@ public class AdhanActivity extends Activity {
                 new int[]{Color.parseColor("#7137A8"), Color.parseColor("#5A2690"), Color.parseColor("#B04E0A")}));
 
         ImageView icon = new ImageView(this);
-        icon.setImageResource(R.mipmap.ic_launcher);
+        icon.setImageResource(R.mipmap.ic_zakkerni);
         root.addView(icon, new LinearLayout.LayoutParams(dp(112), dp(112)));
 
         TextView small = text("حان الآن موعد أذان", 18, false, Color.parseColor("#F1E8F8"));

@@ -7,7 +7,7 @@
     android:updatePeriodMillis="0"
     android:initialLayout="@layout/widget_player_l"
     android:previewLayout="@layout/widget_player_l"
-    android:previewImage="@mipmap/ic_launcher"
+    android:previewImage="@mipmap/ic_zakkerni"
     android:configure="com.zakkerni.app.WidgetConfigActivity"
     android:widgetFeatures="reconfigurable|configuration_optional"
     android:description="@string/wd_player_l"

@@ -7,7 +7,7 @@
     android:updatePeriodMillis="1800000"
     android:initialLayout="@layout/widget_next"
     android:previewLayout="@layout/widget_next"
-    android:previewImage="@mipmap/ic_launcher"
+    android:previewImage="@mipmap/ic_zakkerni"
     android:configure="com.zakkerni.app.WidgetConfigActivity"
     android:widgetFeatures="reconfigurable|configuration_optional"
     android:description="@string/wd_next"

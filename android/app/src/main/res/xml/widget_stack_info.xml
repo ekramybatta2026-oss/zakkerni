@@ -7,6 +7,6 @@
     android:updatePeriodMillis="1800000"
     android:initialLayout="@layout/widget_stack"
     android:previewLayout="@layout/widget_clock"
-    android:previewImage="@mipmap/ic_launcher"
+    android:previewImage="@mipmap/ic_zakkerni"
     android:description="@string/wd_stack"
     android:widgetCategory="home_screen" />

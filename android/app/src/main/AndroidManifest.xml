@@ -21,8 +21,8 @@
 
     <application
         android:label="@string/app_name"
-        android:icon="@mipmap/ic_launcher"
-        android:roundIcon="@mipmap/ic_launcher"
+        android:icon="@mipmap/ic_zakkerni"
+        android:roundIcon="@mipmap/ic_zakkerni"
         android:supportsRtl="true"
         android:allowBackup="true"
         android:theme="@style/AppTheme">
