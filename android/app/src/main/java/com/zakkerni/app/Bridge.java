@@ -196,6 +196,12 @@ public class Bridge {
         if (a != null) a.runOnUiThread(() -> a.applyBars(dark));
     }
 
+    @JavascriptInterface
+    public void setImmersive(boolean on, String color) {
+        MainActivity a = MainActivity.current;
+        if (a != null) a.runOnUiThread(() -> a.setImmersive(on, color));
+    }
+
     /** Ask the launcher to add a widget: 0 small, 1 wide, 2 large, 3 list. */
     @JavascriptInterface
     public boolean pinWidget(int type) {

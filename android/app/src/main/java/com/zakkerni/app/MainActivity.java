@@ -143,7 +143,26 @@ public class MainActivity extends Activity implements SensorEventListener {
     }
 
     /** Status/navigation bar colours that match the app theme (light or dark). */
+    /** Mushaf reading: hide the status bar (swipe down shows it briefly) and paint the cut-out area like the page. */
+    void setImmersive(boolean on, String color) {
+        if (Build.VERSION.SDK_INT >= 30) {
+            WindowInsetsController c = getWindow().getInsetsController();
+            if (c != null) {
+                if (on) { c.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE); c.hide(WindowInsets.Type.statusBars()); }
+                else c.show(WindowInsets.Type.statusBars());
+            }
+        } else {
+            if (on) getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            else getWindow().clearFlags(android.view.WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        }
+        if (on && color != null && root != null) { try { root.setBackgroundColor(Color.parseColor(color)); } catch (Exception ignored) { } }
+        if (!on) applyBars(darkUi);
+    }
+
+    boolean darkUi = false;
+
     void applyBars(boolean dark) {
+        darkUi = dark;
         int bg = Color.parseColor(dark ? "#1D1726" : "#FAF6FD");
         if (root != null) root.setBackgroundColor(bg);
         getWindow().setStatusBarColor(bg);
