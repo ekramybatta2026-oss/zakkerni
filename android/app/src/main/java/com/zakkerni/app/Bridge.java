@@ -145,6 +145,28 @@ public class Bridge {
         open(new Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT, Uri.parse("package:" + ctx.getPackageName())));
     }
 
+    /** "Display over other apps": lets the alarm / adhan screen open over the lock screen from the background. */
+    @JavascriptInterface
+    public boolean canOverlay() { return Build.VERSION.SDK_INT < 23 || Settings.canDrawOverlays(ctx); }
+
+    @JavascriptInterface
+    public void openOverlaySettings() {
+        open(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + ctx.getPackageName())));
+    }
+
+    /** vivo's own permission page (background pop-ups, lock-screen display); falls back to app details. */
+    @JavascriptInterface
+    public void openVendorPermissions() {
+        String pkg = ctx.getPackageName();
+        Intent[] tries = {
+                new Intent().setClassName("com.vivo.permissionmanager", "com.vivo.permissionmanager.activity.SoftPermissionDetailActivity").putExtra("packagename", pkg),
+                new Intent("permission.intent.action.softPermissionDetail").putExtra("packagename", pkg),
+                new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + pkg))};
+        for (Intent i : tries) {
+            try { i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK); ctx.startActivity(i); return; } catch (Exception ignored) { }
+        }
+    }
+
     @JavascriptInterface
     public boolean hasDnd() {
         NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);

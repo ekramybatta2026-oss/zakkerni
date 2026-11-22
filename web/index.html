@@ -469,6 +469,8 @@ body.sec .toast.show{transform:translateX(-50%)}
 .wbar{flex:1;height:6px;border-radius:6px;background:var(--surface-2);position:relative}.wbar i{position:absolute;top:0;bottom:0;border-radius:6px;background:linear-gradient(90deg,#F28A32,#FFC27A)}
 .wx-src{text-align:center;font-size:11px;color:var(--muted);margin:12px 0 4px}
 .ck-note.warn{width:100%;text-align:right;background:#FFF0E2;color:#B04E0A;font-weight:700}[data-theme="dark"] .ck-note.warn{background:#3A2616;color:#FFB066}
+.ck-perm{display:flex;flex-direction:column;gap:6px;background:var(--surface);border-radius:16px;padding:12px;margin-bottom:12px;box-shadow:var(--shadow);font-size:13px}
+.ck-perm b{display:flex;gap:6px;align-items:center;color:var(--orange)}.ck-perm .btn{font-size:13px;padding:9px 10px;text-align:right}.ck-perm .ok{color:#2E9E6A;font-weight:700}
 </style>
 </head>
 <body>
@@ -1961,7 +1963,13 @@ function paintWeather(d, stale) {
 function ckAlarm() {
   const st = ckState(), list = st.alarms || [];
   $('#ckBody').innerHTML = `
-    ${CB() ? (() => { let fs = true; try { fs = !AndroidBridge.canFullScreen || AndroidBridge.canFullScreen(); } catch (e) {} return fs ? '' : `<button class="ck-note warn" id="alFs">${ico('info')} اسمح لذَكِّرني بالظهور بملء الشاشة حتى تظهر شاشة المنبه على قفل الجوال — اضغط هنا</button>`; })() : `<div class="ck-note">${ico('info')} المنبه يرن فقط في تطبيق الأندرويد. في هذه النسخة يمكنك تجهيز المنبهات فقط.</div>`}
+    ${CB() ? (() => { let fs = true, ov = true; try { fs = !AndroidBridge.canFullScreen || AndroidBridge.canFullScreen(); ov = !AndroidBridge.canOverlay || AndroidBridge.canOverlay(); } catch (e) {}
+      return `<div class="ck-perm">
+        <b>${ico('info')} حتى تظهر شاشة المنبه كاملة على قفل الجوال:</b>
+        ${fs ? '' : `<button class="btn" data-perm="fs">١. السماح بالإشعارات بملء الشاشة</button>`}
+        ${ov ? `<span class="ok">✓ الظهور فوق التطبيقات مفعّل</span>` : `<button class="btn primary" data-perm="ov">${fs ? '١' : '٢'}. السماح بالظهور فوق التطبيقات</button>`}
+        <button class="btn" data-perm="vivo">${fs ? (ov ? '١' : '٢') : (ov ? '٢' : '٣')}. أذونات الجوال: فعّل «النوافذ المنبثقة في الخلفية» و«العرض على شاشة القفل»</button>
+      </div>`; })() : `<div class="ck-note">${ico('info')} المنبه يرن فقط في تطبيق الأندرويد. في هذه النسخة يمكنك تجهيز المنبهات فقط.</div>`}
     <div class="al-list">${list.length ? list.map((a, i) => `
       <div class="al ${a.on ? '' : 'off'}">
         <div class="al-main" data-edit="${i}"><div class="al-t">${alarmTime(a)}</div><div class="al-s">${esc(a.label || 'منبه')} · ${alarmDays(a)}${a.toneN ? ' · ♪ ' + esc(a.toneN) : ''}</div><div class="al-n">${nextIn(a)}</div></div>
@@ -1971,7 +1979,7 @@ function ckAlarm() {
   $('#ckBody').querySelectorAll('[data-tog]').forEach(b => b.onclick = () => { const L = ckState().alarms; L[+b.dataset.tog].on = !L[+b.dataset.tog].on; saveAlarms(L); ckAlarm(); const a = L[+b.dataset.tog]; toast(a.on ? (nextIn(a) || 'تم التفعيل') : 'تم إيقاف المنبه'); });
   $('#ckBody').querySelectorAll('[data-edit]').forEach(b => b.onclick = () => alarmEditor(+b.dataset.edit));
   $('#alAdd').onclick = () => alarmEditor(-1);
-  if ($('#alFs')) $('#alFs').onclick = () => { try { AndroidBridge.openFullScreenSettings(); } catch (e) {} };
+  $('#ckBody').querySelectorAll('[data-perm]').forEach(b => b.onclick = () => { try { ({ fs: () => AndroidBridge.openFullScreenSettings(), ov: () => AndroidBridge.openOverlaySettings(), vivo: () => AndroidBridge.openVendorPermissions() })[b.dataset.perm](); } catch (e) {} });
 }
 function alarmEditor(idx) {
   const L = ckState().alarms || [];
@@ -2114,7 +2122,7 @@ let start = (location.hash || '').slice(1); if (start === 'prefs') start = 'sett
 go(SECTIONS[start] || ['favs', 'settings', 'adhan', 'qibla', 'mosques', 'player', 'clock', 'weather', 'alarm', 'timer', 'stopwatch', 'calendar'].includes(start) ? start : 'home', false);
 try { history.replaceState({ view: current }, '', '#' + (current === 'settings' ? 'prefs' : current)); } catch (e) {}
 setTimeout(() => $('#splash').classList.add('hide'), 1300);
-document.addEventListener('visibilitychange', () => { if (!document.hidden && S.date !== todayKey()) { rollDay(); go(current, false); } });
+document.addEventListener('visibilitychange', () => { if (!document.hidden && S.date !== todayKey()) { rollDay(); go(current, false); } else if (!document.hidden && current === 'alarm') ckAlarm(); });
 })();
 
 </script>
