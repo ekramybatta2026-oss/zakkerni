@@ -40,6 +40,7 @@ final class WidgetRenderer {
         boolean art = true; // player widgets: track art as background
         int design = 0;     // wide widget: 0 classic, 1 cards, 2 compact
         int wdp = 0;        // current widget width in dp (from the launcher)
+        int hdp = 0;        // current widget height in dp (portrait)
         boolean cd = true, city = true, hijri = true;
 
         static Cfg load(Context c, int id) {
@@ -47,7 +48,7 @@ final class WidgetRenderer {
             Cfg g = new Cfg();
             String k = "w" + id + "_";
             if (!p.contains(k + "style") && typeOf(c, id) == T_DAY) { g.radius = 1; }
-            try { g.wdp = AppWidgetManager.getInstance(c).getAppWidgetOptions(id).getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 0); } catch (Exception ignored) { }
+            try { android.os.Bundle ob = AppWidgetManager.getInstance(c).getAppWidgetOptions(id); g.wdp = ob.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 0); g.hdp = ob.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 0); } catch (Exception ignored) { }
             g.style = p.getInt(k + "style", g.style);
             g.opacity = p.getInt(k + "opacity", g.opacity);
             g.radius = p.getInt(k + "radius", g.radius);
@@ -284,7 +285,12 @@ final class WidgetRenderer {
             android.graphics.Bitmap src = p != null && p.art != null ? p.art : fallbackArt(c);
             boolean real = p != null && p.art != null;
             int bw = type == T_PLAYER_S ? 360 : 720, bh = type == T_PLAYER_S ? 360 : type == T_PLAYER_L ? 380 : 200;
-            float rr = new float[]{0, 16, 28}[Math.max(0, Math.min(2, g.radius))] * (type == T_PLAYER_S ? bw / 170f : bw / 340f);
+            float dpw = type == T_PLAYER_S ? 170f : 340f;
+            if (g.wdp > 0 && g.hdp > 0) { // match the real cell shape so nothing is stretched
+                bh = Math.max(120, Math.min(1200, Math.round(bw * g.hdp / (float) g.wdp)));
+                dpw = g.wdp;
+            }
+            float rr = new float[]{0, 16, 28}[Math.max(0, Math.min(2, g.radius))] * (bw / dpw);
             if (src != null) v.setImageViewBitmap(R.id.wbg, roundedCrop(src, bw, bh, rr));
             v.setInt(R.id.wbg, "setImageAlpha", alpha);
             v.setImageViewResource(R.id.wscrim, bgRes(3, g.radius));
