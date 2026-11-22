@@ -15,4 +15,12 @@
     <string name="wd_player_s">مربع صغير: صورة الملف وزر تشغيل</string>
     <string name="wd_player_l">تحكم كامل: عشوائي، تكرار، مؤقت النوم وشريط التقدم</string>
     <string name="wd_player">تحكّم في التشغيل من الشاشة الرئيسية</string>
+    <string name="wl_alarm">المنبه</string>
+    <string name="wl_timer">المؤقت</string>
+    <string name="wl_sw">ساعة الإيقاف</string>
+    <string name="wl_cal">التقويم الهجري والميلادي</string>
+    <string name="wd_alarm">المنبه القادم</string>
+    <string name="wd_timer">مؤقت بتشغيل وإيقاف وزيادة دقيقة</string>
+    <string name="wd_sw">ساعة إيقاف مع اللفات</string>
+    <string name="wd_cal">الشهر بالتاريخين الهجري والميلادي</string>
 </resources>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/widget_root" android:layout_width="match_parent" android:layout_height="match_parent" android:layoutDirection="rtl">
+    <ImageView android:id="@+id/wbg" android:layout_width="match_parent" android:layout_height="match_parent" android:clipToOutline="true" android:scaleType="fitXY" android:src="@drawable/wbg_auto_2" android:contentDescription="@null" />
+    <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:gravity="center" android:padding="10dp">
+        <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical">
+            <ImageView android:id="@+id/c_icon" android:layout_width="18dp" android:layout_height="18dp" android:src="@drawable/ic_c_alarm" android:contentDescription="@null" />
+            <TextView android:id="@+id/c_label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="المنبه القادم" android:textColor="#E6D6F5" android:textSize="12dp"  android:maxLines="1" android:layout_marginStart="5dp"/>
+        </LinearLayout>
+        <TextView android:id="@+id/c_big" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="--:--" android:textColor="#FFFFFF" android:textSize="30dp" android:textStyle="bold" android:maxLines="1" android:layout_marginTop="2dp"/>
+        <TextView android:id="@+id/c_sub" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="لا يوجد منبه مفعّل" android:textColor="#E6D6F5" android:textSize="11dp"  android:maxLines="1" android:ellipsize="end"/>
+    </LinearLayout>
+</FrameLayout>

@@ -470,11 +470,38 @@ public class PlayerService extends Service implements MediaPlayer.OnPreparedList
                 .setOngoing(isPlaying())
                 .setShowWhen(false)
                 .setVisibility(Notification.VISIBILITY_PUBLIC)
-                .addAction(new Notification.Action.Builder(null, "السابق", action(A_PREV, 61)).build())
-                .addAction(new Notification.Action.Builder(null, isPlaying() ? "إيقاف مؤقت" : "تشغيل", action(A_TOGGLE, 62)).build())
-                .addAction(new Notification.Action.Builder(null, "التالي", action(A_NEXT, 63)).build())
-                .setStyle(new Notification.MediaStyle().setMediaSession(ms.getSessionToken()).setShowActionsInCompactView(0, 1, 2));
+                .addAction(new Notification.Action.Builder(android.graphics.drawable.Icon.createWithResource(this, R.drawable.ic_p_prev), "السابق", action(A_PREV, 61)).build())
+                .addAction(new Notification.Action.Builder(android.graphics.drawable.Icon.createWithResource(this, isPlaying() ? R.drawable.ic_p_pause : R.drawable.ic_p_play), isPlaying() ? "إيقاف مؤقت" : "تشغيل", action(A_TOGGLE, 62)).build())
+                .addAction(new Notification.Action.Builder(android.graphics.drawable.Icon.createWithResource(this, R.drawable.ic_p_next), "التالي", action(A_NEXT, 63)).build());
+        if (Build.VERSION.SDK_INT >= 24) {
+            // looks like the wide player widget: track art behind, title + controls on top
+            b.setStyle(new Notification.DecoratedMediaCustomViewStyle().setMediaSession(ms.getSessionToken()).setShowActionsInCompactView(0, 1, 2));
+            b.setCustomContentView(notifView(72));
+            b.setCustomBigContentView(notifView(110));
+        } else {
+            b.setStyle(new Notification.MediaStyle().setMediaSession(ms.getSessionToken()).setShowActionsInCompactView(0, 1, 2));
+        }
         return b.build();
+    }
+
+    private android.widget.RemoteViews notifView(int hdp) {
+        android.widget.RemoteViews v = new android.widget.RemoteViews(getPackageName(), R.layout.notif_player);
+        v.setInt(R.id.n_root, "setMinimumHeight", 0);
+        if (Build.VERSION.SDK_INT >= 31) v.setViewLayoutHeight(R.id.n_root, hdp, android.util.TypedValue.COMPLEX_UNIT_DIP);
+        android.graphics.Bitmap src = art != null ? art : WidgetRenderer.fallbackArt(this);
+        if (src != null) {
+            int w = 640, h = Math.round(640f * hdp / 340f);
+            android.graphics.Bitmap bg = WidgetRenderer.roundedCrop(src, w, h, 0);
+            new android.graphics.Canvas(bg).drawColor(0x8C0E1626, android.graphics.PorterDuff.Mode.SRC_ATOP);
+            v.setImageViewBitmap(R.id.n_bg, bg);
+        }
+        v.setTextViewText(R.id.n_title, title.isEmpty() ? "مشغّل ذَكِّرني" : title);
+        v.setTextViewText(R.id.n_artist, artist == null ? "" : artist);
+        v.setImageViewResource(R.id.n_toggle, isPlaying() ? R.drawable.ic_p_pause : R.drawable.ic_p_play);
+        v.setOnClickPendingIntent(R.id.n_prev, action(A_PREV, 61));
+        v.setOnClickPendingIntent(R.id.n_toggle, action(A_TOGGLE, 62));
+        v.setOnClickPendingIntent(R.id.n_next, action(A_NEXT, 63));
+        return v;
     }
 
     PendingIntent action(String a, int code) {
