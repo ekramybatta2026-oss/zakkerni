@@ -460,7 +460,7 @@ public class PlayerService extends Service implements MediaPlayer.OnPreparedList
         PendingIntent open = PendingIntent.getActivity(this, 60, new Intent(this, MainActivity.class).putExtra("go", "player")
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP), PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         Notification.Builder b = Build.VERSION.SDK_INT >= 26 ? new Notification.Builder(this, CH) : new Notification.Builder(this);
-        b.setSmallIcon(R.drawable.ic_stat_play)
+        b.setSmallIcon(R.drawable.ic_stat_zal)
                 .setColor(Color.parseColor("#7137A8"))
                 .setContentTitle(title.isEmpty() ? "مشغّل ذَكِّرني" : title)
                 .setContentText(artist)

@@ -66,7 +66,7 @@ public class RingService extends Service {
         PendingIntent stop = PendingIntent.getService(this, 9, new Intent(this, RingService.class).setAction(STOP), PendingIntent.FLAG_IMMUTABLE);
         Notification.Builder b = Build.VERSION.SDK_INT >= 26 ? new Notification.Builder(this, CHANNEL)
                 : new Notification.Builder(this).setPriority(Notification.PRIORITY_MAX);
-        b.setSmallIcon(R.drawable.ic_stat_alarm).setColor(Color.parseColor("#7137A8"))
+        b.setSmallIcon(R.drawable.ic_stat_zal).setColor(Color.parseColor("#7137A8"))
                 .setContentTitle(title).setContentText(text)
                 .setContentIntent(full).setFullScreenIntent(full, true)
                 .setOngoing(true).setCategory(Notification.CATEGORY_ALARM).setVisibility(Notification.VISIBILITY_PUBLIC)

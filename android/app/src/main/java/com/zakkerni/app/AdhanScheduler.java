@@ -161,7 +161,7 @@ final class AdhanScheduler {
         PendingIntent open = PendingIntent.getActivity(c, 3, new Intent(c, MainActivity.class), PendingIntent.FLAG_IMMUTABLE);
         Notification.Builder b = Build.VERSION.SDK_INT >= 26 ? new Notification.Builder(c, CHANNEL_PRE)
                 : new Notification.Builder(c).setPriority(Notification.PRIORITY_HIGH).setDefaults(Notification.DEFAULT_ALL);
-        b.setSmallIcon(R.drawable.ic_stat_mosque).setColor(Color.parseColor("#F28A32"))
+        b.setSmallIcon(R.drawable.ic_stat_zal).setColor(Color.parseColor("#F28A32"))
                 .setContentTitle("اقترب موعد صلاة " + name)
                 .setContentText(WidgetRenderer.digits(c, "باقي " + pre + " دقائق على الأذان — " + time))
                 .setContentIntent(open).setAutoCancel(true)
@@ -234,7 +234,7 @@ final class AdhanScheduler {
         String city = prefs(c).getString(KEY_CITY, "");
         Notification.Builder b = Build.VERSION.SDK_INT >= 26 ? new Notification.Builder(c, CHANNEL_TIMES)
                 : new Notification.Builder(c).setPriority(Notification.PRIORITY_LOW);
-        b.setSmallIcon(R.drawable.ic_stat_mosque).setColor(Color.parseColor("#7137A8"))
+        b.setSmallIcon(R.drawable.ic_stat_zal).setColor(Color.parseColor("#7137A8"))
                 .setContentTitle("الصلاة القادمة: " + n.optString("n") + " " + n.optString("s"))
                 .setContentText(city.isEmpty() ? line.toString() : city + " — " + line)
                 .setStyle(new Notification.BigTextStyle().bigText(line + (city.isEmpty() ? "" : "\n" + city)))

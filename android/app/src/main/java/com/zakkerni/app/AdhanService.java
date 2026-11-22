@@ -63,7 +63,7 @@ public class AdhanService extends Service {
         Notification.Builder b = Build.VERSION.SDK_INT >= 26
                 ? new Notification.Builder(this, AdhanScheduler.CHANNEL)
                 : new Notification.Builder(this).setPriority(Notification.PRIORITY_MAX);
-        b.setSmallIcon(R.drawable.ic_stat_mosque)
+        b.setSmallIcon(R.drawable.ic_stat_zal)
                 .setColor(Color.parseColor("#7137A8"))
                 .setContentTitle("حان الآن موعد أذان " + name)
                 .setContentText((time.isEmpty() ? "" : time + " — ") + "اضغط إيقاف أو زر الصوت لإسكات الأذان")
