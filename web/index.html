@@ -593,14 +593,12 @@ body.qfull .topbar,body.qfull .nav{display:none}
 .q-frame{position:relative}
 .q-edge{position:fixed;top:0;bottom:0;pointer-events:none;z-index:55}
 /* odd (right-hand) page: stacked page edges on the right, binding shadow on the left */
-.q-stack{right:15px;width:44px;--pl:rgba(140,108,66,.55);--pb:var(--qbg);border-radius:0 26px 26px 0;
-  box-shadow:1.4px 0 0 var(--pl),3px 0 0 var(--pb),4.4px 0 0 var(--pl),6px 0 0 var(--pb),7.4px 0 0 var(--pl),9px 0 0 var(--pb),10.4px 0 0 var(--pl),12px 0 0 var(--pb),13.4px 0 0 var(--pl)}
+.q-stack{right:15px;width:130vw;--pl:rgba(140,108,66,.6);--ps:rgba(90,62,30,.35);--pb:var(--qbg);border-radius:0 26px 26px 0;box-shadow:1.4px 0 2.4px var(--ps),1.4px 0 0 var(--pl),3.0px 0 0 var(--pb),4.4px 0 2.4px var(--ps),4.4px 0 0 var(--pl),6.0px 0 0 var(--pb),7.4px 0 2.4px var(--ps),7.4px 0 0 var(--pl),9.0px 0 0 var(--pb),10.4px 0 2.4px var(--ps),10.4px 0 0 var(--pl),12.0px 0 0 var(--pb),13.4px 0 2.4px var(--ps),13.4px 0 0 var(--pl)}
 .q-spine{left:0;width:34px;background:linear-gradient(to right,rgba(70,50,25,.24),rgba(70,50,25,.09) 40%,rgba(70,50,25,0))}
-.q-frame.q-even .q-stack{right:auto;left:15px;border-radius:26px 0 0 26px;
-  box-shadow:-1.4px 0 0 var(--pl),-3px 0 0 var(--pb),-4.4px 0 0 var(--pl),-6px 0 0 var(--pb),-7.4px 0 0 var(--pl),-9px 0 0 var(--pb),-10.4px 0 0 var(--pl),-12px 0 0 var(--pb),-13.4px 0 0 var(--pl)}
+.q-frame.q-even .q-stack{right:auto;left:15px;border-radius:26px 0 0 26px;box-shadow:-1.4px 0 2.4px var(--ps),-1.4px 0 0 var(--pl),-3.0px 0 0 var(--pb),-4.4px 0 2.4px var(--ps),-4.4px 0 0 var(--pl),-6.0px 0 0 var(--pb),-7.4px 0 2.4px var(--ps),-7.4px 0 0 var(--pl),-9.0px 0 0 var(--pb),-10.4px 0 2.4px var(--ps),-10.4px 0 0 var(--pl),-12.0px 0 0 var(--pb),-13.4px 0 2.4px var(--ps),-13.4px 0 0 var(--pl)}
 .q-frame.q-even .q-spine{left:auto;right:0;background:linear-gradient(to left,rgba(70,50,25,.24),rgba(70,50,25,.09) 40%,rgba(70,50,25,0))}
 .q-frame{padding-right:22px}.q-frame.q-even{padding-right:8px;padding-left:22px}
-[data-theme="dark"] .q-stack{--pl:rgba(230,210,255,.22);--pb:#1B1524}
+[data-theme="dark"] .q-stack{--pl:rgba(230,210,255,.22);--ps:rgba(0,0,0,.6);--pb:#1B1524}
 [data-theme="dark"] .q-spine{background:linear-gradient(to right,rgba(0,0,0,.45),transparent)}[data-theme="dark"] .q-frame.q-even .q-spine{background:linear-gradient(to left,rgba(0,0,0,.45),transparent)}
 </style>
 </head>
