@@ -272,13 +272,20 @@ final class AdhanScheduler {
         String city = prefs(c).getString(KEY_CITY, "");
         Notification.Builder b = Build.VERSION.SDK_INT >= 26 ? new Notification.Builder(c, CHANNEL_TIMES)
                 : new Notification.Builder(c).setPriority(Notification.PRIORITY_LOW);
+        String title = "الصلاة القادمة: " + n.optString("n") + " " + n.optString("s");
         b.setSmallIcon(R.drawable.ic_stat_zal).setColor(Color.parseColor("#7137A8"))
-                .setContentTitle("الصلاة القادمة: " + n.optString("n") + " " + n.optString("s"))
-                .setContentText(city.isEmpty() ? line.toString() : city + " — " + line)
-                .setStyle(new Notification.BigTextStyle().bigText(line + (city.isEmpty() ? "" : "\n" + city)))
-                .setContentIntent(open).setOngoing(true).setShowWhen(true).setWhen(n.optLong("t"))
-                .setUsesChronometer(true).setOnlyAlertOnce(true).setVisibility(Notification.VISIBILITY_PUBLIC);
-        if (Build.VERSION.SDK_INT >= 24) b.setChronometerCountDown(true);
+                .setContentTitle(title)
+                .setContentIntent(open).setOngoing(true).setShowWhen(false)
+                .setOnlyAlertOnce(true).setVisibility(Notification.VISIBILITY_PUBLIC);
+        if (Build.VERSION.SDK_INT >= 24) {
+            android.widget.RemoteViews rv = new android.widget.RemoteViews(c.getPackageName(), R.layout.notif_pin);
+            rv.setTextViewText(R.id.pin_title, title);
+            rv.setChronometer(R.id.pin_cd, android.os.SystemClock.elapsedRealtime() + (n.optLong("t") - System.currentTimeMillis()), null, true);
+            rv.setChronometerCountDown(R.id.pin_cd, true);
+            b.setStyle(new Notification.DecoratedCustomViewStyle()).setCustomContentView(rv);
+        } else {
+            b.setShowWhen(true).setWhen(n.optLong("t")).setUsesChronometer(true);
+        }
         try { nm.notify(PIN_ID, b.build()); } catch (SecurityException ignored) { }
     }
 
