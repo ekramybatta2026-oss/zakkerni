@@ -600,6 +600,7 @@ body.qfull .topbar,body.qfull .nav{display:none}
 .q-frame{padding-right:22px}.q-frame.q-even{padding-right:8px;padding-left:22px}
 [data-theme="dark"] .q-stack{--pl:rgba(230,210,255,.22);--ps:rgba(0,0,0,.6);--pb:#1B1524}
 [data-theme="dark"] .q-spine{background:linear-gradient(to right,rgba(0,0,0,.45),transparent)}[data-theme="dark"] .q-frame.q-even .q-spine{background:linear-gradient(to left,rgba(0,0,0,.45),transparent)}
+.q-page{transition:opacity .22s ease}.q-page.q-rot{opacity:0;transition:opacity .08s linear}
 .q-lines.q-land{justify-content:flex-start;overflow-y:auto;overscroll-behavior:contain;padding-top:6px;padding-bottom:96px}
 .q-lines.q-land .qr{flex:none}
 </style>
@@ -2350,15 +2351,23 @@ function qFit(el, box, count) {
   box.style.setProperty('--lh', lh + 'px');
   box.style.fontSize = Math.min(byW, lh * 0.72, open ? 30 : 44) + 'px';
 }
-let qRot = 0;
+let qRot = 0, qRotWH = '';
 window.addEventListener('resize', () => {
-  clearTimeout(qRot);
-  qRot = setTimeout(() => {
-    if (current !== 'quran' || !Q || !$('#qPage')) return;
-    qCache.forEach(b => b.remove()); qCache.clear(); qCur = null;
-    qShow(S.qpage || 1);
-  }, 250);
+  if (current !== 'quran' || !Q) return;
+  const pg = $('#qPage'); if (!pg) return;
+  const wh = innerWidth > innerHeight ? 'l' : 'p';
+  if (wh === qRotWH && !pg.classList.contains('q-rot')) { clearTimeout(qRot); qRot = setTimeout(qRelayout, 120); return; }
+  qRotWH = wh;
+  pg.classList.add('q-rot');   // fade the old layout out while the screen turns
+  clearTimeout(qRot); qRot = setTimeout(qRelayout, 160);
 });
+async function qRelayout() {
+  const pg = $('#qPage'); if (!pg || current !== 'quran') return;
+  const n = S.qpage || 1;
+  qCache.forEach(b => b.remove()); qCache.clear(); qCur = null;
+  await qShow(n);
+  requestAnimationFrame(() => requestAnimationFrame(() => pg.classList.remove('q-rot')));
+}
 function qMarkState() { const b = $('#qMark'); if (b) b.classList.toggle('on', qMarks().some(m => m.p === (S.qpage || 1) && m.v < 0)); }
 function qSelect(v, open = true) {
   const pg = $('#qPage'); if (!pg) return;
