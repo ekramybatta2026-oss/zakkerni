@@ -137,7 +137,9 @@ public class AdhanService extends Service {
             player.setOnCompletionListener(mp -> stopSelf());
             player.prepare();
             player.start();
+            AdhanLog.add(this, "بدأ تشغيل الأذان (" + file + ")");
         } catch (Exception e) {
+            AdhanLog.add(this, "فشل تشغيل الأذان: " + e.getClass().getSimpleName() + " " + e.getMessage());
             stopSelf();
         }
     }

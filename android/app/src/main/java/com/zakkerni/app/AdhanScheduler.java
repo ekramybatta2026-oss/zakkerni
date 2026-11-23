@@ -135,8 +135,14 @@ final class AdhanScheduler {
             i.putExtra("at", when);
         }
         PendingIntent pi = PendingIntent.getBroadcast(c, 1001, i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-        if (ev == null) { am.cancel(pi); return; }
+        if (ev == null) { am.cancel(pi); AdhanLog.add(c, "لا توجد مواقيت محفوظة للجدولة"); return; }
         setClock(c, am, when, pi);
+        String key = when + (isPre ? "p" : "");
+        if (!key.equals(prefs(c).getString("last_armed", ""))) {
+            prefs(c).edit().putString("last_armed", key).apply();
+            AdhanLog.add(c, "تم ضبط " + (isPre ? "تنبيه قبل " : "أذان ") + ev.optString("n") + " على " + AdhanLog.hm(when)
+                    + (ev.optBoolean("a", true) ? "" : " (الأذان مطفأ لهذه الصلاة)"));
+        }
     }
 
     static void setAlarm(AlarmManager am, long when, PendingIntent pi) {
@@ -204,7 +210,8 @@ final class AdhanScheduler {
         NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
         AudioManager au = (AudioManager) c.getSystemService(Context.AUDIO_SERVICE);
         if (nm == null || au == null) return;
-        if (Build.VERSION.SDK_INT >= 23 && !nm.isNotificationPolicyAccessGranted()) return;
+        if (Build.VERSION.SDK_INT >= 23 && !nm.isNotificationPolicyAccessGranted()) { AdhanLog.add(c, "الصامت: لا يوجد إذن عدم الإزعاج"); return; }
+        AdhanLog.add(c, "تفعيل الصامت لمدة " + min + " دقيقة");
         try {
             int current = au.getRingerMode();
             if (current != AudioManager.RINGER_MODE_SILENT) prefs(c).edit().putInt(KEY_PREV_RINGER, current).apply();
@@ -239,6 +246,7 @@ final class AdhanScheduler {
         if (au == null || prev < 0) return;
         try {
             if (au.getRingerMode() == AudioManager.RINGER_MODE_SILENT) { au.setRingerMode(prev); cue(c, true); } // only undo our own change
+            AdhanLog.add(c, "إعادة الرنين بعد الصامت");
         } catch (Exception ignored) { }
         prefs(c).edit().remove(KEY_PREV_RINGER).apply();
     }

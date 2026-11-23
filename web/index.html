@@ -589,6 +589,7 @@ body.qfull .topbar,body.qfull .nav{display:none}
 .q-seek output.show{display:flex}.q-seek output b{font-size:18px;line-height:1.2;color:#FFB066}.q-seek output small{font-size:11.5px;font-weight:700}
 .q-seek output::after{content:"";position:absolute;bottom:-5px;left:50%;margin-left:-6px;border:6px solid transparent;border-bottom:0;border-top-color:#4A1C78}
 .set-row.sub{padding:9px 16px 9px 16px;padding-inline-start:64px}.set-row.sub .lbl b{font-size:14px;font-weight:700}
+.alog{direction:rtl;text-align:right;white-space:pre-wrap;font:600 12px/1.7 Cairo,sans-serif;background:var(--surface-2);border-radius:14px;padding:12px;max-height:55vh;overflow:auto;margin:0 0 10px;color:var(--text)}
 </style>
 </head>
 <body>
@@ -1642,6 +1643,7 @@ function renderAdhan() {
       ${S.prayer.silent ? `<div class="set-row"><div class="ic2">${ico('timer')}</div><div class="lbl"><b>بداية الصامت</b><small>بعد دخول وقت الأذان</small></div><select class="sel" id="pSilD">${opts([[0, 'مع الأذان مباشرة'], [5, 'بعد ٥ دقائق'], [10, 'بعد ١٠ دقائق'], [15, 'بعد ١٥ دقيقة'], [20, 'بعد ٢٠ دقيقة']].map(([v, l]) => [v, nd(l)]), S.prayer.sdelay ?? 5)}</select></div>
       ${[['fajr', 'الفجر'], ['dhuhr', 'الظهر'], ['asr', 'العصر'], ['maghrib', 'المغرب'], ['isha', 'العشاء']].map(([k, n]) => `<div class="set-row sub"><div class="lbl"><b>مدة الصامت — ${n}</b></div><select class="sel" data-sil="${k}">${opts([0, 10, 15, 20, 25, 30, 40, 45, 60, 90].map(m => [m, m ? nd(m + (m === 10 ? ' دقائق' : ' دقيقة')) : 'بدون']), S.prayer.sil[k])}</select></div>`).join('')}` : ''}
       <div class="set-row"><div class="ic2">${ico('mosque')}</div><div class="lbl"><b>شاشة كاملة عند الأذان</b><small>والجوال مقفول؛ وإن كان مفتوحًا يظهر شريط علوي فقط</small></div><button class="switch ${S.prayer.full ? 'on' : ''}" id="pFull" aria-label="شاشة كاملة"></button></div>` : ''}
+      ${NATIVE ? `<div class="set-row" id="pLog"><div class="ic2">${ico('book')}</div><div class="lbl"><b>سجل الأذان</b><small>متى ضُبط كل أذان ومتى وصل — للتأكد من عمله</small></div>${ico('chev-l')}</div>` : ''}
       ${NATIVE ? `<div class="set-row"><div class="ic2">${ico('bell')}</div><div class="lbl"><b>مواقيت الصلاة في الإشعارات</b><small>إشعار دائم بالصلاة القادمة وعدّاد تنازلي</small></div><button class="switch ${S.prayer.pin ? 'on' : ''}" id="pPin" aria-label="إشعار المواقيت"></button></div>` : ''}
       <div class="set-row"><div class="ic2">${ico('pin')}</div><div class="lbl"><b>المدينة</b></div><select class="sel" id="pCity">${opts([['auto', '📍 تلقائي حسب موقعي'], ...CITIES.map(x => [x.id, x.name])], S.prayer.city)}</select></div>
       <div class="set-row"><div class="ic2">${ico('book')}</div><div class="lbl"><b>طريقة الحساب</b></div><select class="sel" id="pMethod">${opts([['', 'تلقائي حسب المدينة'], ...Object.entries(PrayerCalc.METHODS).map(([k, m]) => [k, m.name])], S.prayer.method)}</select></div>
@@ -1664,6 +1666,7 @@ function renderAdhan() {
   const ps = $('#pSil'); if (ps) ps.onclick = () => { S.prayer.silent = S.prayer.silent ? 0 : 1; save(); renderAdhan(); if (S.prayer.silent && !AndroidBridge.hasDnd()) toast('اسمح للتطبيق بالتحكم في وضع عدم الإزعاج'); };
   document.querySelectorAll('[data-sil]').forEach(s => s.onchange = () => { S.prayer.sil[s.dataset.sil] = +s.value; save(); scheduleNative(); });
   const psd = $('#pSilD'); if (psd) psd.onchange = (e) => { S.prayer.sdelay = +e.target.value; save(); scheduleNative(); };
+  const pl = $('#pLog'); if (pl) pl.onclick = adhanLogSheet;
   const pf = $('#pFull'); if (pf) pf.onclick = () => { S.prayer.full = !S.prayer.full; save(); renderAdhan(); };
   $('#pVoice').onchange = (e) => { S.prayer.voice = e.target.value; save(); stopAdhan(); setVoiceSrc(); renderAdhan(); };
   const pp = $('#pPin'); if (pp) pp.onclick = () => { S.prayer.pin = !S.prayer.pin; save(); renderAdhan(); };
@@ -1915,6 +1918,13 @@ function sheet(title, items, onPick) {
   $('#shList').innerHTML = items.map(([v, l, on]) => `<button class="shi ${on ? 'on' : ''}" data-v="${v}">${l}</button>`).join('');
   m.classList.add('show');
   $('#shList').querySelectorAll('[data-v]').forEach(b => b.onclick = () => { m.classList.remove('show'); onPick(b.dataset.v); });
+}
+function adhanLogSheet() {
+  let txt = ''; try { txt = AndroidBridge.adhanLog() || ''; } catch (e) {}
+  const m = $('#sheet'); $('#shTitle').textContent = 'سجل الأذان';
+  $('#shList').innerHTML = `<pre class="alog">${esc(txt || 'لا يوجد سجل بعد')}</pre><button class="shi" id="alCopy">نسخ السجل</button>`;
+  m.classList.add('show');
+  $('#alCopy').onclick = () => { try { navigator.clipboard.writeText(txt); toast('تم نسخ السجل'); } catch (e) {} };
 }
 function sleepSheet() {
   const opts = [5, 10, 15, 20, 30, 45, 60, 90, 120].map(n => [n, nd(n < 60 ? `${n} دقيقة` : n === 60 ? 'ساعة' : n === 90 ? 'ساعة ونصف' : 'ساعتان')]);

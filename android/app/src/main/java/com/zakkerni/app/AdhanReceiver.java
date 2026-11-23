@@ -21,10 +21,15 @@ public class AdhanReceiver extends BroadcastReceiver {
             AdhanScheduler.restoreRinger(c);
             return;
         }
+        if (action != null && !AdhanScheduler.ACTION_FIRE.equals(action)) AdhanLog.add(c, "حدث النظام: " + action.substring(action.lastIndexOf('.') + 1));
+        if (AdhanScheduler.ACTION_FIRE.equals(action) && intent.getStringExtra("name") == null) AdhanLog.add(c, "منبّه بدون بيانات صلاة");
         if (AdhanScheduler.ACTION_FIRE.equals(action) && intent.getStringExtra("name") != null) {
             String name = intent.getStringExtra("name");
             boolean pre = intent.getBooleanExtra("pre", false);
             long late = System.currentTimeMillis() - intent.getLongExtra("at", System.currentTimeMillis());
+            AdhanLog.add(c, "وصل " + (pre ? "تنبيه قبل " : "أذان ") + name + (late > 30_000 ? " متأخرًا " + (late / 60_000) + " دقيقة" : " في موعده")
+                    + (intent.getBooleanExtra("adhan", true) ? "" : " (الأذان مطفأ)"));
+            if (late > (pre ? 3 : 10) * 60_000L) AdhanLog.add(c, "تم تجاهله لأنه تأخّر كثيرًا");
             // the system delivered this alarm late (phone asleep under a battery manager): never play a stale adhan
             if (late > (pre ? 3 : 10) * 60_000L) {
                 AdhanScheduler.updatePinned(c);

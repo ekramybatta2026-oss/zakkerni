@@ -102,6 +102,24 @@ public class Bridge {
     }
 
     @JavascriptInterface
+    public String adhanLog() {
+        StringBuilder b = new StringBuilder();
+        try {
+            AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
+            AlarmManager.AlarmClockInfo n = am != null ? am.getNextAlarmClock() : null;
+            b.append("المنبّه القادم في النظام: ").append(n != null ? AdhanLog.hm(n.getTriggerTime()) : "لا يوجد").append('\n');
+            b.append("منبّهات دقيقة: ").append(canExact() ? "مسموح" : "غير مسموح").append('\n');
+            b.append("استثناء البطارية: ").append(isIgnoringBattery() ? "نعم" : "لا").append('\n');
+            android.app.NotificationManager nm = (android.app.NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
+            if (nm != null) b.append("الإشعارات: ").append(nm.areNotificationsEnabled() ? "مفعّلة" : "مقفولة").append('\n');
+            android.media.AudioManager au = (android.media.AudioManager) ctx.getSystemService(Context.AUDIO_SERVICE);
+            if (au != null) b.append("صوت المنبّه: ").append(au.getStreamVolume(android.media.AudioManager.STREAM_ALARM)).append('/').append(au.getStreamMaxVolume(android.media.AudioManager.STREAM_ALARM))
+                    .append(" — الرنين: ").append(au.getRingerMode() == 0 ? "صامت" : au.getRingerMode() == 1 ? "اهتزاز" : "عادي").append('\n');
+        } catch (Exception ignored) { }
+        return b.append("──────────\n").append(AdhanLog.get(ctx)).toString();
+    }
+
+    @JavascriptInterface
     public boolean canExact() {
         if (Build.VERSION.SDK_INT < 31) return true;
         AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
