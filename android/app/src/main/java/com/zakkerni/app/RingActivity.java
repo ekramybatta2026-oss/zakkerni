@@ -33,6 +33,7 @@ public class RingActivity extends Activity {
         else getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         if (!fire(getIntent())) { finish(); return; }
+        AdhanLog.add(this, "ظهرت شاشة المنبه");
         boolean timer = "timer".equals(RingService.kind);
 
         LinearLayout root = new LinearLayout(this);

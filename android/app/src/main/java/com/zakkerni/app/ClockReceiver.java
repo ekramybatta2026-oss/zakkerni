@@ -44,6 +44,13 @@ public class ClockReceiver extends BroadcastReceiver {
     }
 
     static void ring(Context c, String kind, int id, String label) {
+        try {
+            boolean fs = Build.VERSION.SDK_INT < 34 || ((android.app.NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE)).canUseFullScreenIntent();
+            boolean ov = Build.VERSION.SDK_INT < 23 || android.provider.Settings.canDrawOverlays(c);
+            boolean locked = ((android.app.KeyguardManager) c.getSystemService(Context.KEYGUARD_SERVICE)).isKeyguardLocked();
+            AdhanLog.add(c, ("timer".equals(kind) ? "رنّ المؤقت" : "رنّ المنبه") + " — ملء الشاشة: " + (fs ? "مسموح" : "غير مسموح")
+                    + "، فوق التطبيقات: " + (ov ? "مسموح" : "غير مسموح") + "، الجوال " + (locked ? "مقفول" : "مفتوح"));
+        } catch (Exception ignored) { }
         RingService.kind = kind; RingService.alarmId = id; RingService.label = label == null ? "" : label;
         Intent s = new Intent(c, RingService.class).putExtra("kind", kind).putExtra("id", id).putExtra("label", label == null ? "" : label);
         try {
@@ -53,6 +60,6 @@ public class ClockReceiver extends BroadcastReceiver {
         // also try to open the ring screen directly (allowed while the alarm's grace window is open on most phones)
         try {
             c.startActivity(new Intent(c, RingActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_USER_ACTION));
-        } catch (Exception ignored) { }
+        } catch (Exception e) { AdhanLog.add(c, "تعذّر فتح شاشة المنبه: " + e.getClass().getSimpleName()); }
     }
 }

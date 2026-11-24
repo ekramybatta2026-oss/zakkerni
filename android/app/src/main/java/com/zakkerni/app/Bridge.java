@@ -109,6 +109,7 @@ public class Bridge {
             AlarmManager.AlarmClockInfo n = am != null ? am.getNextAlarmClock() : null;
             b.append("المنبّه القادم في النظام: ").append(n != null ? AdhanLog.hm(n.getTriggerTime()) : "لا يوجد").append('\n');
             b.append("منبّهات دقيقة: ").append(canExact() ? "مسموح" : "غير مسموح").append('\n');
+            b.append("ملء الشاشة: ").append(canFullScreen() ? "مسموح" : "غير مسموح").append(" — فوق التطبيقات: ").append(canOverlay() ? "مسموح" : "غير مسموح").append('\n');
             b.append("استثناء البطارية: ").append(isIgnoringBattery() ? "نعم" : "لا").append('\n');
             android.app.NotificationManager nm = (android.app.NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
             if (nm != null) b.append("الإشعارات: ").append(nm.areNotificationsEnabled() ? "مفعّلة" : "مقفولة").append('\n');
