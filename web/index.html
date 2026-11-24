@@ -598,7 +598,6 @@ body.qfull .topbar,body.qfull .nav{display:none}
 .q-frame{padding-right:22px}.q-frame.q-even{padding-right:8px;padding-left:22px}
 [data-theme="dark"] .q-stack{--pl:rgba(230,210,255,.22);--ps:rgba(0,0,0,.6);--pb:#1B1524}
 [data-theme="dark"] .q-spine{background:linear-gradient(to right,rgba(0,0,0,.45),transparent)}[data-theme="dark"] .q-frame.q-even .q-spine{background:linear-gradient(to left,rgba(0,0,0,.45),transparent)}
-.q-page{transition:opacity .22s ease}.q-page.q-rot{opacity:0;transition:opacity .08s linear}
 .q-lines.q-land{justify-content:flex-start;overflow-y:auto;overscroll-behavior:contain;padding-top:6px;padding-bottom:96px}
 .q-lines.q-land .qr{flex:none}
 .q-lines.q-open{padding:22px 22px}
@@ -1592,7 +1591,9 @@ function scheduleNative() {
   try { AndroidBridge.scheduleAdhans(JSON.stringify(list), !!S.prayer.pin, city().name); } catch (e) {}
   try { const C = city(); if (AndroidBridge.setLocation && C.lat != null) AndroidBridge.setLocation(+C.lat, +C.lng); } catch (e) {}
 }
-window.onNativeResume = () => { rollDay(); scheduleNative(); if (current === 'adhan') renderAdhan(); };
+function dayCheck() { if (S.date !== todayKey()) { rollDay(); if (current !== 'quran') go(current, false); } }
+setInterval(dayCheck, 60000);
+window.onNativeResume = () => { dayCheck(); scheduleNative(); if (current === 'adhan') renderAdhan(); };
 function checkAdhan() {
   if (NATIVE) return; // Android plays the adhan itself (works with the app closed)
   if (!S.prayer.on) return;
@@ -2316,7 +2317,7 @@ async function qShow(n, hv = -1, dir = 0) {
   qPre = setTimeout(() => {   // keep the neighbours ready so swipes start instantly
     for (const [k, v] of qCache) if (Math.abs(k - n) > 1) { v.remove(); qCache.delete(k); }
     [n + 1, n - 1].forEach(k => { if (k >= 1 && k <= 604) qBuild(k).catch(() => {}); });
-  }, 380);
+  }, Math.max(380, qNoPrebuild - Date.now()));
 }
 function qSlide(box, x) {
   box.style.transition = 'transform .3s cubic-bezier(.22,.8,.25,1)';
@@ -2382,20 +2383,27 @@ function qFit(el, box, count) {
   box.style.setProperty('--lh', lh + 'px');
   box.style.fontSize = Math.min(byW, lh * 0.72, open ? 34 : 44) + 'px';
 }
-let qRot = 0;
+let qLastWH = '', qRelaying = false;
 window.addEventListener('resize', () => {
-  if (current !== 'quran' || !Q) return;
-  const pg = $('#qPage'); if (!pg) return;
-  pg.classList.add('q-rot');   // hide while the screen turns / system bars settle, then lay out once
-  clearTimeout(qRot); qRot = setTimeout(qRelayout, 220);
+  if (current !== 'quran' || !Q || !$('#qPage')) return;
+  const pg = $('#qPage'), wh = pg.clientWidth + 'x' + pg.clientHeight;
+  if (wh === qLastWH) return;
+  qLastWH = wh;
+  qRelayout();   // lay out again in the same frame (fonts are already loaded), no fade, no delay
 });
 async function qRelayout() {
-  const pg = $('#qPage'); if (!pg || current !== 'quran') return;
+  if (qRelaying) { qRelaying = 2; return; }
+  qRelaying = true;
   const n = S.qpage || 1;
-  qCache.forEach(b => b.remove()); qCache.clear(); qCur = null;
+  qCache.forEach(b => { if (+b.dataset.n !== n) b.remove(); });
+  const old = qCache.get(n); qCache.clear(); qCur = null;
+  qNoPrebuild = Date.now() + 900;   // keep the main thread free while the screen settles
   await qShow(n);
-  requestAnimationFrame(() => requestAnimationFrame(() => pg.classList.remove('q-rot')));
+  if (old && old !== qCur) old.remove();
+  const again = qRelaying === 2; qRelaying = false;
+  if (again) qRelayout();
 }
+let qNoPrebuild = 0;
 function qMarkState() { const b = $('#qMark'); if (b) b.classList.toggle('on', qMarks().some(m => m.p === (S.qpage || 1) && m.v < 0)); }
 function qSelect(v, open = true) {
   const pg = $('#qPage'); if (!pg) return;
