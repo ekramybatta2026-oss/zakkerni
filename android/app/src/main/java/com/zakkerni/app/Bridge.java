@@ -232,30 +232,73 @@ public class Bridge {
     }
 
     /** Exact pixels of the app as it is on screen (for sharing a mushaf page as the reader sees it). */
-    @JavascriptInterface
-    public String captureScreen() {
+    private android.graphics.Bitmap grab() {
         MainActivity a = MainActivity.current;
-        if (a == null) return "";
+        if (a == null) { AdhanLog.add(ctx, "مشاركة: التطبيق غير ظاهر"); return null; }
         final android.graphics.Bitmap[] out = { null };
         final java.util.concurrent.CountDownLatch done = new java.util.concurrent.CountDownLatch(1);
         a.runOnUiThread(() -> {
+            android.view.View v = a.webView();
+            int w = v.getWidth(), h = v.getHeight();
             try {
-                android.view.View v = a.webView();
-                int w = v.getWidth(), h = v.getHeight();
                 android.graphics.Bitmap b = android.graphics.Bitmap.createBitmap(w, h, android.graphics.Bitmap.Config.ARGB_8888);
                 if (Build.VERSION.SDK_INT >= 26) {
                     int[] loc = new int[2]; v.getLocationInWindow(loc);
                     android.view.PixelCopy.request(a.getWindow(), new android.graphics.Rect(loc[0], loc[1], loc[0] + w, loc[1] + h), b, r -> {
                         if (r == android.view.PixelCopy.SUCCESS) out[0] = b;
+                        else { AdhanLog.add(ctx, "مشاركة: PixelCopy=" + r); try { v.draw(new android.graphics.Canvas(b)); out[0] = b; } catch (Exception ignored) { } }
                         done.countDown();
                     }, new android.os.Handler(android.os.Looper.getMainLooper()));
                 } else { v.draw(new android.graphics.Canvas(b)); out[0] = b; done.countDown(); }
-            } catch (Exception e) { done.countDown(); }
+            } catch (Exception e) { AdhanLog.add(ctx, "مشاركة: " + e.getClass().getSimpleName()); done.countDown(); }
         });
         try { done.await(4, java.util.concurrent.TimeUnit.SECONDS); } catch (InterruptedException ignored) { }
-        if (out[0] == null) return "";
+        return out[0];
+    }
+
+    private final java.util.List<android.graphics.Bitmap> snaps = new java.util.ArrayList<>();
+
+    @JavascriptInterface
+    public void snapBegin() { snaps.clear(); }
+
+    @JavascriptInterface
+    public boolean snapAdd() { android.graphics.Bitmap b = grab(); if (b == null) return false; snaps.add(b); return true; }
+
+    /** Share the captured pages as one lossless PNG (two pages side by side, first on the right). */
+    @JavascriptInterface
+    public boolean snapShare() {
+        if (snaps.isEmpty()) return false;
+        try {
+            android.graphics.Bitmap out;
+            if (snaps.size() == 1) out = snaps.get(0);
+            else {
+                android.graphics.Bitmap r = snaps.get(0), l = snaps.get(1);
+                int g = 18, W = r.getWidth() + l.getWidth() + g, H = Math.max(r.getHeight(), l.getHeight());
+                out = android.graphics.Bitmap.createBitmap(W, H, android.graphics.Bitmap.Config.ARGB_8888);
+                android.graphics.Canvas c = new android.graphics.Canvas(out);
+                c.drawColor(android.graphics.Color.parseColor("#E9DFCC"));
+                c.drawBitmap(l, 0, 0, null); c.drawBitmap(r, l.getWidth() + g, 0, null);
+            }
+            java.io.File dir = new java.io.File(ctx.getCacheDir(), "share"); dir.mkdirs();
+            java.io.File[] old = dir.listFiles(); if (old != null) for (java.io.File o : old) o.delete();
+            java.io.File f = new java.io.File(dir, "zakkerni-" + System.currentTimeMillis() + ".png");
+            try (java.io.FileOutputStream os = new java.io.FileOutputStream(f)) { out.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, os); }
+            snaps.clear();
+            Uri u = androidx.core.content.FileProvider.getUriForFile(ctx, "com.zakkerni.app.files", f);
+            Intent s = new Intent(Intent.ACTION_SEND).setType("image/png").putExtra(Intent.EXTRA_STREAM, u).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            s.setClipData(android.content.ClipData.newRawUri("", u));
+            Context a = MainActivity.current != null ? MainActivity.current : ctx;
+            a.startActivity(Intent.createChooser(s, "مشاركة").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+            return true;
+        } catch (Exception e) { AdhanLog.add(ctx, "مشاركة: " + e.getClass().getSimpleName()); return false; }
+    }
+
+    @JavascriptInterface
+    public String captureScreen() {
+        android.graphics.Bitmap b = grab();
+        if (b == null) return "";
         java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
-        out[0].compress(android.graphics.Bitmap.CompressFormat.PNG, 100, bos);   // lossless: Quran text stays crisp
+        b.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, bos);
         return "data:image/png;base64," + android.util.Base64.encodeToString(bos.toByteArray(), android.util.Base64.NO_WRAP);
     }
 
