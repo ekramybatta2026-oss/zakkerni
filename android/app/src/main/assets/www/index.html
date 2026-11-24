@@ -1141,7 +1141,7 @@ document.querySelectorAll('#nav button').forEach(b => b.onclick = () => go(b.dat
 $('#gearBtn').onclick = () => go('settings');
 window.zGo = (v) => go(v);
 window.zQ = (n) => qShow(n);
-window.zCv = async (k, a, b) => (k === 'p' ? qJoin(await Promise.all(Array.from({ length: b || 1 }, (_, i) => qPageCanvas(a + i, b > 1 ? 900 : 1080, !(b > 1))))) : await qVersesCanvas(a, b)).toDataURL('image/png');
+window.zCv = async (k, a, b) => (k === 'p' ? qJoin(await Promise.all(Array.from({ length: b || 1 }, (_, i) => qPageCanvas(a + i, b > 1 ? 1200 : 1440, !(b > 1))))) : await qVersesCanvas(a, b)).toDataURL('image/png');
 window.addEventListener('popstate', (e) => go((e.state && e.state.view) || 'home', false));
 
 /* shrink text until it fits on one line; wrap if it still can't */
@@ -2556,7 +2556,7 @@ async function qPageCanvas(n, W = 1080, full = false) {
   ctx.fillText('ذَكِّرني', n % 2 ? pad + W * 0.08 : W - pad - W * 0.08, by + bh * 0.66);
   return cv;
 }
-async function qVersesCanvas(v0, v1, W = 1080) {
+async function qVersesCanvas(v0, v1, W = 1440) {
   const p0 = vPage(v0), p1 = Math.min(604, vPage(v1) + 1), toks = [];
   for (let p = p0; p <= p1; p++) {
     const [fi, lines] = Q.pg[p - 1]; let used = false;
@@ -2611,27 +2611,7 @@ async function qShareCanvas(cv, text) {
 const qWait = (ms) => new Promise(r => setTimeout(r, ms));
 const qFrames = () => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 async function qSharePages(n, count) {
-  // On Android, share exactly what is on screen (same layout, frames and colours), captured and saved natively
-  if (window.AndroidBridge && AndroidBridge.snapAdd) {
-    const bar = $('#qBar'), had = bar && bar.classList.contains('show');
-    const restore = () => { document.body.classList.remove('q-shot'); if (had && bar) bar.classList.add('show'); };
-    try {
-      $('#sheet') && $('#sheet').classList.remove('show'); $('#qSheet') && $('#qSheet').classList.remove('show');
-      if (bar) bar.classList.remove('show');
-      document.body.classList.add('q-shot');   // no page-edge / spine effect in shared pictures
-      AndroidBridge.snapBegin();
-      for (let i = 0; i < count && n + i <= 604; i++) {
-        if (i) await qShow(n + i);
-        await qWait(i ? 350 : 250); await qFrames();
-        if (!AndroidBridge.snapAdd()) throw new Error('capture');
-      }
-      if (count > 1) await qShow(n);
-      restore();
-      if (AndroidBridge.snapShare()) return;
-      toast('تعذّر مشاركة الصورة'); return;
-    } catch (e) { restore(); toast('تعذّر التقاط الصفحة'); return; }
-  }
-  try { const cvs = []; for (let i = 0; i < count && n + i <= 604; i++) cvs.push(await qPageCanvas(n + i, count > 1 ? 900 : 1080, count === 1)); await qShareCanvas(qJoin(cvs), ''); }
+  try { const cvs = []; for (let i = 0; i < count && n + i <= 604; i++) cvs.push(await qPageCanvas(n + i, count > 1 ? 1200 : 1440, count === 1)); await qShareCanvas(qJoin(cvs), ''); }
   catch (e) { toast('تعذّر تجهيز الصورة'); }
 }
 async function qShareVerses(v0, v1) {
