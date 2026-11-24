@@ -44,30 +44,29 @@ public class AdhanActivity extends Activity {
         root.setLayoutDirection(android.view.View.LAYOUT_DIRECTION_RTL);
         int pad = dp(28);
         root.setPadding(pad, pad, pad, pad);
-        // dark night background (same as the app's dark mode) with the light arabesque
-        GradientDrawable grad = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
-                new int[]{Color.parseColor("#2A2236"), Color.parseColor("#1D1726"), Color.parseColor("#160F1F")});
-        android.graphics.drawable.BitmapDrawable pat = new android.graphics.drawable.BitmapDrawable(getResources(),
-                android.graphics.Bitmap.createScaledBitmap(android.graphics.BitmapFactory.decodeResource(getResources(), R.drawable.adhan_pat_dark), dp(220), dp(220), true));
-        pat.setTileModeXY(android.graphics.Shader.TileMode.REPEAT, android.graphics.Shader.TileMode.REPEAT);
-        root.setBackground(new android.graphics.drawable.LayerDrawable(new android.graphics.drawable.Drawable[]{grad, pat}));
-        getWindow().setStatusBarColor(Color.parseColor("#2A2236"));
-        getWindow().setNavigationBarColor(Color.parseColor("#160F1F"));
+        boolean preview = getIntent() != null && getIntent().getBooleanExtra("preview", false);
+        this.preview = preview;
+        String theme = AdhanScheduler.prefs(this).getString("adhan_bg", "night");
+        boolean light = "orange".equals(theme);
+        applyBackground(root, theme);
 
-        int or = Color.parseColor("#F28A32"), orL = Color.parseColor("#FFB066");
+        int or = Color.parseColor(light ? "#4A1C78" : "#F28A32"), orL = Color.parseColor(light ? "#4A1C78" : "#FFB066");
+        int frameCol = Color.parseColor(light ? "#B34A1C78" : "#B3F28A32"), frameFill = Color.parseColor(light ? "#1F4A1C78" : "#1FF28A32");
         ImageView word = new ImageView(this);
-        word.setImageResource(R.drawable.adhan_word);
+        word.setImageResource(light ? R.drawable.adhan_word_purple : R.drawable.adhan_word);
         word.setScaleType(ImageView.ScaleType.FIT_CENTER);
         root.addView(word, new LinearLayout.LayoutParams(dp(200), dp(126)));
 
         TextView small = text("حان الآن موعد أذان", 19, false, orL);
         small.setPadding(0, dp(30), 0, dp(8));
         root.addView(small);
-        root.addView(text(AdhanService.curName.isEmpty() ? "الصلاة" : AdhanService.curName, 52, true, or));
+        String name = AdhanService.curName.isEmpty() || preview ? (preview ? "المغرب" : "الصلاة") : AdhanService.curName;
+        root.addView(text(name, 52, true, or));
 
-        TextView time = text(AdhanService.curTime, 32, true, orL);
+        String tm = preview ? WidgetRenderer.fmtTime(this, System.currentTimeMillis(), 1) : AdhanService.curTime;
+        TextView time = text(tm, 32, true, orL);
         time.setPadding(dp(36), dp(8), dp(36), dp(8));
-        time.setBackground(frame(dp(26)));
+        time.setBackground(frame(dp(26), frameFill, frameCol));
         LinearLayout.LayoutParams tl = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         tl.topMargin = dp(18);
         root.addView(time, tl);
@@ -76,7 +75,7 @@ public class AdhanActivity extends Activity {
         if (!city.isEmpty()) {
             TextView c = text(city, 19, false, orL);
             c.setPadding(dp(22), dp(4), dp(22), dp(4));
-            c.setBackground(frame(dp(30)));
+            c.setBackground(frame(dp(30), frameFill, frameCol));
             LinearLayout.LayoutParams cl = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
             cl.topMargin = dp(18);
             root.addView(c, cl);
@@ -87,7 +86,7 @@ public class AdhanActivity extends Activity {
         stop.setAllCaps(false);
         stop.setTextSize(TypedValue.COMPLEX_UNIT_SP, 21);
         stop.setTypeface(font(true));
-        stop.setTextColor(orL);
+        stop.setTextColor(Color.parseColor("#FFB066"));
         GradientDrawable bg = new GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT,
                 new int[]{Color.parseColor("#8A4BC4"), Color.parseColor("#5A2690")});
         bg.setCornerRadius(dp(30));
@@ -99,7 +98,7 @@ public class AdhanActivity extends Activity {
         root.addView(stop, lp);
         stop.setOnClickListener(v -> stopAdhan());
 
-        TextView hint = text("أو اضغط زر رفع/خفض الصوت", 14, false, Color.parseColor("#B4A6C6"));
+        TextView hint = text(preview ? "معاينة — اضغط للإغلاق" : "أو اضغط زر رفع/خفض الصوت", 14, false, Color.parseColor(light ? "#5A2690" : "#B4A6C6"));
         hint.setPadding(0, dp(18), 0, 0);
         root.addView(hint);
 
@@ -108,11 +107,64 @@ public class AdhanActivity extends Activity {
         IntentFilter f = new IntentFilter(AdhanService.ACTION_DONE);
         if (Build.VERSION.SDK_INT >= 33) registerReceiver(done, f, Context.RECEIVER_NOT_EXPORTED);
         else registerReceiver(done, f);
-        if (!AdhanService.running) finish();
+        if (!AdhanService.running && !preview) finish();
+    }
+
+    private boolean preview = false;
+
+    /** Background presets for the adhan screen, or the user's own picture. */
+    private void applyBackground(LinearLayout root, String theme) {
+        android.graphics.drawable.Drawable base; int top, bottom; int patRes = R.drawable.adhan_pat_dark; int patAlpha = 255;
+        switch (theme) {
+            case "orange": top = Color.parseColor("#FFAA5C"); bottom = Color.parseColor("#E8761E"); patRes = R.drawable.adhan_pat; patAlpha = 150; break;
+            case "purple": top = Color.parseColor("#7137A8"); bottom = Color.parseColor("#3A1660"); patAlpha = 200; break;
+            case "green": top = Color.parseColor("#1F3B33"); bottom = Color.parseColor("#0F221C"); break;
+            default: top = Color.parseColor("#2A2236"); bottom = Color.parseColor("#160F1F");
+        }
+        base = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, new int[]{top, bottom});
+        android.graphics.drawable.Drawable layer2 = null;
+        if ("custom".equals(theme)) {
+            try {
+                java.io.File f = new java.io.File(getFilesDir(), "adhan_bg.jpg");
+                android.graphics.Bitmap bm = android.graphics.BitmapFactory.decodeFile(f.getAbsolutePath());
+                if (bm != null) {
+                    ImageView iv = new ImageView(this);
+                    android.graphics.drawable.BitmapDrawable bd = new android.graphics.drawable.BitmapDrawable(getResources(), bm);
+                    base = new CenterCrop(bd);
+                    layer2 = new android.graphics.drawable.ColorDrawable(Color.parseColor("#80000000"));
+                }
+            } catch (Exception ignored) { }
+        }
+        if (layer2 == null && !"custom".equals(theme)) {
+            android.graphics.drawable.BitmapDrawable pat = new android.graphics.drawable.BitmapDrawable(getResources(),
+                    android.graphics.Bitmap.createScaledBitmap(android.graphics.BitmapFactory.decodeResource(getResources(), patRes), dp(220), dp(220), true));
+            pat.setTileModeXY(android.graphics.Shader.TileMode.REPEAT, android.graphics.Shader.TileMode.REPEAT);
+            pat.setAlpha(patAlpha);
+            layer2 = pat;
+        }
+        root.setBackground(layer2 == null ? base : new android.graphics.drawable.LayerDrawable(new android.graphics.drawable.Drawable[]{base, layer2}));
+        getWindow().setStatusBarColor("custom".equals(theme) ? Color.BLACK : top);
+        getWindow().setNavigationBarColor("custom".equals(theme) ? Color.BLACK : bottom);
+    }
+
+    /** Draws a bitmap scaled to cover the whole screen without stretching. */
+    static class CenterCrop extends android.graphics.drawable.Drawable {
+        private final android.graphics.drawable.BitmapDrawable d;
+        CenterCrop(android.graphics.drawable.BitmapDrawable d) { this.d = d; }
+        @Override public void draw(android.graphics.Canvas c) {
+            android.graphics.Rect b = getBounds(); android.graphics.Bitmap bm = d.getBitmap();
+            float s = Math.max(b.width() / (float) bm.getWidth(), b.height() / (float) bm.getHeight());
+            int w = Math.round(bm.getWidth() * s), h = Math.round(bm.getHeight() * s);
+            int x = b.left + (b.width() - w) / 2, y = b.top + (b.height() - h) / 2;
+            c.drawBitmap(bm, null, new android.graphics.Rect(x, y, x + w, y + h), new android.graphics.Paint(android.graphics.Paint.FILTER_BITMAP_FLAG));
+        }
+        @Override public void setAlpha(int a) { }
+        @Override public void setColorFilter(android.graphics.ColorFilter f) { }
+        @Override public int getOpacity() { return android.graphics.PixelFormat.OPAQUE; }
     }
 
     private void stopAdhan() {
-        stopService(new Intent(this, AdhanService.class));
+        if (!preview) stopService(new Intent(this, AdhanService.class));
         finish();
     }
 
@@ -144,6 +196,12 @@ public class AdhanActivity extends Activity {
         try { if (Build.VERSION.SDK_INT >= 26) return getResources().getFont(bold ? R.font.cairo_bold : R.font.cairo_semibold); }
         catch (Exception ignored) { }
         return bold ? Typeface.DEFAULT_BOLD : Typeface.DEFAULT;
+    }
+
+    private GradientDrawable frame(int radius, int fill, int stroke) {
+        GradientDrawable g = new GradientDrawable();
+        g.setColor(fill); g.setStroke(dp(2), stroke); g.setCornerRadius(radius);
+        return g;
     }
 
     private GradientDrawable frame(int radius) {

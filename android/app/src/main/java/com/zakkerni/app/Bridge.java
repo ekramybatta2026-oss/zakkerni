@@ -216,6 +216,21 @@ public class Bridge {
     }
 
     /** Share a PNG rendered by the page (data: URL) through the system share sheet. */
+    @JavascriptInterface
+    public String getAdhanBg() { return AdhanScheduler.prefs(ctx).getString("adhan_bg", "night"); }
+
+    @JavascriptInterface
+    public void setAdhanBg(String v) { AdhanScheduler.prefs(ctx).edit().putString("adhan_bg", v).apply(); }
+
+    @JavascriptInterface
+    public void pickAdhanBg() { MainActivity a = MainActivity.current; if (a != null) a.runOnUiThread(a::pickAdhanBg); }
+
+    @JavascriptInterface
+    public void previewAdhanScreen() {
+        Context a = MainActivity.current != null ? MainActivity.current : ctx;
+        a.startActivity(new Intent(a, AdhanActivity.class).putExtra("preview", true).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+    }
+
     /** Exact pixels of the app as it is on screen (for sharing a mushaf page as the reader sees it). */
     @JavascriptInterface
     public String captureScreen() {

@@ -605,6 +605,11 @@ body.qfull .topbar,body.qfull .nav{display:none}
 .q-lines.q-open .qr{position:relative}
 .q-orn .bl{fill:none;stroke:#A8875A;stroke-width:1}.q-orn .b2{fill:#F3E9D6;stroke:#A8875A;stroke-width:1.3}
 .q-orn .b0{fill:#E8DABD;stroke:#A8875A;stroke-width:1.4}
+.set-row.col{flex-direction:column;align-items:stretch;gap:10px}
+.abg{display:flex;gap:8px;justify-content:space-between}
+.abg button{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;font-size:11.5px;font-weight:700;color:var(--text)}
+.abg i{width:100%;max-width:54px;aspect-ratio:.6;border-radius:10px;border:2px solid transparent;box-shadow:var(--shadow);display:grid;place-items:center;font-style:normal;font-size:24px;font-weight:700;color:var(--purple)}
+.abg button.on i{border-color:var(--orange)}
 </style>
 </head>
 <body>
@@ -1632,6 +1637,15 @@ function permRows() {
   } catch (e) {}
   return h;
 }
+const ABG = [
+  ['night', 'ليلي', 'background:linear-gradient(#2A2236,#160F1F)'],
+  ['purple', 'بنفسجي', 'background:linear-gradient(#7137A8,#3A1660)'],
+  ['orange', 'برتقالي', 'background:linear-gradient(#FFAA5C,#E8761E)'],
+  ['green', 'أخضر', 'background:linear-gradient(#1F3B33,#0F221C)'],
+  ['custom', 'صورتك', 'background:repeating-linear-gradient(45deg,#E9E1F3 0 6px,#F7F3FC 6px 12px)'],
+];
+const adhanBg = () => { try { return AndroidBridge.getAdhanBg() || 'night'; } catch (e) { return 'night'; } };
+window.onAdhanBg = (ok) => { if (ok) { toast('تم تعيين صورتك خلفيةً لشاشة الأذان'); if (current === 'adhan') renderAdhan(); } };
 function renderAdhan() {
   scheduleNative();
   const v = $('#v-adhan'), c = city(), n = nextPrayer(), list = dayTimes(0), now = Date.now();
@@ -1662,7 +1676,10 @@ function renderAdhan() {
       ${NATIVE ? `<div class="set-row"><div class="ic2">${ico('vib')}</div><div class="lbl"><b>الوضع الصامت بعد الأذان</b><small>يتحوّل الجوال للصامت تلقائيًا ثم يعود لوضعه السابق</small></div><button class="switch ${S.prayer.silent ? 'on' : ''}" id="pSil" aria-label="الوضع الصامت"></button></div>
       ${S.prayer.silent ? `<div class="set-row"><div class="ic2">${ico('timer')}</div><div class="lbl"><b>بداية الصامت</b><small>بعد دخول وقت الأذان</small></div><select class="sel" id="pSilD">${opts([[0, 'مع الأذان مباشرة'], [5, 'بعد ٥ دقائق'], [10, 'بعد ١٠ دقائق'], [15, 'بعد ١٥ دقيقة'], [20, 'بعد ٢٠ دقيقة']].map(([v, l]) => [v, nd(l)]), S.prayer.sdelay ?? 5)}</select></div>
       ${[['fajr', 'الفجر'], ['dhuhr', 'الظهر'], ['asr', 'العصر'], ['maghrib', 'المغرب'], ['isha', 'العشاء']].map(([k, n]) => `<div class="set-row sub"><div class="lbl"><b>مدة الصامت — ${n}</b></div><select class="sel" data-sil="${k}">${opts([0, 10, 15, 20, 25, 30, 40, 45, 60, 90].map(m => [m, m ? nd(m + (m === 10 ? ' دقائق' : ' دقيقة')) : 'بدون']), S.prayer.sil[k])}</select></div>`).join('')}` : ''}
-      <div class="set-row"><div class="ic2">${ico('mosque')}</div><div class="lbl"><b>شاشة كاملة عند الأذان</b><small>والجوال مقفول؛ وإن كان مفتوحًا يظهر شريط علوي فقط</small></div><button class="switch ${S.prayer.full ? 'on' : ''}" id="pFull" aria-label="شاشة كاملة"></button></div>` : ''}
+      <div class="set-row"><div class="ic2">${ico('mosque')}</div><div class="lbl"><b>شاشة كاملة عند الأذان</b><small>والجوال مقفول؛ وإن كان مفتوحًا يظهر شريط علوي فقط</small></div><button class="switch ${S.prayer.full ? 'on' : ''}" id="pFull" aria-label="شاشة كاملة"></button></div>
+      <div class="set-row col"><div class="lbl"><b>خلفية شاشة الأذان</b><small>اختر لونًا أو صورة من جهازك</small></div>
+        <div class="abg">${ABG.map(([k, n, css]) => `<button data-abg="${k}" class="${adhanBg() === k ? 'on' : ''}"><i style="${css}">${k === 'custom' ? '＋' : ''}</i>${n}</button>`).join('')}</div>
+        <button class="btn" id="abgPrev">${ico('play')} معاينة الشاشة</button></div>` : ''}
       ${NATIVE ? `<div class="set-row" id="pLog"><div class="ic2">${ico('book')}</div><div class="lbl"><b>سجل الأذان</b><small>متى ضُبط كل أذان ومتى وصل — للتأكد من عمله</small></div>${ico('chev-l')}</div>` : ''}
       ${NATIVE ? `<div class="set-row"><div class="ic2">${ico('bell')}</div><div class="lbl"><b>مواقيت الصلاة في الإشعارات</b><small>إشعار دائم بالصلاة القادمة وعدّاد تنازلي</small></div><button class="switch ${S.prayer.pin ? 'on' : ''}" id="pPin" aria-label="إشعار المواقيت"></button></div>` : ''}
       <div class="set-row"><div class="ic2">${ico('pin')}</div><div class="lbl"><b>المدينة</b></div><select class="sel" id="pCity">${opts([['auto', '📍 تلقائي حسب موقعي'], ...CITIES.map(x => [x.id, x.name])], S.prayer.city)}</select></div>
@@ -1687,6 +1704,13 @@ function renderAdhan() {
   document.querySelectorAll('[data-sil]').forEach(s => s.onchange = () => { S.prayer.sil[s.dataset.sil] = +s.value; save(); scheduleNative(); });
   const psd = $('#pSilD'); if (psd) psd.onchange = (e) => { S.prayer.sdelay = +e.target.value; save(); scheduleNative(); };
   const pl = $('#pLog'); if (pl) pl.onclick = adhanLogSheet;
+  document.querySelectorAll('[data-abg]').forEach(b => b.onclick = () => {
+    const k = b.dataset.abg;
+    if (k === 'custom') { try { AndroidBridge.pickAdhanBg(); } catch (e) {} return; }
+    try { AndroidBridge.setAdhanBg(k); } catch (e) {}
+    renderAdhan(); toast('تم تغيير خلفية شاشة الأذان');
+  });
+  const ap = $('#abgPrev'); if (ap) ap.onclick = () => { try { AndroidBridge.previewAdhanScreen(); } catch (e) {} };
   const pf = $('#pFull'); if (pf) pf.onclick = () => { S.prayer.full = !S.prayer.full; save(); renderAdhan(); };
   $('#pVoice').onchange = (e) => { S.prayer.voice = e.target.value; save(); stopAdhan(); setVoiceSrc(); renderAdhan(); };
   const pp = $('#pPin'); if (pp) pp.onclick = () => { S.prayer.pin = !S.prayer.pin; save(); renderAdhan(); };

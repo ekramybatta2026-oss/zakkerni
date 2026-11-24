@@ -44,6 +44,38 @@ public class MainActivity extends Activity implements SensorEventListener {
     private FrameLayout root;
     private WebView web;
     WebView webView() { return web; }
+
+    static final int REQ_ADHAN_BG = 7701;
+
+    void pickAdhanBg() {
+        try {
+            startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("image/*"), REQ_ADHAN_BG);
+        } catch (Exception e) {
+            try { startActivityForResult(new Intent(Intent.ACTION_GET_CONTENT).setType("image/*"), REQ_ADHAN_BG); } catch (Exception ignored) { }
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int req, int res, Intent data) {
+        super.onActivityResult(req, res, data);
+        if (req != REQ_ADHAN_BG) return;
+        boolean ok = false;
+        if (res == RESULT_OK && data != null && data.getData() != null) {
+            try (java.io.InputStream in = getContentResolver().openInputStream(data.getData())) {
+                android.graphics.Bitmap bm = android.graphics.BitmapFactory.decodeStream(in);
+                if (bm != null) {
+                    float s = Math.min(1f, 1600f / Math.max(bm.getWidth(), bm.getHeight()));
+                    if (s < 1f) bm = android.graphics.Bitmap.createScaledBitmap(bm, Math.round(bm.getWidth() * s), Math.round(bm.getHeight() * s), true);
+                    try (java.io.FileOutputStream os = new java.io.FileOutputStream(new java.io.File(getFilesDir(), "adhan_bg.jpg"))) {
+                        bm.compress(android.graphics.Bitmap.CompressFormat.JPEG, 90, os);
+                    }
+                    AdhanScheduler.prefs(this).edit().putString("adhan_bg", "custom").apply();
+                    ok = true;
+                }
+            } catch (Exception ignored) { }
+        }
+        if (web != null) web.evaluateJavascript("window.onAdhanBg && window.onAdhanBg(" + ok + ")", null);
+    }
     private GeolocationPermissions.Callback geoCallback;
     private String geoOrigin;
 
