@@ -215,6 +215,34 @@ public class Bridge {
     }
 
     /** Share a PNG rendered by the page (data: URL) through the system share sheet. */
+    /** Exact pixels of the app as it is on screen (for sharing a mushaf page as the reader sees it). */
+    @JavascriptInterface
+    public String captureScreen() {
+        MainActivity a = MainActivity.current;
+        if (a == null) return "";
+        final android.graphics.Bitmap[] out = { null };
+        final java.util.concurrent.CountDownLatch done = new java.util.concurrent.CountDownLatch(1);
+        a.runOnUiThread(() -> {
+            try {
+                android.view.View v = a.webView();
+                int w = v.getWidth(), h = v.getHeight();
+                android.graphics.Bitmap b = android.graphics.Bitmap.createBitmap(w, h, android.graphics.Bitmap.Config.ARGB_8888);
+                if (Build.VERSION.SDK_INT >= 26) {
+                    int[] loc = new int[2]; v.getLocationInWindow(loc);
+                    android.view.PixelCopy.request(a.getWindow(), new android.graphics.Rect(loc[0], loc[1], loc[0] + w, loc[1] + h), b, r -> {
+                        if (r == android.view.PixelCopy.SUCCESS) out[0] = b;
+                        done.countDown();
+                    }, new android.os.Handler(android.os.Looper.getMainLooper()));
+                } else { v.draw(new android.graphics.Canvas(b)); out[0] = b; done.countDown(); }
+            } catch (Exception e) { done.countDown(); }
+        });
+        try { done.await(4, java.util.concurrent.TimeUnit.SECONDS); } catch (InterruptedException ignored) { }
+        if (out[0] == null) return "";
+        java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
+        out[0].compress(android.graphics.Bitmap.CompressFormat.JPEG, 93, bos);
+        return "data:image/jpeg;base64," + android.util.Base64.encodeToString(bos.toByteArray(), android.util.Base64.NO_WRAP);
+    }
+
     @JavascriptInterface
     public boolean shareImage(String dataUrl, String text) {
         try {
@@ -224,10 +252,11 @@ public class Bridge {
             dir.mkdirs();
             java.io.File[] old = dir.listFiles();
             if (old != null) for (java.io.File o : old) o.delete();
-            java.io.File f = new java.io.File(dir, "zakkerni-" + System.currentTimeMillis() + ".png");
+            boolean jpg = dataUrl.startsWith("data:image/jpeg");
+            java.io.File f = new java.io.File(dir, "zakkerni-" + System.currentTimeMillis() + (jpg ? ".jpg" : ".png"));
             try (java.io.FileOutputStream os = new java.io.FileOutputStream(f)) { os.write(bytes); }
             Uri u = androidx.core.content.FileProvider.getUriForFile(ctx, "com.zakkerni.app.files", f);
-            Intent s = new Intent(Intent.ACTION_SEND).setType("image/png").putExtra(Intent.EXTRA_STREAM, u)
+            Intent s = new Intent(Intent.ACTION_SEND).setType(jpg ? "image/jpeg" : "image/png").putExtra(Intent.EXTRA_STREAM, u)
                     .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             if (text != null && !text.isEmpty()) s.putExtra(Intent.EXTRA_TEXT, text);
             s.setClipData(android.content.ClipData.newRawUri("", u));

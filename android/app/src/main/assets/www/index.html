@@ -2578,7 +2578,37 @@ async function qShareCanvas(cv, text) {
   } catch (e) {}
   const a = document.createElement('a'); a.href = url; a.download = 'zakkerni.png'; document.body.appendChild(a); a.click(); a.remove();
 }
+const qWait = (ms) => new Promise(r => setTimeout(r, ms));
+const qFrames = () => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 async function qSharePages(n, count) {
+  // On Android, share exactly what is on screen (same layout, frames and colours)
+  if (window.AndroidBridge && AndroidBridge.captureScreen) {
+    const bar = $('#qBar'), had = bar && bar.classList.contains('show');
+    try {
+      $('#sheet') && $('#sheet').classList.remove('show'); $('#qSheet') && $('#qSheet').classList.remove('show');
+      if (bar) bar.classList.remove('show');
+      const shots = [];
+      for (let i = 0; i < count && n + i <= 604; i++) {
+        if (i) await qShow(n + i);
+        await qWait(i ? 350 : 250); await qFrames();
+        const url = AndroidBridge.captureScreen();
+        if (!url) throw new Error('capture');
+        shots.push(url);
+      }
+      if (count > 1) await qShow(n);
+      if (had && bar) bar.classList.add('show');
+      let out = shots[0];
+      if (shots.length > 1) {
+        const ims = await Promise.all(shots.map(u => new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = u; })));
+        const g = 18, W = ims[0].width * 2 + g, H = Math.max(ims[0].height, ims[1].height);
+        const c = document.createElement('canvas'); c.width = W; c.height = H;
+        const x = c.getContext('2d'); x.fillStyle = '#E9DFCC'; x.fillRect(0, 0, W, H);
+        x.drawImage(ims[0], ims[0].width + g, 0); x.drawImage(ims[1], 0, 0);   // first page on the right, like an open mushaf
+        out = c.toDataURL('image/jpeg', .92);
+      }
+      if (AndroidBridge.shareImage(out, '')) return;
+    } catch (e) { if (had && bar) bar.classList.add('show'); }
+  }
   try { const cvs = []; for (let i = 0; i < count && n + i <= 604; i++) cvs.push(await qPageCanvas(n + i, count > 1 ? 900 : 1080, count === 1)); await qShareCanvas(qJoin(cvs), ''); }
   catch (e) { toast('تعذّر تجهيز الصورة'); }
 }

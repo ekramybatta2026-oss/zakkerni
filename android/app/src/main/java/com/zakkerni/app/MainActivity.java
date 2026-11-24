@@ -43,6 +43,7 @@ public class MainActivity extends Activity implements SensorEventListener {
     private final float[] rot = new float[9], ori = new float[3], remapped = new float[9];
     private FrameLayout root;
     private WebView web;
+    WebView webView() { return web; }
     private GeolocationPermissions.Callback geoCallback;
     private String geoOrigin;
 
