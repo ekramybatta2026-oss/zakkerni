@@ -153,9 +153,6 @@ public class MainActivity extends Activity implements SensorEventListener {
             android.view.WindowManager.LayoutParams lp = getWindow().getAttributes();
             lp.layoutInDisplayCutoutMode = on ? (Build.VERSION.SDK_INT >= 30 ? android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS : android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES)
                     : android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT;
-            // in the full-screen mushaf, turning the phone cross-fades instead of rotating/stretching a snapshot
-            lp.rotationAnimation = on ? android.view.WindowManager.LayoutParams.ROTATION_ANIMATION_CROSSFADE
-                    : android.view.WindowManager.LayoutParams.ROTATION_ANIMATION_ROTATE;
             getWindow().setAttributes(lp);
         }
         if (root != null) root.requestApplyInsets();
@@ -165,10 +162,10 @@ public class MainActivity extends Activity implements SensorEventListener {
                 if (on) { c.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE); c.hide(WindowInsets.Type.statusBars()); }
                 else c.show(WindowInsets.Type.statusBars());
             }
+        } else {
+            if (on) getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            else getWindow().clearFlags(android.view.WindowManager.LayoutParams.FLAG_FULLSCREEN);
         }
-        // FLAG_FULLSCREEN also lets the window choose its own rotation animation
-        if (on) getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        else getWindow().clearFlags(android.view.WindowManager.LayoutParams.FLAG_FULLSCREEN);
         if (on && color != null && root != null) { try { root.setBackgroundColor(Color.parseColor(color)); } catch (Exception ignored) { } }
         if (!on) applyBars(darkUi);
     }
