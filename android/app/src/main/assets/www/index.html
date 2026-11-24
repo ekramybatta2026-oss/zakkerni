@@ -610,6 +610,8 @@ body.qfull .topbar,body.qfull .nav{display:none}
 .abg button{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;font-size:11.5px;font-weight:700;color:var(--text)}
 .abg i{width:100%;max-width:54px;aspect-ratio:.6;border-radius:10px;border:2px solid transparent;box-shadow:var(--shadow);display:grid;place-items:center;font-style:normal;font-size:24px;font-weight:700;color:var(--purple)}
 .abg button.on i{border-color:var(--orange)}
+.ql.qc{justify-content:center;gap:.22em}
+.q-shot .q-edge{display:none}
 </style>
 </head>
 <body>
@@ -2389,13 +2391,16 @@ function qFit(el, box, count) {
   box.classList.toggle('q-land', land);
   const W = (box.querySelector('.ql') || box).getBoundingClientRect().width || box.clientWidth;
   box.style.fontSize = '20px'; box.classList.add('measure');
-  let max = 0; box.querySelectorAll('.ql:not(.qh)').forEach(l => { max = Math.max(max, l.getBoundingClientRect().width); });
+  let max = 0; const ws = [];
+  box.querySelectorAll('.ql:not(.qh)').forEach(l => { const w = l.getBoundingClientRect().width; ws.push([l, w]); max = Math.max(max, w); });
   box.classList.remove('measure');
+  // short lines (end of a surah, a sajdah line…) are centred like the printed mushaf instead of stretched
+  const centre = (fs) => ws.forEach(([l, w]) => l.classList.toggle('qc', !open && w * fs / 20 < (W - 2) * 0.8));
   const byW = max ? 20 * (W - 2) / max : 20;
   if (land) {
     const fs = Math.min(byW, open ? 34 : 48);
     box.style.setProperty('--lh', (fs / 0.6) + 'px');
-    box.style.fontSize = fs + 'px';
+    box.style.fontSize = fs + 'px'; centre(fs);
     return;
   }
   if (open) {   // opening pages: large, compact lines centred in the frame (printed-mushaf style)
@@ -2405,7 +2410,8 @@ function qFit(el, box, count) {
   const H = el.clientHeight, rows = 15;
   const lh = Math.max(18, H / rows);
   box.style.setProperty('--lh', lh + 'px');
-  box.style.fontSize = Math.min(byW, lh * 0.72, open ? 34 : 44) + 'px';
+  const fs = Math.min(byW, lh * 0.72, open ? 34 : 44);
+  box.style.fontSize = fs + 'px'; centre(fs);
 }
 let qLastWH = '', qRelaying = false;
 window.addEventListener('resize', () => {
@@ -2611,6 +2617,7 @@ async function qSharePages(n, count) {
     try {
       $('#sheet') && $('#sheet').classList.remove('show'); $('#qSheet') && $('#qSheet').classList.remove('show');
       if (bar) bar.classList.remove('show');
+      document.body.classList.add('q-shot');   // no page-edge / spine effect in shared pictures
       const shots = [];
       for (let i = 0; i < count && n + i <= 604; i++) {
         if (i) await qShow(n + i);
@@ -2620,6 +2627,7 @@ async function qSharePages(n, count) {
         shots.push(url);
       }
       if (count > 1) await qShow(n);
+      document.body.classList.remove('q-shot');
       if (had && bar) bar.classList.add('show');
       let out = shots[0];
       if (shots.length > 1) {
@@ -2631,7 +2639,7 @@ async function qSharePages(n, count) {
         out = c.toDataURL('image/png');
       }
       if (AndroidBridge.shareImage(out, '')) return;
-    } catch (e) { if (had && bar) bar.classList.add('show'); }
+    } catch (e) { document.body.classList.remove('q-shot'); if (had && bar) bar.classList.add('show'); }
   }
   try { const cvs = []; for (let i = 0; i < count && n + i <= 604; i++) cvs.push(await qPageCanvas(n + i, count > 1 ? 900 : 1080, count === 1)); await qShareCanvas(qJoin(cvs), ''); }
   catch (e) { toast('تعذّر تجهيز الصورة'); }
