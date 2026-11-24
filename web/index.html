@@ -1090,7 +1090,9 @@ const sysDark = () => {
 };
 const effTheme = () => S.settings.theme === 'auto' ? (sysDark() ? 'dark' : 'light') : S.settings.theme;
 function applySettings() {
-  const th = effTheme();
+  let th = effTheme();
+  try { if (current === 'quran' && th === 'dark' && !S.qdark) th = 'light'; } catch (e) {}   // the mushaf keeps its paper colours unless chosen
+
   document.documentElement.dataset.theme = th;
   try { window.AndroidBridge && AndroidBridge.setDarkBars && AndroidBridge.setDarkBars(th === 'dark'); } catch (e) {}
   document.documentElement.style.setProperty('--zfont', S.settings.font + 'px');
@@ -1106,6 +1108,7 @@ function go(view, push = true) {
   document.body.classList.remove('sec');
   const wasQ = document.body.classList.contains('qfull');
   document.body.classList.toggle('qfull', view === 'quran');
+  if (wasQ !== (view === 'quran')) applySettings();
   if (wasQ !== (view === 'quran')) { try { AndroidBridge.setImmersive(view === 'quran', document.documentElement.dataset.theme === 'dark' ? '#1B1524' : qBg()); } catch (e) {} }
   if (view !== 'qibla') stopCompass();
   if (chain || zPlaying) { chain = null; zAudio.pause(); zPlaying = null; }
@@ -2182,10 +2185,11 @@ function renderQuran() {
     sk.value = S.qpage || 1; }
   $('#qSet').onclick = () => {
     $('#qSheet').innerHTML = `<div class="qs-card qs-app"><div class="qs-h"><b>إعدادات المصحف</b><button class="pb sm" id="qsX">${ico('x')}</button></div>
-      <div class="qset">${[['marks', 'العلامات', 'bookmark', 'الصفحات والآيات المحفوظة'], ['khatma', 'الختمة', 'done-all', 'وِرد الختمة والتقدّم'], ['theme', 'الألوان', 'palette', 'لون صفحات المصحف']].map(([k, l, i, d]) => `<button data-k="${k}">${ico(i)}<span><b>${l}</b><small>${d}</small></span>${ico('chev-l')}</button>`).join('')}</div></div>`;
+      <div class="qset">${[['marks', 'العلامات', 'bookmark', 'الصفحات والآيات المحفوظة'], ['khatma', 'الختمة', 'done-all', 'وِرد الختمة والتقدّم'], ['theme', 'الألوان', 'palette', 'لون صفحات المصحف']].map(([k, l, i, d]) => `<button data-k="${k}">${ico(i)}<span><b>${l}</b><small>${d}</small></span>${ico('chev-l')}</button>`).join('')}
+      <button data-k="dark">${ico('moon')}<span><b>الوضع الليلي للمصحف</b><small>${S.qdark ? 'يتبع الوضع الليلي للتطبيق' : 'المصحف بألوان النهار دائمًا'}</small></span><i class="switch ${S.qdark ? 'on' : ''}"></i></button></div></div>`;
     $('#qSheet').classList.add('show');
     $('#qsX').onclick = () => $('#qSheet').classList.remove('show');
-    $('#qSheet').querySelectorAll('.qset button').forEach(b => b.onclick = () => { const k = b.dataset.k; if (k === 'theme') qThemePick(); else { $('#qSheet').classList.remove('show'); qPanel(k); } });
+    $('#qSheet').querySelectorAll('.qset button').forEach(b => b.onclick = () => { const k = b.dataset.k; if (k === 'dark') { S.qdark = !S.qdark; save(); applySettings(); b.querySelector('.switch').classList.toggle('on', !!S.qdark); b.querySelector('small').textContent = S.qdark ? 'يتبع الوضع الليلي للتطبيق' : 'المصحف بألوان النهار دائمًا'; try { AndroidBridge.setImmersive(true, document.documentElement.dataset.theme === 'dark' ? '#1B1524' : qBg()); } catch (e) {} } else if (k === 'theme') qThemePick(); else { $('#qSheet').classList.remove('show'); qPanel(k); } });
   };
   $('#qShareP').onclick = () => { const p = S.qpage || 1; sheet('مشاركة صورة', [['1', `هذه الصفحة (${nd(p)})`, false], ...(p < 604 ? [['2', `صفحتان (${nd(p)} و${nd(p + 1)})`, false]] : [])], (k) => qSharePages(p, +k)); };
   $('#qMark').onclick = () => { const p = S.qpage || 1, M = qMarks(), k = M.findIndex(m => m.p === p && m.v < 0); if (k >= 0) { M.splice(k, 1); toast('أُزيلت العلامة'); } else { M.unshift({ p, v: -1, t: Date.now() }); toast('حُفظت علامة على الصفحة'); } save(); qMarkState(); };
@@ -2351,15 +2355,12 @@ function qFit(el, box, count) {
   box.style.setProperty('--lh', lh + 'px');
   box.style.fontSize = Math.min(byW, lh * 0.72, open ? 30 : 44) + 'px';
 }
-let qRot = 0, qRotWH = '';
+let qRot = 0;
 window.addEventListener('resize', () => {
   if (current !== 'quran' || !Q) return;
   const pg = $('#qPage'); if (!pg) return;
-  const wh = innerWidth > innerHeight ? 'l' : 'p';
-  if (wh === qRotWH && !pg.classList.contains('q-rot')) { clearTimeout(qRot); qRot = setTimeout(qRelayout, 120); return; }
-  qRotWH = wh;
-  pg.classList.add('q-rot');   // fade the old layout out while the screen turns
-  clearTimeout(qRot); qRot = setTimeout(qRelayout, 160);
+  pg.classList.add('q-rot');   // hide while the screen turns / system bars settle, then lay out once
+  clearTimeout(qRot); qRot = setTimeout(qRelayout, 220);
 });
 async function qRelayout() {
   const pg = $('#qPage'); if (!pg || current !== 'quran') return;
