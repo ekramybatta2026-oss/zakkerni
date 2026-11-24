@@ -122,8 +122,10 @@ final class ClockStore {
         scheduleAlarms(c);
     }
 
-    static void snooze(Context c, int id) {
-        p(c).edit().putLong("snz_" + id, System.currentTimeMillis() + SNOOZE).apply();
+    static void snooze(Context c, int id) { snooze(c, id, 0); }
+
+    static void snooze(Context c, int id, int minutes) {
+        p(c).edit().putLong("snz_" + id, System.currentTimeMillis() + (minutes > 0 ? minutes * 60_000L : SNOOZE)).apply();
         scheduleAlarms(c);
     }
 

@@ -44,7 +44,7 @@ public class RingService extends Service {
     public int onStartCommand(Intent i, int flags, int startId) {
         String act = i == null ? null : i.getAction();
         if (STOP.equals(act)) { stopSelf(); return START_NOT_STICKY; }
-        if (SNOOZE.equals(act)) { ClockStore.snooze(this, alarmId); WidgetRenderer.updateAll(this); stopSelf(); return START_NOT_STICKY; }
+        if (SNOOZE.equals(act)) { ClockStore.snooze(this, alarmId, i.getIntExtra("min", 0)); WidgetRenderer.updateAll(this); stopSelf(); return START_NOT_STICKY; }
         kind = i != null && i.getStringExtra("kind") != null ? i.getStringExtra("kind") : "alarm";
         alarmId = i != null ? i.getIntExtra("id", 0) : 0;
         label = i != null && i.getStringExtra("label") != null ? i.getStringExtra("label") : "";

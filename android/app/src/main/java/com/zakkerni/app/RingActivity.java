@@ -24,6 +24,37 @@ public class RingActivity extends Activity {
     private final BroadcastReceiver done = new BroadcastReceiver() {
         @Override public void onReceive(Context c, Intent i) { finish(); }
     };
+    private final BroadcastReceiver power = new BroadcastReceiver() {
+        @Override public void onReceive(Context c, Intent i) { if (System.currentTimeMillis() - shownAt > 3000) stopRing(); }
+    };
+    private long shownAt = System.currentTimeMillis();
+
+    private void stopRing() { stopService(new Intent(this, RingService.class)); finish(); }
+
+    private void snooze(int min) {
+        startService(new Intent(this, RingService.class).setAction(RingService.SNOOZE).putExtra("min", min));
+        android.widget.Toast.makeText(this, "غفوة " + toAr(min) + (min <= 10 ? " دقائق" : " دقيقة"), android.widget.Toast.LENGTH_SHORT).show();
+        finish();
+    }
+
+    private static String toAr(int n) {
+        String s = String.valueOf(n), d = "٠١٢٣٤٥٦٧٨٩"; StringBuilder b = new StringBuilder();
+        for (char ch : s.toCharArray()) b.append(d.charAt(ch - '0'));
+        return b.toString();
+    }
+
+    private Typeface font(boolean bold) {
+        try { if (Build.VERSION.SDK_INT >= 26) return getResources().getFont(bold ? R.font.cairo_bold : R.font.cairo_semibold); } catch (Exception ignored) { }
+        return bold ? Typeface.DEFAULT_BOLD : Typeface.DEFAULT;
+    }
+
+    private GradientDrawable frame(int radius) {
+        GradientDrawable g = new GradientDrawable();
+        g.setColor(Color.parseColor("#1FF28A32"));
+        g.setStroke(dp(2), Color.parseColor("#B3F28A32"));
+        g.setCornerRadius(radius);
+        return g;
+    }
 
     @SuppressWarnings("deprecation")
     @Override
@@ -41,32 +72,81 @@ public class RingActivity extends Activity {
         root.setGravity(Gravity.CENTER);
         root.setLayoutDirection(android.view.View.LAYOUT_DIRECTION_RTL);
         root.setPadding(dp(28), dp(28), dp(28), dp(28));
-        root.setBackground(new GradientDrawable(GradientDrawable.Orientation.TL_BR,
-                new int[]{Color.parseColor("#33284A"), Color.parseColor("#251D33"), Color.parseColor("#1D1726")}));
+        // same look as the adhan screen: night background with the light arabesque
+        GradientDrawable grad = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
+                new int[]{Color.parseColor("#2A2236"), Color.parseColor("#1D1726"), Color.parseColor("#160F1F")});
+        android.graphics.drawable.BitmapDrawable pat = new android.graphics.drawable.BitmapDrawable(getResources(),
+                android.graphics.Bitmap.createScaledBitmap(android.graphics.BitmapFactory.decodeResource(getResources(), R.drawable.adhan_pat_dark), dp(220), dp(220), true));
+        pat.setTileModeXY(android.graphics.Shader.TileMode.REPEAT, android.graphics.Shader.TileMode.REPEAT);
+        root.setBackground(new android.graphics.drawable.LayerDrawable(new android.graphics.drawable.Drawable[]{grad, pat}));
+        getWindow().setStatusBarColor(Color.parseColor("#2A2236"));
+        getWindow().setNavigationBarColor(Color.parseColor("#160F1F"));
+        int or = Color.parseColor("#F28A32"), orL = Color.parseColor("#FFB066"), deep = Color.parseColor("#4A1C78");
 
-        ImageView icon = new ImageView(this);
-        icon.setImageResource(R.drawable.ic_c_alarm);
-        icon.setColorFilter(Color.parseColor("#F28A32"));
-        root.addView(icon, new LinearLayout.LayoutParams(dp(84), dp(84)));
-        root.addView(text(WidgetRenderer.fmtTime(this, System.currentTimeMillis(), 1), 54, true, Color.WHITE));
-        root.addView(text(timer ? "انتهى المؤقت" : (RingService.label.isEmpty() ? "المنبه" : RingService.label), 22, true, Color.parseColor("#FFB066")));
+        ImageView word = new ImageView(this);
+        word.setImageResource(R.drawable.adhan_word);
+        word.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        word.setAlpha(.9f);
+        root.addView(word, new LinearLayout.LayoutParams(dp(150), dp(95)));
 
-        Button stop = button("إيقاف", new int[]{Color.parseColor("#FFB066"), Color.parseColor("#F28A32")});
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(dp(240), dp(60));
-        lp.topMargin = dp(48);
-        root.addView(stop, lp);
-        stop.setOnClickListener(v -> { stopService(new Intent(this, RingService.class)); finish(); });
-        if (!timer) {
-            Button sn = button("غفوة ١٠ دقائق", new int[]{Color.parseColor("#7137A8"), Color.parseColor("#5A2690")});
-            LinearLayout.LayoutParams lp2 = new LinearLayout.LayoutParams(dp(240), dp(54));
-            lp2.topMargin = dp(14);
-            root.addView(sn, lp2);
-            sn.setOnClickListener(v -> { startService(new Intent(this, RingService.class).setAction(RingService.SNOOZE)); finish(); });
+        TextView kindT = text(timer ? "انتهى المؤقت" : "المنبه", 19, false, orL);
+        kindT.setPadding(0, dp(22), 0, 0);
+        root.addView(kindT);
+        TextView time = text(WidgetRenderer.fmtTime(this, System.currentTimeMillis(), 1), 40, true, orL);
+        time.setPadding(dp(34), dp(6), dp(34), dp(6));
+        time.setBackground(frame(dp(26)));
+        LinearLayout.LayoutParams tl = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        tl.topMargin = dp(12);
+        root.addView(time, tl);
+        if (!timer && !RingService.label.isEmpty()) {
+            TextView lbl = text(RingService.label, 22, true, or);
+            lbl.setPadding(0, dp(14), 0, 0);
+            root.addView(lbl);
         }
-        TextView hint = text(timer ? "أو اضغط زر الصوت للإيقاف" : "زر الصوت = غفوة", 14, false, Color.parseColor("#E6D6F5"));
-        hint.setPadding(0, dp(14), 0, 0);
+
+        Button stop = new Button(this);
+        stop.setText("إيقاف"); stop.setAllCaps(false); stop.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);
+        stop.setTypeface(font(true)); stop.setTextColor(deep);
+        GradientDrawable sg = new GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT, new int[]{orL, or});
+        sg.setCornerRadius(dp(34));
+        stop.setBackground(sg); stop.setElevation(dp(6));
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(dp(260), dp(68));
+        lp.topMargin = dp(44);
+        root.addView(stop, lp);
+        stop.setOnClickListener(v -> stopRing());
+
+        if (!timer) {
+            TextView sn = text("غفوة", 14, false, Color.parseColor("#B4A6C6"));
+            sn.setPadding(0, dp(22), 0, dp(8));
+            root.addView(sn);
+            LinearLayout row = new LinearLayout(this);
+            row.setOrientation(LinearLayout.HORIZONTAL);
+            row.setGravity(Gravity.CENTER);
+            int[][] opts = {{5}, {10}, {15}};
+            for (int[] o : opts) {
+                int m = o[0];
+                Button c = new Button(this);
+                c.setText(toAr(m) + " د"); c.setAllCaps(false); c.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
+                c.setTypeface(font(true)); c.setTextColor(m == 10 ? Color.WHITE : orL);
+                GradientDrawable cg = m == 10 ? new GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT, new int[]{Color.parseColor("#8A4BC4"), Color.parseColor("#5A2690")}) : new GradientDrawable();
+                cg.setCornerRadius(dp(22));
+                if (m != 10) cg.setStroke(dp(1), Color.parseColor("#99FFB066"));
+                c.setBackground(cg);
+                LinearLayout.LayoutParams cl = new LinearLayout.LayoutParams(dp(76), dp(44));
+                cl.setMarginStart(dp(5)); cl.setMarginEnd(dp(5));
+                row.addView(c, cl);
+                c.setOnClickListener(v -> snooze(m));
+            }
+            root.addView(row);
+        }
+        TextView hint = text(timer ? "زر الصوت أو زر التشغيل = إيقاف" : "زر الصوت = غفوة ١٠ د  ·  زر التشغيل = إيقاف", 13, false, Color.parseColor("#B4A6C6"));
+        hint.setPadding(0, dp(22), 0, 0);
         root.addView(hint);
         setContentView(root);
+
+        // power button: the screen is kept on while this is shown, so a screen-off means the user pressed it
+        IntentFilter off = new IntentFilter(Intent.ACTION_SCREEN_OFF);
+        if (Build.VERSION.SDK_INT >= 33) registerReceiver(power, off, Context.RECEIVER_EXPORTED); else registerReceiver(power, off);
 
         IntentFilter f = new IntentFilter(RingService.DONE);
         if (Build.VERSION.SDK_INT >= 33) registerReceiver(done, f, Context.RECEIVER_NOT_EXPORTED); else registerReceiver(done, f);
@@ -104,15 +184,13 @@ public class RingActivity extends Activity {
     @Override
     public boolean onKeyDown(int k, KeyEvent e) {
         if (k == KeyEvent.KEYCODE_VOLUME_UP || k == KeyEvent.KEYCODE_VOLUME_DOWN) {
-            if ("timer".equals(RingService.kind)) stopService(new Intent(this, RingService.class));
-            else startService(new Intent(this, RingService.class).setAction(RingService.SNOOZE));
-            finish();
+            if ("timer".equals(RingService.kind)) stopRing(); else snooze(10);
             return true;
         }
         return super.onKeyDown(k, e);
     }
 
-    @Override protected void onDestroy() { try { unregisterReceiver(done); } catch (Exception ignored) { } super.onDestroy(); }
+    @Override protected void onDestroy() { try { unregisterReceiver(done); } catch (Exception ignored) { } try { unregisterReceiver(power); } catch (Exception ignored) { } super.onDestroy(); }
 
 
     private Button button(String s, int[] cols) {
@@ -128,7 +206,7 @@ public class RingActivity extends Activity {
     private TextView text(String s, int sp, boolean bold, int color) {
         TextView t = new TextView(this);
         t.setText(s); t.setTextSize(TypedValue.COMPLEX_UNIT_SP, sp); t.setTextColor(color); t.setGravity(Gravity.CENTER);
-        if (bold) t.setTypeface(Typeface.DEFAULT_BOLD);
+        t.setTypeface(font(bold)); t.setIncludeFontPadding(false);
         return t;
     }
 
