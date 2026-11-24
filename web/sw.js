@@ -1,4 +1,4 @@
-const CACHE = 'zakkerni-v60';
+const CACHE = 'zakkerni-v61';
 const FILES = ['./', './index.html', './adhan.mp3', './adhan-fajr.mp3', './icon-192.png', './icon-512.png', './manifest.webmanifest', './quran.json', './tajweed.json'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES))); self.skipWaiting(); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE && k !== 'qcf4').map(k => caches.delete(k))))); self.clients.claim(); });

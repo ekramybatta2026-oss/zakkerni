@@ -239,8 +239,8 @@ public class Bridge {
         try { done.await(4, java.util.concurrent.TimeUnit.SECONDS); } catch (InterruptedException ignored) { }
         if (out[0] == null) return "";
         java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
-        out[0].compress(android.graphics.Bitmap.CompressFormat.JPEG, 93, bos);
-        return "data:image/jpeg;base64," + android.util.Base64.encodeToString(bos.toByteArray(), android.util.Base64.NO_WRAP);
+        out[0].compress(android.graphics.Bitmap.CompressFormat.PNG, 100, bos);   // lossless: Quran text stays crisp
+        return "data:image/png;base64," + android.util.Base64.encodeToString(bos.toByteArray(), android.util.Base64.NO_WRAP);
     }
 
     @JavascriptInterface

@@ -2604,7 +2604,7 @@ async function qSharePages(n, count) {
         const c = document.createElement('canvas'); c.width = W; c.height = H;
         const x = c.getContext('2d'); x.fillStyle = '#E9DFCC'; x.fillRect(0, 0, W, H);
         x.drawImage(ims[0], ims[0].width + g, 0); x.drawImage(ims[1], 0, 0);   // first page on the right, like an open mushaf
-        out = c.toDataURL('image/jpeg', .92);
+        out = c.toDataURL('image/png');
       }
       if (AndroidBridge.shareImage(out, '')) return;
     } catch (e) { if (had && bar) bar.classList.add('show'); }
