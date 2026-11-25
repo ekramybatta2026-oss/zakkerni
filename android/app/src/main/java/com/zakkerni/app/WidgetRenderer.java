@@ -215,7 +215,7 @@ final class WidgetRenderer {
         if (type == T_FULL) {
             // full widget: clock, weather, location and both dates
             String greg = digits(c, new java.text.SimpleDateFormat("EEEE d MMMM yyyy", new java.util.Locale("ar")).format(new java.util.Date()));
-            setText(v, R.id.w_hijri, greg + "  ·  " + hijri(c), Color.parseColor("#FFB066"), 11.5f * f);
+            setText(v, R.id.w_hijri, greg + "  ·  " + hijri(c), android.graphics.Color.parseColor("#FFB066"), 11.5f * f);
             v.setViewVisibility(R.id.w_hijri, View.VISIBLE);
             v.setTextViewTextSize(R.id.w_clock, TypedValue.COMPLEX_UNIT_DIP, 36 * f);
             v.setTextColor(R.id.w_clock, main);
