@@ -210,21 +210,27 @@ final class WidgetRenderer {
         String city = AdhanScheduler.prefs(c).getString(AdhanScheduler.KEY_CITY, "");
 
         setText(v, R.id.w_label, since ? "الصلاة الحالية" : "الصلاة القادمة", sub, 11 * f);
-        setText(v, R.id.w_city, city, sub, (type == T_FULL ? 13.5f : 10.5f) * f);
+        setText(v, R.id.w_city, city, sub, (type == T_FULL ? 12f : 10.5f) * f);
         v.setViewVisibility(R.id.w_city, g.city && !city.isEmpty() ? View.VISIBLE : View.GONE);
         if (type == T_FULL) {
             // full widget: clock, weather, location and both dates
             String greg = digits(c, new java.text.SimpleDateFormat("EEEE d MMMM yyyy", new java.util.Locale("ar")).format(new java.util.Date()));
             setText(v, R.id.w_hijri, greg + "  ·  " + hijri(c), android.graphics.Color.parseColor("#FFB066"), 11.5f * f);
             v.setViewVisibility(R.id.w_hijri, View.VISIBLE);
-            v.setTextViewTextSize(R.id.w_clock, TypedValue.COMPLEX_UNIT_DIP, 36 * f);
+            v.setTextViewTextSize(R.id.w_clock, TypedValue.COMPLEX_UNIT_DIP, 30 * f);
             v.setTextColor(R.id.w_clock, main);
+            // tap targets: clock → clock page, weather → weather page, dates → calendar
+            String[][] taps = {{"clock", "" + R.id.w_clock}, {"weather", "" + R.id.w_weather}, {"calendar", "" + R.id.w_hijri}};
+            for (int k = 0; k < taps.length; k++) {
+                Intent it = new Intent(c, MainActivity.class).putExtra("go", taps[k][0]).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                v.setOnClickPendingIntent(Integer.parseInt(taps[k][1]), PendingIntent.getActivity(c, 90 + k, it, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
+            }
         } else {
             setText(v, R.id.w_hijri, g.hijri ? hijri(c) : "", sub, 11 * f);
             v.setViewVisibility(R.id.w_hijri, g.hijri ? View.VISIBLE : View.GONE);
         }
         String wx = (g.weather || type == T_FULL) ? Weather.text(c) : "";
-        setText(v, R.id.w_weather, wx, main, (type == T_FULL ? 15 : type == T_DAY && g.design != 2 ? 12 : 11) * f);
+        setText(v, R.id.w_weather, wx, main, (type == T_FULL ? 14 : type == T_DAY && g.design != 2 ? 12 : 11) * f);
         v.setViewVisibility(R.id.w_weather, wx.isEmpty() ? View.GONE : View.VISIBLE);
 
         if (n == null) {
@@ -232,9 +238,9 @@ final class WidgetRenderer {
             v.setViewVisibility(R.id.w_cd, View.GONE);
             return v;
         }
-        float bigSize = type == T_NEXT ? 20 : type == T_LIST ? 17 : 18;
+        float bigSize = type == T_NEXT ? 20 : type == T_LIST ? 17 : type == T_FULL ? 17 : 18;
         setText(v, R.id.w_next, n.optString("n") + "  " + fmtTime(c, n.optLong("t"), g.fmt), main, bigSize * f);
-        setText(v, R.id.w_cd, since ? sinceText(c, now - n.optLong("t")) : countdown(c, n.optLong("t") - now), hi, (type == T_NEXT ? 15 : 14) * f);
+        setText(v, R.id.w_cd, since ? sinceText(c, now - n.optLong("t")) : countdown(c, n.optLong("t") - now), hi, (type == T_NEXT ? 15 : type == T_FULL ? 13 : 14) * f);
         v.setViewVisibility(R.id.w_cd, g.cd ? View.VISIBLE : View.GONE);
 
         // sizes that always fit the widget width
