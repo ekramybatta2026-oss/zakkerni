@@ -210,21 +210,21 @@ final class WidgetRenderer {
         String city = AdhanScheduler.prefs(c).getString(AdhanScheduler.KEY_CITY, "");
 
         setText(v, R.id.w_label, since ? "الصلاة الحالية" : "الصلاة القادمة", sub, 11 * f);
-        setText(v, R.id.w_city, city, sub, 10.5f * f);
+        setText(v, R.id.w_city, city, sub, (type == T_FULL ? 13.5f : 10.5f) * f);
         v.setViewVisibility(R.id.w_city, g.city && !city.isEmpty() ? View.VISIBLE : View.GONE);
         if (type == T_FULL) {
             // full widget: clock, weather, location and both dates
             String greg = digits(c, new java.text.SimpleDateFormat("EEEE d MMMM yyyy", new java.util.Locale("ar")).format(new java.util.Date()));
-            setText(v, R.id.w_hijri, greg + "  ·  " + hijri(c), sub, 11 * f);
+            setText(v, R.id.w_hijri, greg + "  ·  " + hijri(c), Color.parseColor("#FFB066"), 11.5f * f);
             v.setViewVisibility(R.id.w_hijri, View.VISIBLE);
-            v.setTextViewTextSize(R.id.w_clock, TypedValue.COMPLEX_UNIT_DIP, 30 * f);
+            v.setTextViewTextSize(R.id.w_clock, TypedValue.COMPLEX_UNIT_DIP, 36 * f);
             v.setTextColor(R.id.w_clock, main);
         } else {
             setText(v, R.id.w_hijri, g.hijri ? hijri(c) : "", sub, 11 * f);
             v.setViewVisibility(R.id.w_hijri, g.hijri ? View.VISIBLE : View.GONE);
         }
         String wx = (g.weather || type == T_FULL) ? Weather.text(c) : "";
-        setText(v, R.id.w_weather, wx, main, (type == T_DAY && g.design != 2 ? 12 : 11) * f);
+        setText(v, R.id.w_weather, wx, main, (type == T_FULL ? 15 : type == T_DAY && g.design != 2 ? 12 : 11) * f);
         v.setViewVisibility(R.id.w_weather, wx.isEmpty() ? View.GONE : View.VISIBLE);
 
         if (n == null) {
