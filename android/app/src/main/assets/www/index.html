@@ -1594,7 +1594,7 @@ function scheduleNative() {
     if (p.k === 'sunrise') return;
     list.push({ t: p.at.getTime(), n: p.name, s: fmtTime(p.at), a: !!(S.prayer.on && p.adhan && S.prayer.per[p.k]), f: voiceFile(p.k) });
   });
-  try { AndroidBridge.setAdhanSettings && AndroidBridge.setAdhanSettings(JSON.stringify({ dig: S.settings.digits || 'ar', tz: city().tz, vol: S.prayer.vol, pre: S.prayer.pre, silent: S.prayer.silent ? 1 : 0, sil: S.prayer.sil, sdelay: S.prayer.sdelay ?? 5, full: S.prayer.full, city: city().name })); } catch (e) {}
+  try { AndroidBridge.setAdhanSettings && AndroidBridge.setAdhanSettings(JSON.stringify({ dig: S.settings.digits || 'ar', tz: city().tz, vol: S.prayer.vol, pre: S.prayer.pre, silent: S.prayer.silent ? 1 : 0, sil: S.prayer.sil, silmode: S.prayer.silmode || 'silent', sdelay: S.prayer.sdelay ?? 5, full: S.prayer.full, city: city().name })); } catch (e) {}
   try { AndroidBridge.scheduleAdhans(JSON.stringify(list), !!S.prayer.pin, city().name); } catch (e) {}
   try { const C = city(); if (AndroidBridge.setLocation && C.lat != null) AndroidBridge.setLocation(+C.lat, +C.lng); } catch (e) {}
 }
@@ -1676,6 +1676,7 @@ function renderAdhan() {
         <input type="range" id="pVol" min="10" max="100" step="5" value="${S.prayer.vol}"></div>
       <div class="set-row"><div class="ic2">${ico('bell')}</div><div class="lbl"><b>تنبيه قبل الأذان</b><small>تذكير بقرب موعد الصلاة</small></div><select class="sel" id="pPre">${opts([[0, 'بدون'], [5, 'قبل ٥ دقائق'], [10, 'قبل ١٠ دقائق'], [15, 'قبل ١٥ دقيقة'], [20, 'قبل ٢٠ دقيقة'], [30, 'قبل ٣٠ دقيقة']], S.prayer.pre)}</select></div>
       ${NATIVE ? `<div class="set-row"><div class="ic2">${ico('vib')}</div><div class="lbl"><b>الوضع الصامت بعد الأذان</b><small>يتحوّل الجوال للصامت تلقائيًا ثم يعود لوضعه السابق</small></div><button class="switch ${S.prayer.silent ? 'on' : ''}" id="pSil" aria-label="الوضع الصامت"></button></div>
+      ${S.prayer.silent ? `<div class="set-row"><div class="ic2">${ico('vib')}</div><div class="lbl"><b>يتحوّل الجوال إلى</b><small>بعد الأذان طوال مدة الصامت</small></div><select class="sel" id="pSilM">${opts([['silent', 'صامت'], ['vibrate', 'اهتزاز']], S.prayer.silmode || 'silent')}</select></div>` : ''}
       ${S.prayer.silent ? `<div class="set-row"><div class="ic2">${ico('timer')}</div><div class="lbl"><b>بداية الصامت</b><small>بعد دخول وقت الأذان</small></div><select class="sel" id="pSilD">${opts([[0, 'مع الأذان مباشرة'], [5, 'بعد ٥ دقائق'], [10, 'بعد ١٠ دقائق'], [15, 'بعد ١٥ دقيقة'], [20, 'بعد ٢٠ دقيقة']].map(([v, l]) => [v, nd(l)]), S.prayer.sdelay ?? 5)}</select></div>
       ${[['fajr', 'الفجر'], ['dhuhr', 'الظهر'], ['asr', 'العصر'], ['maghrib', 'المغرب'], ['isha', 'العشاء']].map(([k, n]) => `<div class="set-row sub"><div class="lbl"><b>مدة الصامت — ${n}</b></div><select class="sel" data-sil="${k}">${opts([0, 10, 15, 20, 25, 30, 40, 45, 60, 90].map(m => [m, m ? nd(m + (m === 10 ? ' دقائق' : ' دقيقة')) : 'بدون']), S.prayer.sil[k])}</select></div>`).join('')}` : ''}
       <div class="set-row"><div class="ic2">${ico('mosque')}</div><div class="lbl"><b>شاشة كاملة عند الأذان</b><small>والجوال مقفول؛ وإن كان مفتوحًا يظهر شريط علوي فقط</small></div><button class="switch ${S.prayer.full ? 'on' : ''}" id="pFull" aria-label="شاشة كاملة"></button></div>
@@ -1703,6 +1704,7 @@ function renderAdhan() {
   pv.onchange = () => scheduleNative();
   $('#pPre').onchange = (e) => { S.prayer.pre = +e.target.value; save(); renderAdhan(); };
   const ps = $('#pSil'); if (ps) ps.onclick = () => { S.prayer.silent = S.prayer.silent ? 0 : 1; save(); renderAdhan(); if (S.prayer.silent && !AndroidBridge.hasDnd()) toast('اسمح للتطبيق بالتحكم في وضع عدم الإزعاج'); };
+  const psm = $('#pSilM'); if (psm) psm.onchange = () => { S.prayer.silmode = psm.value; save(); scheduleNative(); };
   document.querySelectorAll('[data-sil]').forEach(s => s.onchange = () => { S.prayer.sil[s.dataset.sil] = +s.value; save(); scheduleNative(); });
   const psd = $('#pSilD'); if (psd) psd.onchange = (e) => { S.prayer.sdelay = +e.target.value; save(); scheduleNative(); };
   const pl = $('#pLog'); if (pl) pl.onclick = adhanLogSheet;

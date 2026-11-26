@@ -60,6 +60,7 @@ final class AdhanScheduler {
                     .putInt(KEY_SILENT, o.optInt("silent", 0))
                     .putInt(KEY_SILENT_DELAY, o.optInt("sdelay", 5))
                     .putString("silmap", o.optJSONObject("sil") != null ? o.optJSONObject("sil").toString() : "")
+                    .putString("silmode", o.optString("silmode", "silent"))
                     .putBoolean(KEY_FULL, o.optBoolean("full", true))
                     .putString(KEY_CITY, o.optString("city", prefs(c).getString(KEY_CITY, "")))
                     .putString("dig", o.optString("dig", "ar"))
@@ -211,12 +212,15 @@ final class AdhanScheduler {
         AudioManager au = (AudioManager) c.getSystemService(Context.AUDIO_SERVICE);
         if (nm == null || au == null) return;
         if (Build.VERSION.SDK_INT >= 23 && !nm.isNotificationPolicyAccessGranted()) { AdhanLog.add(c, "الصامت: لا يوجد إذن عدم الإزعاج"); return; }
-        AdhanLog.add(c, "تفعيل الصامت لمدة " + min + " دقيقة");
+        AdhanLog.add(c, ("vibrate".equals(prefs(c).getString("silmode", "silent")) ? "تفعيل الاهتزاز" : "تفعيل الصامت") + " لمدة " + min + " دقيقة");
         try {
             int current = au.getRingerMode();
-            if (current != AudioManager.RINGER_MODE_SILENT) prefs(c).edit().putInt(KEY_PREV_RINGER, current).apply();
-            if (current != AudioManager.RINGER_MODE_SILENT) { cue(c, false); try { Thread.sleep(900); } catch (InterruptedException ignored) { } }
-            au.setRingerMode(AudioManager.RINGER_MODE_SILENT);
+            int target = "vibrate".equals(prefs(c).getString("silmode", "silent")) ? AudioManager.RINGER_MODE_VIBRATE : AudioManager.RINGER_MODE_SILENT;
+            // already quiet (silent, or vibrate when vibrate is the target): leave the phone as the user set it
+            if (current == target || current == AudioManager.RINGER_MODE_SILENT) { prefs(c).edit().putInt(KEY_PREV_RINGER, -1).apply(); return; }
+            prefs(c).edit().putInt(KEY_PREV_RINGER, current).putInt("sil_target", target).apply();
+            cue(c, false); try { Thread.sleep(900); } catch (InterruptedException ignored) { }
+            au.setRingerMode(target);
         } catch (Exception ignored) { return; }
         AlarmManager am = (AlarmManager) c.getSystemService(Context.ALARM_SERVICE);
         if (am == null) return;
@@ -245,7 +249,9 @@ final class AdhanScheduler {
         int prev = prefs(c).getInt(KEY_PREV_RINGER, -1);
         if (au == null || prev < 0) return;
         try {
-            if (au.getRingerMode() == AudioManager.RINGER_MODE_SILENT) { au.setRingerMode(prev); cue(c, true); } // only undo our own change
+            int target = prefs(c).getInt("sil_target", AudioManager.RINGER_MODE_SILENT);
+            if (au.getRingerMode() == target) { au.setRingerMode(prev); cue(c, true); } // only undo our own change
+            prefs(c).edit().putInt(KEY_PREV_RINGER, -1).apply();
             AdhanLog.add(c, "إعادة الرنين بعد الصامت");
         } catch (Exception ignored) { }
         prefs(c).edit().remove(KEY_PREV_RINGER).apply();

@@ -66,16 +66,20 @@ public class AdhanActivity extends Activity {
         String tm = preview ? WidgetRenderer.fmtTime(this, System.currentTimeMillis(), 1) : AdhanService.curTime;
         TextView time = text(tm, 32, true, orL);
         time.setPadding(dp(36), dp(8), dp(36), dp(8));
-        time.setBackground(frame(dp(26), frameFill, frameCol));
+        time.setBackground(frame(dp(26), frameFill, 0));
         LinearLayout.LayoutParams tl = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         tl.topMargin = dp(18);
         root.addView(time, tl);
 
         String city = AdhanScheduler.prefs(this).getString(AdhanScheduler.KEY_CITY, "");
         if (!city.isEmpty()) {
-            TextView c = text(city, 19, false, orL);
-            c.setPadding(dp(22), dp(4), dp(22), dp(4));
-            c.setBackground(frame(dp(30), frameFill, frameCol));
+            String wx = Weather.text(this);
+            TextView c = text(city + (wx.isEmpty() ? "" : "   " + wx), 19, false, orL);
+            c.setPadding(dp(22), dp(6), dp(22), dp(6));
+            c.setBackground(frame(dp(30), frameFill, 0));
+            android.graphics.drawable.Drawable pin = getDrawable(R.drawable.ic_pin_m);
+            if (pin != null) { pin.setTint(orL); c.setCompoundDrawablesRelativeWithIntrinsicBounds(pin, null, null, null); c.setCompoundDrawablePadding(dp(6)); }
+            c.setGravity(Gravity.CENTER_VERTICAL);
             LinearLayout.LayoutParams cl = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
             cl.topMargin = dp(18);
             root.addView(c, cl);
@@ -86,13 +90,9 @@ public class AdhanActivity extends Activity {
         stop.setAllCaps(false);
         stop.setTextSize(TypedValue.COMPLEX_UNIT_SP, 21);
         stop.setTypeface(font(true));
-        stop.setTextColor(Color.parseColor("#FFB066"));
-        GradientDrawable bg = new GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT,
-                new int[]{Color.parseColor("#8A4BC4"), Color.parseColor("#5A2690")});
-        bg.setCornerRadius(dp(30));
-        bg.setStroke(dp(1), Color.parseColor("#66F28A32"));
-        stop.setBackground(bg);
-        stop.setElevation(dp(6));
+        stop.setTextColor(orL);
+        stop.setBackground(frame(dp(30), frameFill, 0));   // same soft panel as the time, no border
+        stop.setStateListAnimator(null);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(dp(240), dp(60));
         lp.topMargin = dp(46);
         root.addView(stop, lp);
@@ -200,7 +200,7 @@ public class AdhanActivity extends Activity {
 
     private GradientDrawable frame(int radius, int fill, int stroke) {
         GradientDrawable g = new GradientDrawable();
-        g.setColor(fill); g.setStroke(dp(2), stroke); g.setCornerRadius(radius);
+        g.setColor(fill); if (stroke != 0) g.setStroke(dp(2), stroke); g.setCornerRadius(radius);
         return g;
     }
 
