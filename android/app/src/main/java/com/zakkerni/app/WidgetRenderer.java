@@ -363,7 +363,7 @@ final class WidgetRenderer {
                 bh = Math.max(120, Math.min(1200, Math.round(bw * g.hdp / (float) g.wdp)));
                 dpw = g.wdp;
             }
-            float[] radii = type == T_PLAYER_S ? new float[]{0, 11, 19} : new float[]{0, 16, 28};
+            float[] radii = type == T_PLAYER_S ? new float[]{0, 8, 14} : new float[]{0, 11, 20};
             float rr = radii[Math.max(0, Math.min(2, g.radius))] * (bw / dpw);
             if (type == T_PLAYER_S) { // scrim baked into the bitmap so its corners match exactly
                 if (src != null) {
