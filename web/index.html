@@ -656,6 +656,18 @@ body.qfull .topbar,body.qfull .nav{display:none}
 .qs-app .btn.primary{background:linear-gradient(135deg,var(--qm),var(--qa));color:#fff;box-shadow:0 8px 20px var(--qsh)}
 .qs-app .btn{background:#fff;color:var(--qa)}
 .qs-share b{color:var(--qm)}
+.q-bar .q-landonly{display:none}.q-landmode .q-bar .q-landonly{display:flex}
+.q-bar.show~.q-autoctl,.q-bar.show+.q-autoctl{opacity:0;pointer-events:none}
+.q-autoctl{position:fixed;left:14px;opacity:.92;bottom:calc(14px + env(safe-area-inset-bottom));z-index:70;display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:24px;background:color-mix(in srgb,var(--qs) 92%,transparent);box-shadow:0 8px 24px var(--qsh);border:1px solid color-mix(in srgb,var(--qm) 35%,transparent);color:var(--qa);font-weight:700;font-size:13px}
+.q-autoctl button{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--ql);color:var(--qa);font-size:18px;font-weight:800}
+.q-autoctl button svg.i{width:18px;height:18px}.q-autoctl b{padding:0 4px;white-space:nowrap}
+.qset-sp{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:16px;background:#fff;border:1px solid color-mix(in srgb,var(--qm) 30%,transparent);box-shadow:0 4px 14px var(--qsh);color:var(--qa)}
+.qset-sp>span{flex:1;display:flex;flex-direction:column;position:relative;padding-inline-start:44px}
+.qset-sp>span svg.i{position:absolute;inset-inline-start:0;top:50%;transform:translateY(-50%);width:20px;height:20px;padding:8px;border-radius:50%;background:linear-gradient(135deg,var(--qm),var(--qa));color:#fff;box-sizing:content-box}
+.qset-sp>span b{font-size:14.5px}.qset-sp>span small{font-size:12px;color:var(--qm);font-weight:600}
+.qset-sp>b{min-width:26px;text-align:center;font-size:17px;color:var(--qm)}
+.qset-sp .pb.sm{background:var(--ql);color:var(--qa)}
+[data-theme="dark"] .qset-sp{background:#352A45;color:#F3ECFA}
 </style>
 </head>
 <body>
@@ -2250,6 +2262,7 @@ function renderQuran() {
       <div class="q-seek"><output id="qSeekB"></output><input type="range" id="qSeek" min="1" max="604" step="1" dir="rtl" aria-label="الانتقال إلى صفحة"></div>
       <button class="pb" id="qBack" aria-label="رجوع">${ico('home')}<span>الرئيسية</span></button>
       ${[['index', 'الفهرس', 'book'], ['search', 'بحث', 'search']].map(([k, l, i]) => `<button data-qp="${k}">${ico(i)}<span>${l}</span></button>`).join('')}
+      <button id="qAuto" class="q-landonly">${ico(qAutoOn ? 'pause' : 'play')}<span>تمرير</span></button>
       <button id="qSet">${ico('gear')}<span>الإعدادات</span></button>
       <button id="qShareP">${ico('share')}<span>مشاركة</span></button>
       <button id="qMark">${ico('bookmark')}<span>علامة</span></button>
@@ -2271,14 +2284,17 @@ function renderQuran() {
     sk.addEventListener('change', () => { delete sk.dataset.drag; bub.classList.remove('show'); const p = +sk.value; if (p !== (S.qpage || 1)) qShow(p); });
     ['touchstart', 'pointerdown'].forEach(e => sk.addEventListener(e, (ev) => { ev.stopPropagation(); sk.dataset.drag = 1; bub.classList.add('show'); paint(); }, { passive: true }));
     sk.value = S.qpage || 1; }
+  $('#qAuto').onclick = () => qAutoOn ? qAutoStop() : qAutoStart();
   $('#qSet').onclick = () => {
     $('#qSheet').innerHTML = `<div class="qs-card qs-app"><div class="qs-h"><b>إعدادات المصحف</b><button class="pb sm" id="qsX">${ico('x')}</button></div>
       <div class="qset">${[['marks', 'العلامات', 'bookmark', 'الصفحات والآيات المحفوظة'], ['khatma', 'الختمة', 'done-all', 'وِرد الختمة والتقدّم'], ['theme', 'الألوان', 'palette', 'لون صفحات المصحف']].map(([k, l, i, d]) => `<button data-k="${k}">${ico(i)}<span><b>${l}</b><small>${d}</small></span>${ico('chev-l')}</button>`).join('')}
+      <div class="qset-sp"><span>${ico('play')}<b>سرعة التمرير التلقائي</b><small>في الوضع الأفقي</small></span><button class="pb sm" data-sp="-">−</button><b id="qSpV">${nd(qSpeed())}</b><button class="pb sm" data-sp="+">+</button></div>
       <button data-k="taj">${ico('book')}<span><b>مصحف التجويد</b><small>${S.qtajweed ? 'ملوّن بأحكام التجويد' : 'المصحف العادي بدون ألوان'}</small></span><i class="switch ${S.qtajweed ? 'on' : ''}"></i></button>
       <button data-k="dark">${ico('moon')}<span><b>الوضع الليلي للمصحف</b><small>${S.qdark ? 'يتبع الوضع الليلي للتطبيق' : 'المصحف بألوان النهار دائمًا'}</small></span><i class="switch ${S.qdark ? 'on' : ''}"></i></button></div></div>`;
     $('#qSheet').classList.add('show');
     $('#qsX').onclick = () => $('#qSheet').classList.remove('show');
-    $('#qSheet').querySelectorAll('.qset button').forEach(b => b.onclick = () => { const k = b.dataset.k; if (k === 'taj') {
+    $('#qSheet').querySelectorAll('[data-sp]').forEach(x => x.onclick = () => { S.qspeed = Math.max(1, Math.min(10, qSpeed() + (x.dataset.sp === '+' ? 1 : -1))); save(); $('#qSpV').textContent = nd(qSpeed()); if (qAutoOn) qAutoUi(); });
+    $('#qSheet').querySelectorAll('.qset button[data-k]').forEach(b => b.onclick = () => { const k = b.dataset.k; if (k === 'taj') {
       S.qtajweed = !S.qtajweed; save();
       b.querySelector('.switch').classList.toggle('on', !!S.qtajweed); b.querySelector('small').textContent = S.qtajweed ? 'ملوّن بأحكام التجويد' : 'المصحف العادي بدون ألوان';
       if (S.qtajweed) toast('جارٍ تجهيز مصحف التجويد…');
@@ -2353,6 +2369,54 @@ const QBANNER = `<svg class="q-ban" viewBox="0 0 920 100" preserveAspectRatio="n
 const QBADGE = `<svg class="q-orn" viewBox="0 0 120 44" aria-hidden="true"><path d="M3 22C14 8 30 4 60 4S106 8 117 22C106 36 90 40 60 40S14 36 3 22Z" class="b0"/><path d="M9 22C20 12 34 9 60 9S100 12 111 22C100 32 86 35 60 35S20 32 9 22Z" class="bl"/><ellipse cx="60" cy="22" rx="38" ry="11.5" class="b2"/><path d="M14 22H20M100 22H106" class="bl"/></svg>`;
 function qQuarter(v) { let q = 0; while (q + 1 < Q.hq.length && Q.hq[q + 1] <= v) q++; return q; }
 function qQuarterName(q, full) { const h = Math.floor(q / 4) + 1, part = q % 4; if (!part && full && h % 2 === 1) return `الجزء ${nd((h + 1) / 2)}`; return part ? `${QFRAC[part]} الحزب ${nd(h)}` : `الحزب ${nd(h)}`; }
+/* Auto-scroll in landscape: the page glides up at the reader's speed and turns to the next page at the end */
+let qAutoOn = false, qAutoRaf = 0, qAutoLast = 0, qAutoAcc = 0, qAutoWait = 0;
+const qSpeed = () => Math.max(1, Math.min(10, S.qspeed || 3));
+function qAutoUi() {
+  const b = $('#qAuto'); if (b) b.innerHTML = `${ico(qAutoOn ? 'pause' : 'play')}<span>${qAutoOn ? 'إيقاف' : 'تمرير'}</span>`;
+  let c = $('#qAutoCtl');
+  if (!qAutoOn) { if (c) c.remove(); return; }
+  if (!c) { c = document.createElement('div'); c.id = 'qAutoCtl'; c.className = 'q-autoctl'; ($('#v-quran') || document.body).appendChild(c); }
+  c.innerHTML = `<button data-a="stop">${ico('pause')}</button><button data-a="-">−</button><b>السرعة ${nd(qSpeed())}</b><button data-a="+">+</button>`;
+  c.querySelectorAll('button').forEach(x => x.onclick = (e) => {
+    e.stopPropagation(); const a = x.dataset.a;
+    if (a === 'stop') return qAutoStop();
+    S.qspeed = Math.max(1, Math.min(10, qSpeed() + (a === '+' ? 1 : -1))); save(); qAutoUi();
+  });
+}
+function qAutoStart() {
+  if (!document.body.classList.contains('q-landmode')) { toast('أدر الجوال للوضع الأفقي لتشغيل التمرير'); return; }
+  qAutoOn = true; qAutoLast = 0; qAutoAcc = 0; qAutoWait = 0;
+  try { AndroidBridge.keepScreenOn && AndroidBridge.keepScreenOn(true); } catch (e) {}
+  const bar = $('#qBar'); if (bar) bar.classList.remove('show');   // clear view while reading
+  qAutoUi(); cancelAnimationFrame(qAutoRaf); qAutoRaf = requestAnimationFrame(qAutoStep);
+}
+function qAutoStop() {
+  qAutoOn = false; cancelAnimationFrame(qAutoRaf);
+  try { AndroidBridge.keepScreenOn && AndroidBridge.keepScreenOn(false); } catch (e) {}
+  qAutoUi();
+}
+async function qAutoStep(ts) {
+  if (!qAutoOn) return;
+  if (current !== 'quran') return qAutoStop();
+  const box = qCur;
+  if (box && box.classList.contains('q-land')) {
+    const dt = qAutoLast ? Math.min(100, ts - qAutoLast) : 0; qAutoLast = ts;
+    const end = box.scrollTop + box.clientHeight >= box.scrollHeight - 2;
+    if (end) {
+      if (!qAutoWait) qAutoWait = ts + 1800;   // a short pause at the end of the page
+      else if (ts > qAutoWait && (S.qpage || 1) < 604) {
+        qAutoWait = 0; qAutoLast = 0;
+        await qShow((S.qpage || 1) + 1, -1, 1);
+        if (qCur) qCur.scrollTop = 0;
+      } else if ((S.qpage || 1) >= 604 && ts > qAutoWait) return qAutoStop();
+    } else {
+      qAutoAcc += dt * qSpeed() * 0.012;   // speed 1 ≈ 12 px/s … speed 10 ≈ 120 px/s
+      if (qAutoAcc >= 1) { const px = Math.floor(qAutoAcc); box.scrollTop += px; qAutoAcc -= px; }
+    }
+  }
+  qAutoRaf = requestAnimationFrame(qAutoStep);
+}
 async function qShow(n, hv = -1, dir = 0) {
   if (!Q) return;
   n = Math.max(1, Math.min(604, n)); S.qpage = n;
@@ -2443,6 +2507,8 @@ function qFit(el, box, count) {
   const open = box.classList.contains('q-open');
   const land = el.clientWidth > el.clientHeight * 1.15;   // phone turned sideways: fit by width, scroll vertically
   box.classList.toggle('q-land', land);
+  document.body.classList.toggle('q-landmode', land);
+  if (!land && qAutoOn) qAutoStop();
   const W = (box.querySelector('.ql') || box).getBoundingClientRect().width || box.clientWidth;
   box.style.fontSize = '20px'; box.classList.add('measure');
   let max = 0; const ws = [];

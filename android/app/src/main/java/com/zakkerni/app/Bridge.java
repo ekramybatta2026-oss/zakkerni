@@ -217,6 +217,15 @@ public class Bridge {
 
     /** Share a PNG rendered by the page (data: URL) through the system share sheet. */
     @JavascriptInterface
+    public void keepScreenOn(boolean on) {
+        MainActivity a = MainActivity.current;
+        if (a != null) a.runOnUiThread(() -> {
+            if (on) a.getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            else a.getWindow().clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        });
+    }
+
+    @JavascriptInterface
     public String getAdhanBg() { return AdhanScheduler.prefs(ctx).getString("adhan_bg", "night"); }
 
     @JavascriptInterface
