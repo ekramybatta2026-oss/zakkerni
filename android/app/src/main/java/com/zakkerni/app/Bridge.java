@@ -302,6 +302,45 @@ public class Bridge {
         return "data:image/png;base64," + android.util.Base64.encodeToString(bos.toByteArray(), android.util.Base64.NO_WRAP);
     }
 
+    private final java.util.ArrayList<Uri> multi = new java.util.ArrayList<>();
+
+    @JavascriptInterface
+    public void shareReset() {
+        multi.clear();
+        java.io.File dir = new java.io.File(ctx.getCacheDir(), "share"); dir.mkdirs();
+        java.io.File[] old = dir.listFiles(); if (old != null) for (java.io.File o : old) o.delete();
+    }
+
+    @JavascriptInterface
+    public boolean shareAddImage(String dataUrl) {
+        try {
+            byte[] bytes = android.util.Base64.decode(dataUrl.substring(dataUrl.indexOf(',') + 1), android.util.Base64.DEFAULT);
+            java.io.File dir = new java.io.File(ctx.getCacheDir(), "share"); dir.mkdirs();
+            java.io.File f = new java.io.File(dir, "zakkerni-" + (multi.size() + 1) + "-" + System.currentTimeMillis() + ".png");
+            try (java.io.FileOutputStream os = new java.io.FileOutputStream(f)) { os.write(bytes); }
+            multi.add(androidx.core.content.FileProvider.getUriForFile(ctx, "com.zakkerni.app.files", f));
+            return true;
+        } catch (Exception e) { return false; }
+    }
+
+    /** Share all added pictures at once (each page separate), with a caption listing the pages. */
+    @JavascriptInterface
+    public boolean shareFlush(String text) {
+        if (multi.isEmpty()) return false;
+        try {
+            Intent s = new Intent(Intent.ACTION_SEND_MULTIPLE).setType("image/png")
+                    .putParcelableArrayListExtra(Intent.EXTRA_STREAM, new java.util.ArrayList<>(multi))
+                    .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            if (text != null && !text.isEmpty()) s.putExtra(Intent.EXTRA_TEXT, text);
+            android.content.ClipData cd = android.content.ClipData.newRawUri("", multi.get(0));
+            for (int i = 1; i < multi.size(); i++) cd.addItem(new android.content.ClipData.Item(multi.get(i)));
+            s.setClipData(cd);
+            Context a = MainActivity.current != null ? MainActivity.current : ctx;
+            a.startActivity(Intent.createChooser(s, "مشاركة").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+            return true;
+        } catch (Exception e) { AdhanLog.add(ctx, "مشاركة: " + e.getClass().getSimpleName()); return false; }
+    }
+
     @JavascriptInterface
     public boolean shareImage(String dataUrl, String text) {
         try {

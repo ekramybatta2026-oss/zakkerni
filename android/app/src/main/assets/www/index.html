@@ -612,6 +612,10 @@ body.qfull .topbar,body.qfull .nav{display:none}
 .abg button.on i{border-color:var(--orange)}
 .ql.qc{justify-content:center;gap:.22em}
 .q-shot .q-edge{display:none}
+.qm-row{display:flex;align-items:center;gap:10px;justify-content:space-between;margin:8px 0;font-weight:700;color:#4A1C78}
+.qm-row span{flex:1}.qm-row b{min-width:44px;text-align:center;font-size:18px;color:#C2580C}
+.qm-sum{background:#fff;border-radius:14px;padding:10px 12px;margin:10px 0 12px;font-weight:700;color:#4A1C78}
+.qm-sum b{color:#C2580C}.qm-sum small{display:block;font-size:12.5px;color:#6B5A7E;margin-top:4px;line-height:1.7}
 </style>
 </head>
 <body>
@@ -2241,7 +2245,7 @@ function renderQuran() {
       qCache.forEach(x => x.remove()); qCache.clear(); qCur = null; qShow(S.qpage || 1);
     } else if (k === 'dark') { S.qdark = !S.qdark; save(); applySettings(); b.querySelector('.switch').classList.toggle('on', !!S.qdark); b.querySelector('small').textContent = S.qdark ? 'يتبع الوضع الليلي للتطبيق' : 'المصحف بألوان النهار دائمًا'; try { AndroidBridge.setImmersive(true, document.documentElement.dataset.theme === 'dark' ? '#1B1524' : qBg()); } catch (e) {} } else if (k === 'theme') qThemePick(); else { $('#qSheet').classList.remove('show'); qPanel(k); } });
   };
-  $('#qShareP').onclick = () => { const p = S.qpage || 1; sheet('مشاركة صورة', [['1', `هذه الصفحة (${nd(p)})`, false], ...(p < 604 ? [['2', `صفحتان (${nd(p)} و${nd(p + 1)})`, false]] : [])], (k) => qSharePages(p, +k)); };
+  $('#qShareP').onclick = () => { const p = S.qpage || 1; sheet('مشاركة صورة', [['1', `هذه الصفحة (${nd(p)})`, false], ...(p < 604 ? [['2', `صفحتان (${nd(p)} و${nd(p + 1)})`, false]] : []), ['m', 'عدة صفحات منفصلة…', false]], (k) => k === 'm' ? qMultiPick(p) : qSharePages(p, +k)); };
   $('#qMark').onclick = () => { const p = S.qpage || 1, M = qMarks(), k = M.findIndex(m => m.p === p && m.v < 0); if (k >= 0) { M.splice(k, 1); toast('أُزيلت العلامة'); } else { M.unshift({ p, v: -1, t: Date.now() }); toast('حُفظت علامة على الصفحة'); } save(); qMarkState(); };
   const fr = $('#qFrame');
   // short tap anywhere = show/hide the toolbar; long press on a verse = tafsir
@@ -2609,6 +2613,45 @@ async function qShareCanvas(cv, text) {
     if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], text }); return; }
   } catch (e) {}
   const a = document.createElement('a'); a.href = url; a.download = 'zakkerni.png'; document.body.appendChild(a); a.click(); a.remove();
+}
+/* Several pages, each shared as its own picture, with the page numbers written under them */
+function qMultiPick(p) {
+  let a = p, b = Math.min(604, p + 2);
+  const draw = () => {
+    const n = b - a + 1;
+    $('#qSheet').innerHTML = `<div class="qs-card qs-app"><div class="qs-h"><b>مشاركة عدة صفحات</b><button class="pb sm" id="qsX">${ico('x')}</button></div>
+      <div class="qm-row"><span>من صفحة</span><button class="pb sm" data-d="a-">−</button><b>${nd(a)}</b><button class="pb sm" data-d="a+">+</button></div>
+      <div class="qm-row"><span>إلى صفحة</span><button class="pb sm" data-d="b-">−</button><b>${nd(b)}</b><button class="pb sm" data-d="b+">+</button></div>
+      <div class="qm-sum">عدد الصفحات: <b>${nd(n)}</b><small>${Array.from({ length: n }, (_, i) => nd(a + i)).join('، ')}</small></div>
+      <button class="btn primary" id="qmGo" style="width:100%">مشاركة ${nd(n)} ${n === 1 ? 'صفحة' : n <= 10 ? 'صفحات' : 'صفحة'}</button></div>`;
+    $('#qSheet').classList.add('show');
+    $('#qsX').onclick = () => $('#qSheet').classList.remove('show');
+    $('#qSheet').querySelectorAll('[data-d]').forEach(x => x.onclick = () => {
+      const d = x.dataset.d;
+      if (d === 'a-' && a > 1) a--; if (d === 'a+' && a < b) a++;
+      if (d === 'b-' && b > a) b--; if (d === 'b+' && b < 604 && b - a < 9) b++;
+      draw();
+    });
+    $('#qmGo').onclick = () => { $('#qSheet').classList.remove('show'); qShareMany(a, b); };
+  };
+  draw();
+}
+async function qShareMany(a, b) {
+  const pages = Array.from({ length: b - a + 1 }, (_, i) => a + i);
+  const suras = [...new Set(pages.map(p => { let s = 1; Q.ch.forEach((c, i) => { if (c[3] <= p) s = i + 1; }); return Q.ch[s - 1][0]; }))];
+  const text = `${suras.map(s => 'سورة ' + s).join(' · ')}\nالصفحات: ${pages.map(nd).join('، ')}\n— ذَكِّرني`;
+  toast(`جارٍ تجهيز ${nd(pages.length)} صور…`);
+  try {
+    if (window.AndroidBridge && AndroidBridge.shareAddImage) {
+      AndroidBridge.shareReset();
+      for (const p of pages) { const cv = await qPageCanvas(p, 1440, true); AndroidBridge.shareAddImage(cv.toDataURL('image/png')); }
+      if (AndroidBridge.shareFlush(text)) return;
+    }
+    const files = [];
+    for (const p of pages) { const cv = await qPageCanvas(p, 1440, true); const bl = await new Promise(r => cv.toBlob(r, 'image/png')); files.push(new File([bl], `zakkerni-${p}.png`, { type: 'image/png' })); }
+    if (navigator.canShare && navigator.canShare({ files })) { await navigator.share({ files, text }); return; }
+    files.forEach(f => { const u = URL.createObjectURL(f), x = document.createElement('a'); x.href = u; x.download = f.name; document.body.appendChild(x); x.click(); x.remove(); });
+  } catch (e) { toast('تعذّر تجهيز الصور'); }
 }
 const qWait = (ms) => new Promise(r => setTimeout(r, ms));
 const qFrames = () => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
