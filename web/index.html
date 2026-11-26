@@ -658,7 +658,8 @@ body.qfull .topbar,body.qfull .nav{display:none}
 .qs-share b{color:var(--qm)}
 .q-bar .q-landonly{display:none}.q-landmode .q-bar .q-landonly{display:flex}
 .q-bar.show~.q-autoctl,.q-bar.show+.q-autoctl{opacity:0;pointer-events:none}
-.q-autoctl{position:fixed;left:14px;opacity:.92;bottom:calc(14px + env(safe-area-inset-bottom));z-index:70;display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:24px;background:color-mix(in srgb,var(--qs) 92%,transparent);box-shadow:0 8px 24px var(--qsh);border:1px solid color-mix(in srgb,var(--qm) 35%,transparent);color:var(--qa);font-weight:700;font-size:13px}
+.q-autoctl.hide{opacity:0!important;transform:translateY(12px);pointer-events:none}
+.q-autoctl{transition:opacity .4s,transform .4s;position:fixed;left:14px;opacity:.92;bottom:calc(14px + env(safe-area-inset-bottom));z-index:70;display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:24px;background:color-mix(in srgb,var(--qs) 92%,transparent);box-shadow:0 8px 24px var(--qsh);border:1px solid color-mix(in srgb,var(--qm) 35%,transparent);color:var(--qa);font-weight:700;font-size:13px}
 .q-autoctl button{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--ql);color:var(--qa);font-size:18px;font-weight:800}
 .q-autoctl button svg.i{width:18px;height:18px}.q-autoctl b{padding:0 4px;white-space:nowrap}
 .qset-sp{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:16px;background:#fff;border:1px solid color-mix(in srgb,var(--qm) 30%,transparent);box-shadow:0 4px 14px var(--qsh);color:var(--qa)}
@@ -2377,6 +2378,7 @@ function qAutoUi() {
   let c = $('#qAutoCtl');
   if (!qAutoOn) { if (c) c.remove(); return; }
   if (!c) { c = document.createElement('div'); c.id = 'qAutoCtl'; c.className = 'q-autoctl'; ($('#v-quran') || document.body).appendChild(c); }
+  qAutoPeek();
   c.innerHTML = `<button data-a="stop">${ico('pause')}</button><button data-a="-">−</button><b>السرعة ${nd(qSpeed())}</b><button data-a="+">+</button>`;
   c.querySelectorAll('button').forEach(x => x.onclick = (e) => {
     e.stopPropagation(); const a = x.dataset.a;
@@ -2384,6 +2386,13 @@ function qAutoUi() {
     S.qspeed = Math.max(1, Math.min(10, qSpeed() + (a === '+' ? 1 : -1))); save(); qAutoUi();
   });
 }
+let qAutoHideT = 0;
+function qAutoPeek() {   // show the speed control, then hide it 5 s after the last change
+  const c = $('#qAutoCtl'); if (c) c.classList.remove('hide');
+  clearTimeout(qAutoHideT);
+  qAutoHideT = setTimeout(() => { const x = $('#qAutoCtl'); if (x && qAutoOn) x.classList.add('hide'); }, 5000);
+}
+document.addEventListener('click', (e) => { if (qAutoOn && current === 'quran' && !e.target.closest('#qAutoCtl')) qAutoPeek(); }, true);
 function qAutoStart() {
   if (!document.body.classList.contains('q-landmode')) { toast('أدر الجوال للوضع الأفقي لتشغيل التمرير'); return; }
   qAutoOn = true; qAutoLast = 0; qAutoAcc = 0; qAutoWait = 0;
