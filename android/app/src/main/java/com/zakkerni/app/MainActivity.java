@@ -58,6 +58,18 @@ public class MainActivity extends Activity implements SensorEventListener {
     @Override
     protected void onActivityResult(int req, int res, Intent data) {
         super.onActivityResult(req, res, data);
+        if (req == REQ_PHOTO) {
+            java.util.List<android.net.Uri> u = res == RESULT_OK ? PhotoPickActivity.uris(data) : new java.util.ArrayList<>();
+            if (!u.isEmpty() && photoFor != 0) {
+                final int id = photoFor;
+                new Thread(() -> {
+                    int n = PhotoPickActivity.save(this, id, u);
+                    runOnUiThread(() -> { android.widget.Toast.makeText(this, "تمت إضافة " + n + (n == 1 ? " صورة" : " صور") + " للويدجت", android.widget.Toast.LENGTH_LONG).show(); moveTaskToBack(true); });
+                }).start();
+            }
+            photoFor = 0;
+            return;
+        }
         if (req != REQ_ADHAN_BG) return;
         boolean ok = false;
         if (res == RESULT_OK && data != null && data.getData() != null) {
@@ -151,6 +163,7 @@ public class MainActivity extends Activity implements SensorEventListener {
             String go = getIntent().getStringExtra("go");
             web.loadUrl(START_URL + (goOk(go) ? "#" + go : ""));
         }
+        maybePickPhotos(getIntent());
 
         if (Build.VERSION.SDK_INT >= 33
                 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
@@ -290,9 +303,23 @@ public class MainActivity extends Activity implements SensorEventListener {
         super.onDestroy();
     }
 
+    static final int REQ_PHOTO = 7702;
+    private int photoFor = 0;
+
+    private void maybePickPhotos(Intent i) {
+        int id = i == null ? 0 : i.getIntExtra("photo_pick", 0);
+        if (id == 0) return;
+        i.removeExtra("photo_pick");
+        photoFor = id;
+        try { startActivityForResult(PhotoPickActivity.picker(), REQ_PHOTO); }
+        catch (Exception e) { try { startActivityForResult(new Intent(Intent.ACTION_GET_CONTENT).setType("image/*").putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true), REQ_PHOTO); } catch (Exception ignored) { } }
+        android.widget.Toast.makeText(this, "اختر صورة أو أكثر للويدجت", android.widget.Toast.LENGTH_SHORT).show();
+    }
+
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
+        maybePickPhotos(intent);
         String go = intent.getStringExtra("go");
         if (web != null && goOk(go))
             web.evaluateJavascript("window.zGo && window.zGo('" + go + "')", null);

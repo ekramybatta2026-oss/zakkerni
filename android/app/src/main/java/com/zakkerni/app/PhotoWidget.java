@@ -68,8 +68,8 @@ public class PhotoWidget extends AppWidgetProvider {
         if (ph.length == 0) {
             v.setViewVisibility(R.id.ph_img, android.view.View.GONE);
             v.setViewVisibility(R.id.ph_empty, android.view.View.VISIBLE);
-            Intent cfg = new Intent(c, PhotoPickActivity.class).putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, id).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            v.setOnClickPendingIntent(R.id.ph_root, PendingIntent.getActivity(c, 7000 + id, cfg, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
+            v.setOnClickPendingIntent(R.id.ph_root, pickIntent(c, id));
+            v.setViewVisibility(R.id.ph_edit, android.view.View.GONE);
         } else {
             int idx = c.getSharedPreferences("photo_w", Context.MODE_PRIVATE).getInt("i" + id, 0) % ph.length;
             Bundle o = m.getAppWidgetOptions(id);
@@ -81,6 +81,8 @@ public class PhotoWidget extends AppWidgetProvider {
             v.setViewVisibility(R.id.ph_empty, android.view.View.GONE);
             Intent nx = new Intent(c, PhotoWidget.class).setAction(NEXT).putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, id);
             v.setOnClickPendingIntent(R.id.ph_root, PendingIntent.getBroadcast(c, 7000 + id, nx, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
+            v.setViewVisibility(R.id.ph_edit, android.view.View.VISIBLE);
+            v.setOnClickPendingIntent(R.id.ph_edit, pickIntent(c, id));
         }
         m.updateAppWidget(id, v);
     }
@@ -104,6 +106,12 @@ public class PhotoWidget extends AppWidgetProvider {
             new Canvas(out).drawRoundRect(new RectF(0, 0, W, H), r, r, p);
             return out;
         } catch (Throwable t) { return null; }
+    }
+
+    static PendingIntent pickIntent(Context c, int id) {
+        Intent it = new Intent(c, MainActivity.class).putExtra("photo_pick", id)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        return PendingIntent.getActivity(c, 8000 + id, it, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
 
     static void refresh(Context c, int id) { draw(c, AppWidgetManager.getInstance(c), id); }

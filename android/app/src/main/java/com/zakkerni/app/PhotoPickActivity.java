@@ -27,51 +27,62 @@ public class PhotoPickActivity extends Activity {
         setResult(RESULT_CANCELED, new Intent().putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, id));
         if (id == AppWidgetManager.INVALID_APPWIDGET_ID) { finish(); return; }
         if (b != null) return;
-        Intent pick = new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("image/*")
-                .putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-        try { startActivityForResult(pick, 1); }
+        try { startActivityForResult(picker(), 1); }
         catch (Exception e) { startActivityForResult(new Intent(Intent.ACTION_GET_CONTENT).setType("image/*").putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true), 1); }
         Toast.makeText(this, "اختر صورة أو أكثر (حتى ٣٠ صورة)", Toast.LENGTH_SHORT).show();
     }
 
     @Override protected void onActivityResult(int req, int res, Intent data) {
         super.onActivityResult(req, res, data);
-        List<Uri> uris = new ArrayList<>();
-        if (res == RESULT_OK && data != null) {
-            ClipData cd = data.getClipData();
-            if (cd != null) for (int i = 0; i < cd.getItemCount() && uris.size() < 30; i++) uris.add(cd.getItemAt(i).getUri());
-            else if (data.getData() != null) uris.add(data.getData());
-        }
+        List<Uri> uris = res == RESULT_OK ? uris(data) : new ArrayList<>();
         if (uris.isEmpty()) {
             // keep the widget (showing "add photos") even if the picker was dismissed
             PhotoWidget.refresh(this, id);
             setResult(RESULT_OK, new Intent().putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, id));
             finish(); return;
         }
-        File dir = PhotoWidget.dir(this, id); dir.mkdirs();
-        File[] old = dir.listFiles(); if (old != null) for (File o : old) o.delete();
-        int n = 0;
-        for (Uri u : uris) {
-            try (InputStream in = getContentResolver().openInputStream(u)) {
-                BitmapFactory.Options op = new BitmapFactory.Options(); op.inSampleSize = 1;
-                Bitmap bm = BitmapFactory.decodeStream(in);
-                if (bm == null) continue;
-                float s = Math.min(1f, 1080f / Math.max(bm.getWidth(), bm.getHeight()));
-                if (s < 1f) bm = Bitmap.createScaledBitmap(bm, Math.round(bm.getWidth() * s), Math.round(bm.getHeight() * s), true);
-                bm = rotate(u, bm);
-                try (FileOutputStream os = new FileOutputStream(new File(dir, String.format(java.util.Locale.US, "%03d.jpg", n++)))) { bm.compress(Bitmap.CompressFormat.JPEG, 88, os); }
-            } catch (Exception ignored) { }
-        }
-        getSharedPreferences("photo_w", MODE_PRIVATE).edit().putInt("i" + id, 0).apply();
-        PhotoWidget.refresh(this, id);
+        int n = save(this, id, uris);
         Toast.makeText(this, "تمت إضافة " + n + (n == 1 ? " صورة" : " صور") + " — اضغط على الويدجت للتالية", Toast.LENGTH_LONG).show();
         setResult(RESULT_OK, new Intent().putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, id));
         finish();
     }
 
+    static List<Uri> uris(Intent data) {
+        List<Uri> uris = new ArrayList<>();
+        if (data == null) return uris;
+        ClipData cd = data.getClipData();
+        if (cd != null) for (int i = 0; i < cd.getItemCount() && uris.size() < 30; i++) uris.add(cd.getItemAt(i).getUri());
+        else if (data.getData() != null) uris.add(data.getData());
+        return uris;
+    }
+
+    static Intent picker() {
+        return new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("image/*").putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+    }
+
+    /** Copy the chosen pictures (scaled, upright) into the widget's folder and redraw it. */
+    static int save(android.content.Context c, int id, List<Uri> uris) {
+        File dir = PhotoWidget.dir(c, id); dir.mkdirs();
+        File[] old = dir.listFiles(); if (old != null) for (File o : old) o.delete();
+        int n = 0;
+        for (Uri u : uris) {
+            try (InputStream in = c.getContentResolver().openInputStream(u)) {
+                Bitmap bm = BitmapFactory.decodeStream(in);
+                if (bm == null) continue;
+                float s = Math.min(1f, 1080f / Math.max(bm.getWidth(), bm.getHeight()));
+                if (s < 1f) bm = Bitmap.createScaledBitmap(bm, Math.round(bm.getWidth() * s), Math.round(bm.getHeight() * s), true);
+                bm = rotate(c, u, bm);
+                try (FileOutputStream os = new FileOutputStream(new File(dir, String.format(java.util.Locale.US, "%03d.jpg", n++)))) { bm.compress(Bitmap.CompressFormat.JPEG, 88, os); }
+            } catch (Exception ignored) { }
+        }
+        c.getSharedPreferences("photo_w", MODE_PRIVATE).edit().putInt("i" + id, 0).apply();
+        PhotoWidget.refresh(c, id);
+        return n;
+    }
+
     /** Respect the camera's EXIF orientation. */
-    private Bitmap rotate(Uri u, Bitmap bm) {
-        try (InputStream in = getContentResolver().openInputStream(u)) {
+    private static Bitmap rotate(android.content.Context c, Uri u, Bitmap bm) {
+        try (InputStream in = c.getContentResolver().openInputStream(u)) {
             android.media.ExifInterface ex = new android.media.ExifInterface(in);
             int o = ex.getAttributeInt(android.media.ExifInterface.TAG_ORIENTATION, 1);
             int deg = o == 6 ? 90 : o == 3 ? 180 : o == 8 ? 270 : 0;
