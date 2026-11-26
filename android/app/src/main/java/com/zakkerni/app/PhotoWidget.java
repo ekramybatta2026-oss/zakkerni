@@ -75,7 +75,7 @@ public class PhotoWidget extends AppWidgetProvider {
             Bundle o = m.getAppWidgetOptions(id);
             int wdp = Math.max(110, o.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 170));
             int hdp = Math.max(110, o.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 170));
-            Bitmap b = rounded(ph[idx], wdp, hdp, 20);
+            Bitmap b = rounded(ph[idx], wdp, hdp, 14);
             if (b != null) v.setImageViewBitmap(R.id.ph_img, b);
             v.setViewVisibility(R.id.ph_img, android.view.View.VISIBLE);
             v.setViewVisibility(R.id.ph_empty, android.view.View.GONE);
