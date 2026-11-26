@@ -616,6 +616,19 @@ body.qfull .topbar,body.qfull .nav{display:none}
 .qm-row span{flex:1}.qm-row b{min-width:44px;text-align:center;font-size:18px;color:#C2580C}
 .qm-sum{background:#fff;border-radius:14px;padding:10px 12px;margin:10px 0 12px;font-weight:700;color:#4A1C78}
 .qm-sum b{color:#C2580C}.qm-sum small{display:block;font-size:12.5px;color:#6B5A7E;margin-top:4px;line-height:1.7}
+/* compact settings: every option its own one-line card */
+.set-group{background:none;box-shadow:none;overflow:visible;border-radius:0}
+.set-group>.set-row,.set-group>*>.set-row{background:var(--surface);border-radius:16px;box-shadow:var(--shadow);border-bottom:0;margin-bottom:8px;padding:9px 12px;gap:10px;min-height:54px;box-sizing:border-box}
+.set-row .ic2{width:32px;height:32px;border-radius:10px}.set-row .ic2 svg{width:18px;height:18px}
+.set-row .lbl{min-width:0}
+.set-row .lbl b{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.set-row .lbl small{display:none}
+.set-row.col .lbl small,.set-row.keep .lbl small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:11.5px}
+.set-row .sel{font-size:13px;padding:6px 8px;max-width:46%}
+.set-row .switch{width:46px;height:26px}.set-row .switch::after{width:20px;height:20px}.set-row .switch.on::after{transform:translateX(-20px)}
+.set-row.sub{padding-inline-start:12px;min-height:46px}.set-row.sub .lbl b{font-size:13px}
+.vpct{color:var(--orange);font-size:13px;margin-inline-start:6px}
+.set-row[style*="flex-wrap"]{row-gap:4px}
 </style>
 </head>
 <body>
@@ -1676,7 +1689,7 @@ function renderAdhan() {
     <div class="set-group">
       <div class="set-row"><div class="ic2">${ico('bell')}</div><div class="lbl"><b>تشغيل الأذان تلقائيًا</b><small>عند دخول وقت كل صلاة</small></div><button class="switch ${S.prayer.on ? 'on' : ''}" id="pOn" aria-label="الأذان"></button></div>
       <div class="set-row"><div class="ic2">${ico('sound')}</div><div class="lbl"><b>صوت الأذان</b><small>${voice().note || ''}</small></div><select class="sel" id="pVoice">${opts(ADHANS.map(x => [x.id, x.name]), voice().id)}</select></div>
-      <div class="set-row" style="flex-wrap:wrap"><div class="ic2">${ico('sound')}</div><div class="lbl"><b>مستوى صوت الأذان</b><small id="pVolL">${ar(S.prayer.vol)}٪</small></div>
+      <div class="set-row" style="flex-wrap:wrap"><div class="ic2">${ico('sound')}</div><div class="lbl"><b>مستوى صوت الأذان <span class="vpct" id="pVolL">${ar(S.prayer.vol)}٪</span></b></div>
         <input type="range" id="pVol" min="10" max="100" step="5" value="${S.prayer.vol}"></div>
       <div class="set-row"><div class="ic2">${ico('bell')}</div><div class="lbl"><b>تنبيه قبل الأذان</b><small>تذكير بقرب موعد الصلاة</small></div><select class="sel" id="pPre">${opts([[0, 'بدون'], [5, 'قبل ٥ دقائق'], [10, 'قبل ١٠ دقائق'], [15, 'قبل ١٥ دقيقة'], [20, 'قبل ٢٠ دقيقة'], [30, 'قبل ٣٠ دقيقة']], S.prayer.pre)}</select></div>
       ${NATIVE ? `<div class="set-row"><div class="ic2">${ico('vib')}</div><div class="lbl"><b>الوضع الصامت بعد الأذان</b><small>يتحوّل الجوال للصامت تلقائيًا ثم يعود لوضعه السابق</small></div><button class="switch ${S.prayer.silent ? 'on' : ''}" id="pSil" aria-label="الوضع الصامت"></button></div>
