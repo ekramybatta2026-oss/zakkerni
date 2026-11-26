@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/ph_root" android:layout_width="match_parent" android:layout_height="match_parent" android:padding="4dp">
+    <ImageView android:id="@+id/ph_img" android:layout_width="match_parent" android:layout_height="match_parent" android:scaleType="fitXY" android:contentDescription="@null" android:visibility="gone" />
+    <LinearLayout android:id="@+id/ph_empty" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:gravity="center" android:background="@drawable/wbg_dark_2">
+        <ImageView android:layout_width="40dp" android:layout_height="40dp" android:src="@mipmap/ic_zakkerni" android:contentDescription="@null" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="اضغط لإضافة صورك" android:textColor="#FFB066" android:textSize="13dp" android:textStyle="bold" />
+    </LinearLayout>
+</FrameLayout>

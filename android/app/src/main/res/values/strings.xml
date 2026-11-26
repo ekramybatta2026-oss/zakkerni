@@ -18,6 +18,8 @@
     <string name="wl_alarm">المنبه</string>
     <string name="wl_timer">المؤقت</string>
     <string name="wl_sw">ساعة الإيقاف</string>
+    <string name="wl_photo">صوري</string>
+    <string name="wd_photo">صورك المفضلة — اضغط للصورة التالية</string>
     <string name="wl_cal">التقويم الهجري والميلادي</string>
     <string name="wd_alarm">المنبه القادم</string>
     <string name="wd_timer">مؤقت بتشغيل وإيقاف وزيادة دقيقة</string>
