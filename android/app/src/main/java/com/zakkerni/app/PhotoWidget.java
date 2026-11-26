@@ -79,10 +79,8 @@ public class PhotoWidget extends AppWidgetProvider {
             if (b != null) v.setImageViewBitmap(R.id.ph_img, b);
             v.setViewVisibility(R.id.ph_img, android.view.View.VISIBLE);
             v.setViewVisibility(R.id.ph_empty, android.view.View.GONE);
-            Intent nx = new Intent(c, PhotoWidget.class).setAction(NEXT).putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, id);
-            v.setOnClickPendingIntent(R.id.ph_root, PendingIntent.getBroadcast(c, 7000 + id, nx, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
-            v.setViewVisibility(R.id.ph_edit, android.view.View.VISIBLE);
-            v.setOnClickPendingIntent(R.id.ph_edit, pickIntent(c, id));
+            v.setOnClickPendingIntent(R.id.ph_root, pickIntent(c, id));   // tap anywhere: choose photos
+            v.setViewVisibility(R.id.ph_edit, android.view.View.GONE);
         }
         m.updateAppWidget(id, v);
     }
