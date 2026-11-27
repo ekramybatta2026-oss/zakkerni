@@ -7,13 +7,15 @@ import com.ultimateiptv.sports.core.util.TextUtils
  * Used for the demo fixtures and as a fallback when a provider returns no logo,
  * and to show Arabic team names when the app language is Arabic.
  */
-data class TeamInfo(val apiFootballId: Int, val nameEn: String, val nameAr: String, val aliases: List<String>) {
-    val logoUrl: String get() = "https://media.api-sports.io/football/teams/$apiFootballId.png"
+/** [apiFootballId] is null when the crest id has not been verified: initials are shown instead of a wrong crest. */
+data class TeamInfo(val apiFootballId: Int?, val nameEn: String, val nameAr: String, val aliases: List<String>) {
+    val logoUrl: String? get() = apiFootballId?.let { "https://media.api-sports.io/football/teams/$it.png" }
 }
 
 object Teams {
-    private fun t(id: Int, en: String, ar: String, vararg aliases: String) = TeamInfo(id, en, ar, aliases.toList())
+    private fun t(id: Int?, en: String, ar: String, vararg aliases: String) = TeamInfo(id, en, ar, aliases.toList())
 
+    // Crest ids were checked visually against the downloaded images (CI job "crests").
     val all: List<TeamInfo> = listOf(
         // England
         t(42, "Arsenal", "آرسنال", "Arsenal FC"),
@@ -51,18 +53,18 @@ object Teams {
         // Africa
         t(1029, "Al Ahly", "الأهلي", "Al Ahly SC", "Al-Ahly"),
         t(1040, "Zamalek", "الزمالك", "Zamalek SC"),
-        t(1035, "Pyramids", "بيراميدز", "Pyramids FC"),
+        t(null, "Pyramids", "بيراميدز", "Pyramids FC"),
         t(1039, "Al Masry", "المصري", "Al-Masry"),
-        t(1050, "Esperance", "الترجي", "Esperance Tunis", "Espérance de Tunis"),
+        t(null, "Esperance", "الترجي", "Esperance Tunis", "Espérance de Tunis"),
         t(968, "Wydad", "الوداد", "Wydad AC", "Wydad Casablanca"),
-        t(2482, "Mamelodi Sundowns", "صن داونز", "Sundowns"),
+        t(null, "Mamelodi Sundowns", "صن داونز", "Sundowns"),
         // Saudi Arabia
         t(2932, "Al Hilal", "الهلال", "Al-Hilal Saudi FC", "Al-Hilal"),
         t(2939, "Al Nassr", "النصر", "Al-Nassr"),
         t(2938, "Al Ittihad", "الاتحاد", "Al-Ittihad FC", "Al-Ittihad"),
         t(2929, "Al Ahli", "الأهلي السعودي", "Al-Ahli Jeddah", "Al-Ahli Saudi FC"),
-        t(2934, "Al Shabab", "الشباب", "Al-Shabab"),
-        t(2944, "Al Ettifaq", "الاتفاق", "Al-Ettifaq"),
+        t(null, "Al Shabab", "الشباب", "Al-Shabab"),
+        t(2934, "Al Ettifaq", "الاتفاق", "Al-Ettifaq"),
     )
 
     private val byKey: Map<String, TeamInfo> = buildMap {

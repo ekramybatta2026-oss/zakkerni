@@ -4,7 +4,7 @@ import base64, io, re, sys, urllib.request
 from PIL import Image, ImageDraw
 
 src = open(sys.argv[1], encoding="utf-8").read()
-teams = re.findall(r't\((\d+), "([^"]+)"', src)
+teams = re.findall(r't\((\d+), "([^"]+)"', src)  # entries with null ids are skipped
 cell, cols = 110, 7
 rows = (len(teams) + cols - 1) // cols
 sheet = Image.new("RGB", (cols * cell, rows * (cell + 18)), "white")
