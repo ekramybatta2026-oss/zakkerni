@@ -28,6 +28,7 @@ import com.ultimateiptv.sports.R
 import com.ultimateiptv.sports.data.db.MatchEntity
 import com.ultimateiptv.sports.data.db.MatchStatus
 import com.ultimateiptv.sports.data.sports.Competitions
+import com.ultimateiptv.sports.data.sports.Teams
 import com.ultimateiptv.sports.data.sports.isLive
 import com.ultimateiptv.sports.ui.components.ChannelLogo
 import com.ultimateiptv.sports.ui.components.FocusCard
@@ -40,6 +41,9 @@ import com.ultimateiptv.sports.ui.theme.Pitch
 import java.util.Locale
 
 fun isArabic(): Boolean = Locale.getDefault().language == "ar"
+
+/** Team name in the app language (Arabic names for known clubs). */
+fun teamLabel(name: String): String = Teams.displayName(name, isArabic())
 
 /** Localised competition name: catalog translation when known, provider name otherwise. */
 fun competitionLabel(m: MatchEntity): String = Competitions.get(m.competitionKey)?.name(isArabic()) ?: m.competitionName
@@ -78,7 +82,7 @@ fun MatchCard(
                 Spacer(Modifier.height(6.dp))
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Team(m.homeName, m.homeLogo, Modifier.weight(1f), alignEnd = true)
+                Team(teamLabel(m.homeName), m.homeLogo, Modifier.weight(1f), alignEnd = true)
                 Column(Modifier.width(96.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                     val showScore = m.homeScore != null && m.status != MatchStatus.SCHEDULED
                     if (showScore) {
@@ -93,7 +97,7 @@ fun MatchCard(
                     if (m.isLive()) LiveBadge(statusText(m))
                     else if (showScore || m.status != MatchStatus.SCHEDULED) Text(statusText(m), style = MaterialTheme.typography.labelSmall, color = if (m.status == MatchStatus.CANCELLED) LiveRed else MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                Team(m.awayName, m.awayLogo, Modifier.weight(1f), alignEnd = false)
+                Team(teamLabel(m.awayName), m.awayLogo, Modifier.weight(1f), alignEnd = false)
                 if (onReminder != null && m.status == MatchStatus.SCHEDULED && m.kickoff > System.currentTimeMillis()) {
                     IconButton(onClick = onReminder, modifier = Modifier.tvFocusBorder(CircleShape)) {
                         Icon(

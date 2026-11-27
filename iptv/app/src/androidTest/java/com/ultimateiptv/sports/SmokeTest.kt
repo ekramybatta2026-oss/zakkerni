@@ -44,6 +44,8 @@ class SmokeTest {
 
     @Test
     fun demoPlaylistPlays() {
+        // The app starts in Arabic by default; run the first part in English, Arabic is checked below.
+        rule.runOnUiThread { AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("en")) }
         rule.waitUntilAtLeastOneExists(hasText("Try legal demo channels"), 20_000)
         shot("01_home_empty")
         rule.onAllNodes(hasText("Try legal demo channels")).onFirst().performClick()
@@ -97,6 +99,10 @@ class SmokeTest {
         rule.waitUntilAtLeastOneExists(hasText("أين تشاهد (من قنواتك)"), 10_000)
         Thread.sleep(1000)
         shot("08_match_detail_ar")
-        rule.runOnUiThread { AppCompatDelegate.setApplicationLocales(LocaleListCompat.getEmptyLocaleList()) }
+        // Back to the match list, scrolled further, to review more club crests.
+        InstrumentationRegistry.getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_BACK)
+        Thread.sleep(1500)
+        shot("09_matches_ar_list")
+
     }
 }

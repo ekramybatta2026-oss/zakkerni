@@ -113,7 +113,7 @@ fun MatchDetailScreen(actions: AppActions, vm: MatchDetailViewModel = hiltViewMo
         LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             item {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    TeamColumn(match.homeName, match.homeLogo, MatchRepository.teamKey(match.homeName) in favTeams, Modifier.weight(1f)) { vm.toggleTeam(match.homeName, match.homeLogo) }
+                    TeamColumn(teamLabel(match.homeName), match.homeLogo, MatchRepository.teamKey(match.homeName) in favTeams, Modifier.weight(1f)) { vm.toggleTeam(match.homeName, match.homeLogo) }
                     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.width(120.dp)) {
                         if (match.homeScore != null && match.status != MatchStatus.SCHEDULED) {
                             Text("${match.homeScore} - ${match.awayScore}", style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.Bold, color = if (match.isLive()) Pitch else MaterialTheme.colorScheme.onSurface)
@@ -122,7 +122,7 @@ fun MatchDetailScreen(actions: AppActions, vm: MatchDetailViewModel = hiltViewMo
                         }
                         if (match.isLive()) LiveBadge(statusText(match)) else Text(statusText(match), style = MaterialTheme.typography.labelMedium)
                     }
-                    TeamColumn(match.awayName, match.awayLogo, MatchRepository.teamKey(match.awayName) in favTeams, Modifier.weight(1f)) { vm.toggleTeam(match.awayName, match.awayLogo) }
+                    TeamColumn(teamLabel(match.awayName), match.awayLogo, MatchRepository.teamKey(match.awayName) in favTeams, Modifier.weight(1f)) { vm.toggleTeam(match.awayName, match.awayLogo) }
                 }
             }
             item {

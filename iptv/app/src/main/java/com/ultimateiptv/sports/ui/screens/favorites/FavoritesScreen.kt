@@ -108,9 +108,9 @@ fun FavoritesScreen(actions: AppActions, vm: FavoritesViewModel = hiltViewModel(
                 items(teams, key = { it.key }) { t ->
                     FocusCard(onClick = {}, modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
                         Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                            ChannelLogo(t.logo, t.name, size = 36.dp, shape = CircleShape)
+                            ChannelLogo(t.logo ?: com.ultimateiptv.sports.data.sports.Teams.logo(t.name), t.name, size = 36.dp, shape = CircleShape)
                             Spacer(Modifier.width(12.dp))
-                            Text(t.name, modifier = Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
+                            Text(com.ultimateiptv.sports.ui.screens.matches.teamLabel(t.name), modifier = Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
                             IconButton(onClick = { vm.removeTeam(t.key) }, modifier = Modifier.tvFocusBorder()) { Icon(Icons.Filled.Close, stringResource(R.string.remove)) }
                         }
                     }
