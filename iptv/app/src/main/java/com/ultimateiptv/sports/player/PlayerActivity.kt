@@ -22,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import com.ultimateiptv.sports.BuildConfig
 import com.ultimateiptv.sports.R
 import com.ultimateiptv.sports.data.iptv.ChannelContext
 import com.ultimateiptv.sports.ui.theme.AppTheme
@@ -54,6 +55,13 @@ class PlayerActivity : AppCompatActivity() {
                 )
             }
         }
+    }
+
+    /** Debug builds log key routing (helps diagnose remote-control navigation). */
+    override fun dispatchKeyEvent(event: android.view.KeyEvent): Boolean {
+        val handled = super.dispatchKeyEvent(event)
+        if (BuildConfig.DEBUG) android.util.Log.d("KeyDebug", "${javaClass.simpleName} ${android.view.KeyEvent.keyCodeToString(event.keyCode)} action=${event.action} handled=$handled")
+        return handled
     }
 
     override fun onUserLeaveHint() {

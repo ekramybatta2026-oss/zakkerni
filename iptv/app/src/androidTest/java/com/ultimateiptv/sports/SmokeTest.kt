@@ -114,13 +114,16 @@ class SmokeTest {
         shot("07_matches_ar")
         rule.onAllNodes(hasTestTag("match_card")).onFirst().performClick()
         rule.waitUntilAtLeastOneExists(hasText("أين تشاهد (من قنواتك)"), 10_000)
-        Thread.sleep(1000)
+        Thread.sleep(3000) // let the crests load
         shot("08_match_detail_ar")
         // Back to the match list, scrolled further, to review more club crests.
         InstrumentationRegistry.getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_BACK)
         Thread.sleep(1500)
         shot("09_matches_ar_list")
+        val backLeftDetail = rule.onAllNodes(hasText("أين تشاهد (من قنواتك)")).fetchSemanticsNodes().isEmpty()
+        Log.i("SmokeTest", "BACK on match detail -> left=$backLeftDetail")
         assertTrue("BACK did not close the player", backClosedPlayer)
+        assertTrue("BACK did not leave the match detail screen", backLeftDetail)
 
     }
 }

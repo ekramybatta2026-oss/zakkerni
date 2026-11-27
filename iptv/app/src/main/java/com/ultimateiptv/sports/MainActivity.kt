@@ -58,6 +58,13 @@ class MainActivity : AppCompatActivity() {
         setContent { AppTheme { AppRoot(viewModel) } }
     }
 
+    /** Debug builds log key routing (helps diagnose remote-control navigation). */
+    override fun dispatchKeyEvent(event: android.view.KeyEvent): Boolean {
+        val handled = super.dispatchKeyEvent(event)
+        if (BuildConfig.DEBUG) android.util.Log.d("KeyDebug", "${javaClass.simpleName} ${android.view.KeyEvent.keyCodeToString(event.keyCode)} action=${event.action} handled=$handled")
+        return handled
+    }
+
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         intent.getStringExtra(EXTRA_MATCH_ID)?.let(viewModel::openMatch)

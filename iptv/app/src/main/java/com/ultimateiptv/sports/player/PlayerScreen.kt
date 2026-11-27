@@ -142,6 +142,15 @@ fun PlayerScreen(viewModel: PlayerViewModel, inPip: Boolean, onBack: () -> Unit,
             .focusRequester(rootFocus)
             .focusable()
             .onPreviewKeyEvent { e ->
+                // BACK is handled explicitly (remote controls): channel list -> info bar -> leave the player.
+                if (e.key == Key.Back && !tracksOpen) {
+                    if (e.type == KeyEventType.KeyUp) when {
+                        listOpen -> listOpen = false
+                        overlay -> overlay = false
+                        else -> onBack()
+                    }
+                    return@onPreviewKeyEvent true
+                }
                 if (e.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
                 poke()
                 if (listOpen || tracksOpen) return@onPreviewKeyEvent false
