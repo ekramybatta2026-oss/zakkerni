@@ -86,3 +86,69 @@ jobs:
           files: |
             iptv/out/UltimateIPTV.apk
             iptv/out/UltimateIPTV.aab
+
+  # End-to-end test on an Android emulator: demo playlist -> Live TV -> real HLS playback.
+  emulator:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: iptv
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Android SDK (platform 36)
+        run: |
+          SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}"
+          SM=$(ls -d "$SDK"/cmdline-tools/*/bin/sdkmanager | sort -V | tail -1)
+          yes | "$SM" --licenses > /dev/null || true
+          "$SM" "platforms;android-36" "build-tools;36.0.0" | tail -2
+          echo "sdk.dir=$SDK" > local.properties
+
+      - name: Check that the public demo streams are reachable
+        run: |
+          grep -E '^https?://' app/src/main/assets/demo/demo_playlist.m3u | while read -r u; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$u" || true)
+            echo "$code  $u"
+          done
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Build test APKs
+        run: ./gradlew assembleDebug assembleDebugAndroidTest
+
+      - name: Run instrumented tests on emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          arch: x86_64
+          target: google_apis
+          profile: pixel_5
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          working-directory: iptv
+          script: |
+            ./gradlew connectedDebugAndroidTest || touch tests_failed
+            mkdir -p out/screens && adb pull /sdcard/Android/data/com.ultimateiptv.sports.debug/files/screenshots out/screens || true
+            adb logcat -d > out/logcat.txt || true
+            if [ -f tests_failed ]; then grep -E "AndroidRuntime|ExoPlayer|PlaybackException|TestRunner|FATAL" out/logcat.txt | tail -150; exit 1; fi
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: emulator-results
+          path: |
+            iptv/out/screens
+            iptv/out/logcat.txt
+            iptv/app/build/reports/androidTests

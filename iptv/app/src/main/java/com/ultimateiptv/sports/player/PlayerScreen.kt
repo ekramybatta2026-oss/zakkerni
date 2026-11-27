@@ -80,6 +80,7 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -190,6 +191,9 @@ fun PlayerScreen(viewModel: PlayerViewModel, inPip: Boolean, onBack: () -> Unit,
             },
             modifier = Modifier.fillMaxSize(),
         )
+
+        // Test marker (invisible): lets instrumentation tests know playback is running.
+        Box(Modifier.size(1.dp).testTag(if (state.playing && !state.buffering && state.errorRes == null) "player_ready" else "player_loading"))
 
         if (state.buffering && state.errorRes == null) {
             CircularProgressIndicator(Modifier.align(Alignment.Center).size(56.dp), color = MaterialTheme.colorScheme.primary)

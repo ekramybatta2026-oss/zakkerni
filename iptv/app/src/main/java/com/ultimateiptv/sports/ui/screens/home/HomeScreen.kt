@@ -129,6 +129,9 @@ class HomeViewModel @Inject constructor(
 fun HomeScreen(actions: AppActions, vm: HomeViewModel = hiltViewModel()) {
     val state by vm.state.collectAsState()
     val addingDemo by vm.addingDemo.collectAsState()
+    val continueTitle = stringResource(R.string.home_continue)
+    val favoritesTitle = stringResource(R.string.nav_favorites)
+    val sportsTitle = stringResource(R.string.home_sports_channels)
 
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 24.dp)) {
         item {
@@ -162,8 +165,8 @@ fun HomeScreen(actions: AppActions, vm: HomeViewModel = hiltViewModel()) {
             item { MatchesRow(state.liveMatches, state.demoProvider) { actions.open(Routes.match(it.id)) } }
         }
 
-        channelRow(stringResource(R.string.home_continue), state.history, onClick = { actions.play(it.uid, ChannelContext.History) })
-        channelRow(stringResource(R.string.nav_favorites), state.favorites, onClick = { actions.play(it.uid, ChannelContext.Favorites) },
+        channelRow(continueTitle, state.history, onClick = { actions.play(it.uid, ChannelContext.History) })
+        channelRow(favoritesTitle, state.favorites, onClick = { actions.play(it.uid, ChannelContext.Favorites) },
             action = { TextButton(onClick = { actions.open(Routes.FAVORITES) }, modifier = Modifier.tvFocusBorder()) { Text(stringResource(R.string.see_all)) } })
 
         if (state.upcoming.isNotEmpty()) {
@@ -171,7 +174,7 @@ fun HomeScreen(actions: AppActions, vm: HomeViewModel = hiltViewModel()) {
             item { MatchesRow(state.upcoming, state.demoProvider) { actions.open(Routes.match(it.id)) } }
         }
 
-        channelRow(stringResource(R.string.home_sports_channels), state.sports, onClick = { actions.play(it.uid, ChannelContext.Group(0, null, true)) },
+        channelRow(sportsTitle, state.sports, onClick = { actions.play(it.uid, ChannelContext.Group(0, null, true)) },
             action = { TextButton(onClick = { actions.open(Routes.SPORTS) }, modifier = Modifier.tvFocusBorder()) { Text(stringResource(R.string.see_all)) } })
     }
 }
