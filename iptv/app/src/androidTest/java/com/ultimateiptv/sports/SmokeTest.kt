@@ -7,6 +7,9 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.performClick
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
+import androidx.test.espresso.Espresso
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Rule
@@ -61,5 +64,24 @@ class SmokeTest {
         rule.waitUntilAtLeastOneExists(hasTestTag("player_ready"), 60_000)
         Thread.sleep(3000)
         shot("05_player")
+
+        // Back to the app, then check the Arabic (RTL) interface.
+        Espresso.pressBackUnconditionally()
+        Espresso.pressBackUnconditionally()
+        rule.waitUntilAtLeastOneExists(hasText("Live TV"), 10_000)
+        rule.runOnUiThread { AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("ar")) }
+        rule.waitUntilAtLeastOneExists(hasText("المباريات"), 15_000)
+        rule.onAllNodes(hasText("الرئيسية")).onFirst().performClick()
+        Thread.sleep(1500)
+        shot("06_home_ar")
+        rule.onAllNodes(hasText("المباريات")).onFirst().performClick()
+        rule.waitUntilAtLeastOneExists(hasText("اليوم"), 10_000)
+        Thread.sleep(1000)
+        shot("07_matches_ar")
+        rule.onAllNodes(hasTestTag("match_card")).onFirst().performClick()
+        rule.waitUntilAtLeastOneExists(hasText("أين تشاهد (من قنواتك)"), 10_000)
+        Thread.sleep(1000)
+        shot("08_match_detail_ar")
+        rule.runOnUiThread { AppCompatDelegate.setApplicationLocales(LocaleListCompat.getEmptyLocaleList()) }
     }
 }

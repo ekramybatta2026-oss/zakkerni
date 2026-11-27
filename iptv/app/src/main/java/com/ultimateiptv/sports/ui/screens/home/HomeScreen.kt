@@ -202,11 +202,11 @@ private fun WelcomeCard(addingDemo: Boolean, onAdd: () -> Unit, onDemo: () -> Un
             Spacer(Modifier.height(6.dp))
             Text(stringResource(R.string.welcome_message), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(16.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                Button(onClick = onAdd, modifier = Modifier.tvFocusBorder()) {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Button(onClick = onAdd, modifier = Modifier.fillMaxWidth().tvFocusBorder()) {
                     Icon(Icons.Filled.Add, null); Spacer(Modifier.width(6.dp)); Text(stringResource(R.string.add_subscription))
                 }
-                OutlinedButton(onClick = onDemo, enabled = !addingDemo, modifier = Modifier.tvFocusBorder()) {
+                OutlinedButton(onClick = onDemo, enabled = !addingDemo, modifier = Modifier.fillMaxWidth().tvFocusBorder()) {
                     if (addingDemo) CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp) else Text(stringResource(R.string.try_demo))
                 }
             }

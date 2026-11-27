@@ -1,6 +1,5 @@
 package com.ultimateiptv.sports.ui.screens.matches
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -64,7 +64,7 @@ fun MatchCard(
     showCompetition: Boolean = false,
     isDemo: Boolean = false,
 ) {
-    FocusCard(onClick = onClick, modifier = modifier.fillMaxWidth()) {
+    FocusCard(onClick = onClick, modifier = modifier.fillMaxWidth().testTag("match_card")) {
         Column(Modifier.padding(horizontal = 12.dp, vertical = 10.dp)) {
             if (showCompetition || isDemo) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -111,13 +111,14 @@ fun MatchCard(
 }
 
 @Composable
-private fun Team(name: String, logo: String?, modifier: Modifier, alignEnd: Boolean) {
-    Row(modifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = if (alignEnd) Arrangement.End else Arrangement.Start) {
-        if (!alignEnd) { ChannelLogo(logo, name, size = 32.dp, shape = CircleShape); Spacer(Modifier.width(8.dp)) }
+private fun Team(name: String, logo: String?, modifier: Modifier, @Suppress("UNUSED_PARAMETER") alignEnd: Boolean) {
+    // Logo above the name, centred: long names wrap on word boundaries instead of being cut mid-word.
+    Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+        ChannelLogo(logo, name, size = 34.dp, shape = CircleShape)
+        Spacer(Modifier.height(4.dp))
         Text(
-            name, style = MaterialTheme.typography.bodyLarge, maxLines = 2, overflow = TextOverflow.Ellipsis,
-            textAlign = if (alignEnd) TextAlign.End else TextAlign.Start, modifier = Modifier.weight(1f, fill = false),
+            name, style = MaterialTheme.typography.bodyMedium, maxLines = 2, overflow = TextOverflow.Ellipsis,
+            textAlign = TextAlign.Center, minLines = 2,
         )
-        if (alignEnd) { Spacer(Modifier.width(8.dp)); ChannelLogo(logo, name, size = 32.dp, shape = CircleShape) }
     }
 }

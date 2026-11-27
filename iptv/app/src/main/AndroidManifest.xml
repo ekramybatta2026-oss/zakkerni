@@ -45,9 +45,11 @@
 
         <activity
             android:name=".player.PlayerActivity"
+            tools:ignore="DiscouragedApi,LockedOrientationActivity"
             android:exported="false"
             android:theme="@style/Theme.App.Player"
             android:supportsPictureInPicture="true"
+            android:screenOrientation="sensorLandscape"
             android:resizeableActivity="true"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation|keyboardHidden|keyboard|navigation|uiMode" />
 

@@ -15,6 +15,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -306,7 +308,8 @@ private fun Overlay(
         Row(
             Modifier.fillMaxWidth().align(Alignment.BottomCenter)
                 .background(Brush.verticalGradient(listOf(Color.Transparent, Color(0xE6000000))))
-                .padding(horizontal = 24.dp, vertical = 20.dp),
+                .horizontalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp, vertical = 20.dp),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
         ) {
