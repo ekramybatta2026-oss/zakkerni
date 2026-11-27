@@ -34,7 +34,7 @@ class PlayerActivity : AppCompatActivity() {
 
     private val viewModel: PlayerViewModel by viewModels()
     private var inPip by mutableStateOf(false)
-    private val backConsumer = mutableStateOf<(() -> Boolean)?>(null)
+    private val keys = mutableStateOf<PlayerKeys?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -58,23 +58,28 @@ class PlayerActivity : AppCompatActivity() {
                         finish()
                     },
                     onExternal = ::openExternal,
-                    backConsumer = backConsumer,
+                    keys = keys,
                 )
             }
         }
     }
 
     /**
-     * BACK from a remote / hardware key is handled here, before any view can swallow it:
-     * close the channel list, then hide the info bar, then leave the player.
+     * Remote-control keys are handled here, before any view can swallow them, so they work
+     * whatever currently holds focus: BACK (list -> info bar -> exit), CH+/-, D-pad zapping, OK, MENU.
      */
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        val handler = keys.value
         if (event.keyCode == KeyEvent.KEYCODE_BACK) {
             if (event.action == KeyEvent.ACTION_UP && !event.isCanceled) {
-                val consumed = backConsumer.value?.invoke() == true
+                val consumed = handler?.onBack() == true
                 if (BuildConfig.DEBUG) android.util.Log.d("KeyDebug", "PlayerActivity BACK consumedByUi=$consumed")
                 if (!consumed) finish()
             }
+            return true
+        }
+        if (event.action == KeyEvent.ACTION_DOWN && handler?.onKeyDown(event.keyCode) == true) {
+            if (BuildConfig.DEBUG) android.util.Log.d("KeyDebug", "PlayerActivity handled ${KeyEvent.keyCodeToString(event.keyCode)}")
             return true
         }
         return super.dispatchKeyEvent(event)

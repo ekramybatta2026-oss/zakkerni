@@ -3,6 +3,7 @@ package com.ultimateiptv.sports.player
 import android.app.Activity
 import android.content.Context
 import android.media.AudioManager
+import android.view.KeyEvent
 import android.view.ViewGroup
 import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
@@ -76,11 +77,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onPreviewKeyEvent
-import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -108,7 +104,7 @@ fun PlayerScreen(
     inPip: Boolean,
     onBack: () -> Unit,
     onExternal: () -> Unit,
-    backConsumer: androidx.compose.runtime.MutableState<(() -> Boolean)?>,
+    keys: androidx.compose.runtime.MutableState<PlayerKeys?>,
 ) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
@@ -130,7 +126,10 @@ fun PlayerScreen(
         }
     }
     LaunchedEffect(overlay, listOpen, tracksOpen) {
-        runCatching { if (!overlay && !listOpen && !tracksOpen) rootFocus.requestFocus() else if (overlay && !listOpen) primaryFocus.requestFocus() }
+        when {
+            overlay && !listOpen && !tracksOpen -> primaryFocus.requestFocusWhenReady()
+            !overlay && !listOpen && !tracksOpen -> rootFocus.requestFocusWhenReady()
+        }
     }
     // Show the info bar each time the channel changes.
     LaunchedEffect(state.position) { if (state.position > 0) { overlay = true; poke() } }
@@ -141,16 +140,36 @@ fun PlayerScreen(
             else -> overlay = false
         }
     }
-    // Remote-control BACK is routed here by PlayerActivity.dispatchKeyEvent; returns true if consumed.
+    // Remote-control keys are routed here by PlayerActivity.dispatchKeyEvent (independent of Compose focus).
     DisposableEffect(Unit) {
-        backConsumer.value = {
-            when {
+        keys.value = object : PlayerKeys {
+            override fun onBack(): Boolean = when {
+                tracksOpen -> { tracksOpen = false; true }
                 listOpen -> { listOpen = false; true }
                 overlay -> { overlay = false; true }
                 else -> false
             }
+
+            override fun onKeyDown(keyCode: Int): Boolean {
+                poke()
+                if (listOpen || tracksOpen) return false // let the list / dialog handle D-pad
+                return when (keyCode) {
+                    KeyEvent.KEYCODE_CHANNEL_UP -> { viewModel.next(); true }
+                    KeyEvent.KEYCODE_CHANNEL_DOWN -> { viewModel.previous(); true }
+                    KeyEvent.KEYCODE_DPAD_UP -> if (!overlay) { viewModel.next(); true } else false
+                    KeyEvent.KEYCODE_DPAD_DOWN -> if (!overlay) { viewModel.previous(); true } else false
+                    KeyEvent.KEYCODE_DPAD_LEFT -> if (!overlay) { listOpen = true; true } else false
+                    KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER,
+                    KeyEvent.KEYCODE_DPAD_RIGHT, KeyEvent.KEYCODE_INFO -> if (!overlay) { overlay = true; true } else false
+                    KeyEvent.KEYCODE_MENU -> { tracksOpen = true; true }
+                    KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> {
+                        if (viewModel.player.isPlaying) viewModel.player.pause() else viewModel.player.play(); true
+                    }
+                    else -> false
+                }
+            }
         }
-        onDispose { backConsumer.value = null }
+        onDispose { keys.value = null }
     }
 
     Box(
@@ -159,23 +178,6 @@ fun PlayerScreen(
             .background(Color.Black)
             .focusRequester(rootFocus)
             .focusable()
-            .onPreviewKeyEvent { e ->
-                if (e.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
-                poke()
-                if (listOpen || tracksOpen) return@onPreviewKeyEvent false
-                when (e.key) {
-                    Key.ChannelUp -> { viewModel.next(); true }
-                    Key.ChannelDown -> { viewModel.previous(); true }
-                    Key.DirectionUp -> if (!overlay) { viewModel.next(); true } else false
-                    Key.DirectionDown -> if (!overlay) { viewModel.previous(); true } else false
-                    Key.DirectionLeft -> if (!overlay) { listOpen = true; true } else false
-                    Key.DirectionCenter, Key.Enter, Key.NumPadEnter, Key.DirectionRight, Key.Info ->
-                        if (!overlay) { overlay = true; true } else false
-                    Key.Menu -> { tracksOpen = true; true }
-                    Key.MediaPlayPause -> { if (viewModel.player.isPlaying) viewModel.player.pause() else viewModel.player.play(); true }
-                    else -> false
-                }
-            }
             .pointerInput(Unit) {
                 detectTapGestures(onTap = { overlay = !overlay; poke() }, onDoubleTap = { viewModel.cycleAspect() })
             }
@@ -358,7 +360,7 @@ private fun ChannelPanel(state: PlayerUiState, onSelect: (String) -> Unit) {
     val currentIndex = state.zapList.indexOfFirst { it.uid == state.channel?.uid }.coerceAtLeast(0)
     LaunchedEffect(Unit) {
         listState.scrollToItem((currentIndex - 3).coerceAtLeast(0))
-        runCatching { focus.requestFocus() }
+        focus.requestFocusWhenReady()
     }
     LazyColumn(
         state = listState,
@@ -476,3 +478,17 @@ private fun adjustVolume(context: Context, delta: Float): Float {
     return am.getStreamVolume(AudioManager.STREAM_MUSIC).toFloat() / max.coerceAtLeast(1)
 }
 
+
+/** Remote-control key callbacks, implemented by the player UI and invoked by PlayerActivity. */
+interface PlayerKeys {
+    fun onBack(): Boolean
+    fun onKeyDown(keyCode: Int): Boolean
+}
+
+/** Focus requests fail while the target is still being laid out (e.g. during an enter animation): retry briefly. */
+private suspend fun FocusRequester.requestFocusWhenReady() {
+    repeat(20) {
+        if (runCatching { requestFocus() }.isSuccess) return
+        delay(50)
+    }
+}
