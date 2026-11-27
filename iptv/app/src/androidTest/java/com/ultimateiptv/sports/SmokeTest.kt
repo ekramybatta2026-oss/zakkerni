@@ -9,7 +9,9 @@ import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.performClick
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
+import android.util.Log
 import android.view.KeyEvent
+import org.junit.Assert.assertTrue
 import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry
 import androidx.test.runner.lifecycle.Stage
 import com.ultimateiptv.sports.player.PlayerActivity
@@ -86,16 +88,21 @@ class SmokeTest {
             return top
         }
         var tries = 0
-        while (playerOnTop() && tries++ < 4) {
+        while (playerOnTop() && tries < 4) {
+            tries++
             inst.sendKeyDownUpSync(KeyEvent.KEYCODE_BACK)
             Thread.sleep(1500)
+            Log.i("SmokeTest", "BACK #$tries -> playerOnTop=${playerOnTop()}")
         }
-        try {
-            waitFor(hasText("Live TV"), 15_000)
-        } catch (e: Throwable) {
-            shot("99_after_back_failure")
-            throw e
+        val backClosedPlayer = !playerOnTop()
+        if (!backClosedPlayer) {
+            shot("99_back_did_not_close_player")
+            // Close it anyway so the Arabic UI checks below still run; the test fails at the end.
+            inst.runOnMainSync {
+                ActivityLifecycleMonitorRegistry.getInstance().getActivitiesInStage(Stage.RESUMED).filterIsInstance<PlayerActivity>().forEach { it.finish() }
+            }
         }
+        waitFor(hasText("Live TV"), 15_000)
         rule.runOnUiThread { AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("ar")) }
         waitFor(hasText("المباريات"), 15_000)
         rule.onAllNodes(hasText("الرئيسية")).onFirst().performClick()
@@ -113,6 +120,7 @@ class SmokeTest {
         InstrumentationRegistry.getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_BACK)
         Thread.sleep(1500)
         shot("09_matches_ar_list")
+        assertTrue("BACK did not close the player", backClosedPlayer)
 
     }
 }

@@ -157,7 +157,7 @@ jobs:
             mkdir -p out/screens && for n in $(adb shell run-as com.ultimateiptv.sports.debug ls files/screenshots | tr -d '\r'); do adb exec-out run-as com.ultimateiptv.sports.debug cat files/screenshots/$n > out/screens/$n; done || true
             adb logcat -d > out/logcat.txt || true
             for f in out/screens/*.jpg; do echo "SHOT_BEGIN $(basename $f)"; base64 -w0 "$f"; echo; echo "SHOT_END"; done || true
-            if [ -f tests_failed ]; then grep -E "AndroidRuntime|ExoPlayer|PlaybackException|TestRunner|FATAL" out/logcat.txt | tail -150; exit 1; fi
+            if [ -f tests_failed ]; then grep -E "AndroidRuntime|PlaybackException|SmokeTest|FATAL|E TestRunner: [a-z]" out/logcat.txt | tail -60; exit 1; fi
 
       - uses: actions/upload-artifact@v4
         if: always()
