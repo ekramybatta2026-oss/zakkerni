@@ -88,6 +88,19 @@ jobs:
             iptv/out/UltimateIPTV.apk
             iptv/out/UltimateIPTV.aab
 
+  # Downloads every built-in club crest into one labelled sheet, for review of the club <-> crest mapping.
+  crests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: iptv
+    steps:
+      - uses: actions/checkout@v4
+      - name: Club crest contact sheet
+        run: |
+          pip install --quiet pillow
+          python3 tools/crest_sheet.py app/src/main/java/com/ultimateiptv/sports/data/sports/Teams.kt
+
   # End-to-end test on an Android emulator: demo playlist -> Live TV -> real HLS playback.
   emulator:
     runs-on: ubuntu-latest
@@ -117,12 +130,6 @@ jobs:
             code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$u" || true)
             echo "$code  $u"
           done
-
-      - name: Club crest contact sheet (review)
-        continue-on-error: true
-        run: |
-          pip install --quiet pillow
-          python3 tools/crest_sheet.py app/src/main/java/com/ultimateiptv/sports/data/sports/Teams.kt
 
       - name: Enable KVM
         run: |
