@@ -1,0 +1,25 @@
+#EXTM3U
+#
+# Ultimate IPTV - legal demo playlist.
+# Every stream below is a public test stream published by its owner for player testing
+# (Unified Streaming, Akamai, Apple, Mux, Bitmovin, Google Widevine test content).
+# No paid or copyrighted TV channels are included.
+#
+#EXTINF:-1 tvg-id="demo.live" tvg-chno="1" group-title="Demo Sports",Demo Live 24/7 (Unified Streaming)
+https://demo.unified-streaming.com/k8s/live/stable/live.isml/.m3u8
+#EXTINF:-1 tvg-id="demo.sports1" tvg-chno="2" group-title="Demo Sports",Demo Sports 1 Live (Akamai test)
+https://cph-p2p-msl.akamaized.net/hls/live/2000341/test/master.m3u8
+#EXTINF:-1 tvg-id="demo.sports2" tvg-chno="3" group-title="Demo Sports",Demo Sports 2 - Multi audio & subtitles (Apple)
+https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8
+#EXTINF:-1 tvg-id="demo.news" tvg-chno="4" group-title="Demo Entertainment",Demo Adaptive HLS (Mux)
+https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8
+#EXTINF:-1 tvg-id="demo.movies" tvg-chno="5" group-title="Demo Entertainment",Sintel - HLS (Bitmovin)
+https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8
+#EXTINF:-1 tvg-id="demo.docs" tvg-chno="6" group-title="Demo Entertainment",Big Buck Bunny - MPEG-DASH (Akamai)
+https://dash.akamaized.net/akamai/bbb_30fps/bbb_30fps.mpd
+#EXTINF:-1 tvg-chno="7" group-title="Demo Entertainment",Tears of Steel - HLS (Unified Streaming)
+https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8
+#EXTINF:-1 tvg-chno="8" group-title="Demo DRM",Widevine DRM test - Tears of Steel (Google)
+#KODIPROP:inputstream.adaptive.license_type=com.widevine.alpha
+#KODIPROP:inputstream.adaptive.license_key=https://proxy.uat.widevine.com/proxy?video_id=2015_tears&provider=widevine_test
+https://storage.googleapis.com/wvmedia/cenc/h264/tears/tears.mpd

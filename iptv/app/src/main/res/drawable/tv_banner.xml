@@ -1,0 +1,16 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="320dp" android:height="180dp"
+    android:viewportWidth="320" android:viewportHeight="180">
+    <path android:fillColor="#0B1424" android:pathData="M0,0h320v180h-320z" />
+    <path android:fillColor="#00381F" android:pathData="M0,150L320,110L320,180L0,180Z" />
+    <!-- Logo -->
+    <path android:fillColor="#00D47E" android:fillType="evenOdd"
+        android:pathData="M30,58h70a10,10 0 0 1 10,10v38a10,10 0 0 1 -10,10h-70a10,10 0 0 1 -10,-10v-38a10,10 0 0 1 10,-10zM55,72L82,87L55,102Z" />
+    <path android:fillColor="#00D47E" android:pathData="M48,122h34a3,3 0 0 1 0,6h-34a3,3 0 0 1 0,-6z" />
+    <path android:fillColor="#FF3B30" android:pathData="M104,56m-6,0a6,6 0 1 0 12,0a6,6 0 1 0 -12,0" />
+    <!-- "IPTV" -->
+    <path android:fillColor="#F2F5FA" android:pathData="M132,60h12v60h-12z" />
+    <path android:fillColor="#F2F5FA" android:pathData="M154,60h12v60h-12zM166,60h16a18,18 0 0 1 0,36h-16v-12h16a6,6 0 0 0 0,-12h-16z" />
+    <path android:fillColor="#F2F5FA" android:pathData="M204,60h40v12h-40zM218,72h12v48h-12z" />
+    <path android:fillColor="#00D47E" android:pathData="M248,60h13l11,43l11,-43h13l-18,60h-12z" />
+</vector>
