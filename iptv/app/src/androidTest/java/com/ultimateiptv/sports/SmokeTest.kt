@@ -79,6 +79,13 @@ class SmokeTest {
 
         // Back to the app, then check the Arabic (RTL) interface.
         val inst = InstrumentationRegistry.getInstrumentation()
+        // Remote control: CH+ zaps from channel 4/8 to 5/8.
+        val inst0 = InstrumentationRegistry.getInstrumentation()
+        inst0.sendKeyDownUpSync(KeyEvent.KEYCODE_CHANNEL_UP)
+        waitFor(hasText("5/8", substring = true), 10_000)
+        Thread.sleep(2000)
+        shot("05b_player_ch_up")
+
         // BACK hides the overlay first (if shown), then closes the player: press until the main screen is back.
         fun playerOnTop(): Boolean {
             var top = false

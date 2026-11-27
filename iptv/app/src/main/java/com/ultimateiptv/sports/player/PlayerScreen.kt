@@ -1,8 +1,6 @@
 package com.ultimateiptv.sports.player
 
 import android.app.Activity
-import android.util.Log
-import com.ultimateiptv.sports.BuildConfig
 import android.content.Context
 import android.media.AudioManager
 import android.view.ViewGroup
@@ -63,6 +61,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -104,7 +103,13 @@ import kotlinx.coroutines.delay
 
 @OptIn(UnstableApi::class)
 @Composable
-fun PlayerScreen(viewModel: PlayerViewModel, inPip: Boolean, onBack: () -> Unit, onExternal: () -> Unit) {
+fun PlayerScreen(
+    viewModel: PlayerViewModel,
+    inPip: Boolean,
+    onBack: () -> Unit,
+    onExternal: () -> Unit,
+    backConsumer: androidx.compose.runtime.MutableState<(() -> Boolean)?>,
+) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
     var overlay by remember { mutableStateOf(true) }
@@ -136,6 +141,17 @@ fun PlayerScreen(viewModel: PlayerViewModel, inPip: Boolean, onBack: () -> Unit,
             else -> overlay = false
         }
     }
+    // Remote-control BACK is routed here by PlayerActivity.dispatchKeyEvent; returns true if consumed.
+    DisposableEffect(Unit) {
+        backConsumer.value = {
+            when {
+                listOpen -> { listOpen = false; true }
+                overlay -> { overlay = false; true }
+                else -> false
+            }
+        }
+        onDispose { backConsumer.value = null }
+    }
 
     Box(
         Modifier
@@ -144,18 +160,6 @@ fun PlayerScreen(viewModel: PlayerViewModel, inPip: Boolean, onBack: () -> Unit,
             .focusRequester(rootFocus)
             .focusable()
             .onPreviewKeyEvent { e ->
-                // BACK is handled explicitly (remote controls): channel list -> info bar -> leave the player.
-                if (e.key == Key.Back && !tracksOpen) {
-                    if (e.type == KeyEventType.KeyUp) {
-                        if (BuildConfig.DEBUG) Log.d("KeyDebug", "player BACK listOpen=$listOpen overlay=$overlay")
-                        when {
-                            listOpen -> listOpen = false
-                            overlay -> overlay = false
-                            else -> onBack()
-                        }
-                    }
-                    return@onPreviewKeyEvent true
-                }
                 if (e.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
                 poke()
                 if (listOpen || tracksOpen) return@onPreviewKeyEvent false
@@ -191,6 +195,10 @@ fun PlayerScreen(viewModel: PlayerViewModel, inPip: Boolean, onBack: () -> Unit,
         AndroidView(
             factory = { ctx ->
                 PlayerView(ctx).apply {
+                    // The video surface must never take focus: keys (BACK, D-pad, CH+/-) go to the Compose controls.
+                    isFocusable = false
+                    isFocusableInTouchMode = false
+                    descendantFocusability = ViewGroup.FOCUS_BLOCK_DESCENDANTS
                     useController = false
                     setShowBuffering(PlayerView.SHOW_BUFFERING_NEVER)
                     keepScreenOn = true

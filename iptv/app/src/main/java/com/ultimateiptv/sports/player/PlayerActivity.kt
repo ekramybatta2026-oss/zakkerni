@@ -9,6 +9,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Rational
+import android.view.KeyEvent
 import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -33,6 +34,7 @@ class PlayerActivity : AppCompatActivity() {
 
     private val viewModel: PlayerViewModel by viewModels()
     private var inPip by mutableStateOf(false)
+    private val backConsumer = mutableStateOf<(() -> Boolean)?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -56,16 +58,26 @@ class PlayerActivity : AppCompatActivity() {
                         finish()
                     },
                     onExternal = ::openExternal,
+                    backConsumer = backConsumer,
                 )
             }
         }
     }
 
-    /** Debug builds log key routing (helps diagnose remote-control navigation). */
-    override fun dispatchKeyEvent(event: android.view.KeyEvent): Boolean {
-        val handled = super.dispatchKeyEvent(event)
-        if (BuildConfig.DEBUG) android.util.Log.d("KeyDebug", "${javaClass.simpleName} ${android.view.KeyEvent.keyCodeToString(event.keyCode)} action=${event.action} handled=$handled")
-        return handled
+    /**
+     * BACK from a remote / hardware key is handled here, before any view can swallow it:
+     * close the channel list, then hide the info bar, then leave the player.
+     */
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (event.keyCode == KeyEvent.KEYCODE_BACK) {
+            if (event.action == KeyEvent.ACTION_UP && !event.isCanceled) {
+                val consumed = backConsumer.value?.invoke() == true
+                if (BuildConfig.DEBUG) android.util.Log.d("KeyDebug", "PlayerActivity BACK consumedByUi=$consumed")
+                if (!consumed) finish()
+            }
+            return true
+        }
+        return super.dispatchKeyEvent(event)
     }
 
     override fun onDestroy() {
