@@ -30,6 +30,10 @@ class SmokeTest {
         val bmp = inst.uiAutomation.takeScreenshot() ?: return
         val dir = inst.targetContext.getExternalFilesDir("screenshots") ?: return
         File(dir, "$name.png").outputStream().use { bmp.compress(Bitmap.CompressFormat.PNG, 90, it) }
+        // Small preview copy (printed into the CI log for review).
+        val w = 400
+        val small = Bitmap.createScaledBitmap(bmp, w, bmp.height * w / bmp.width, true)
+        File(dir, "$name.jpg").outputStream().use { small.compress(Bitmap.CompressFormat.JPEG, 60, it) }
     }
 
     @Test

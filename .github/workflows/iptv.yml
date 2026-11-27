@@ -140,9 +140,10 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
           working-directory: iptv
           script: |
-            ./gradlew connectedDebugAndroidTest || touch tests_failed
+            ./gradlew connectedDebugAndroidTest -Pandroid.injected.androidTest.leaveApksInstalledAfterRun=true || touch tests_failed
             mkdir -p out/screens && adb pull /sdcard/Android/data/com.ultimateiptv.sports.debug/files/screenshots out/screens || true
             adb logcat -d > out/logcat.txt || true
+            for f in out/screens/screenshots/*.jpg; do echo "SHOT_BEGIN $(basename $f)"; base64 -w0 "$f"; echo; echo "SHOT_END"; done || true
             if [ -f tests_failed ]; then grep -E "AndroidRuntime|ExoPlayer|PlaybackException|TestRunner|FATAL" out/logcat.txt | tail -150; exit 1; fi
 
       - uses: actions/upload-artifact@v4
