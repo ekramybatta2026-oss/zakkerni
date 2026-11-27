@@ -53,7 +53,8 @@ jobs:
         run: ./gradlew testDebugUnitTest --stacktrace
 
       - name: Lint
-        run: ./gradlew lintDebug
+        run: |
+          ./gradlew lintDebug || { grep -E "Error:" -A3 app/build/intermediates/lint_intermediate_text_report/debug/lintReportDebug/lint-results-debug.txt | head -300; exit 1; }
 
       - name: Build debug + release APK and AAB
         env:

@@ -133,7 +133,7 @@ object DemoEpgGenerator {
         "demo.sports1" to listOf("Matchday Live (Demo)", "Pre-match Studio (Demo)", "Goals of the Week (Demo)", "Post-match Analysis (Demo)"),
         "demo.sports2" to listOf("Tennis Classics (Demo)", "Motorsport Weekly (Demo)", "Basketball Night (Demo)"),
         "demo.news" to listOf("World Headlines (Demo)", "Business Today (Demo)", "Tech Review (Demo)"),
-        "demo.movies" to listOf("Big Buck Bunny", "Sintel", "Tears of Steel"),
+        "demo.movies" to listOf("Bip-Bop Test Pattern (Demo)", "Tears of Steel", "Big Buck Bunny"),
         "demo.docs" to listOf("Nature Close-up (Demo)", "Science Hour (Demo)"),
         "demo.live" to listOf("Live Test Stream (Demo)", "Signal Check (Demo)"),
     )

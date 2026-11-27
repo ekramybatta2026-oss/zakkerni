@@ -40,7 +40,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.OpenInNew
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
@@ -321,7 +321,7 @@ private fun Overlay(
             TvIconButton(Icons.Filled.Settings, stringResource(R.string.player_tracks), onTracks)
             TvIconButton(Icons.Filled.AspectRatio, stringResource(R.string.player_aspect), onAspect)
             TvIconButton(if (state.isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder, stringResource(R.string.favorite), onFavorite)
-            TvIconButton(Icons.Filled.OpenInNew, stringResource(R.string.player_external), onExternal)
+            TvIconButton(Icons.AutoMirrored.Filled.OpenInNew, stringResource(R.string.player_external), onExternal)
         }
     }
 }

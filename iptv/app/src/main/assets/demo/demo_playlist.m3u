@@ -2,7 +2,7 @@
 #
 # Ultimate IPTV - legal demo playlist.
 # Every stream below is a public test stream published by its owner for player testing
-# (Unified Streaming, Akamai, Apple, Mux, Bitmovin, Google Widevine test content).
+# (Unified Streaming, Akamai, Apple, Mux, Google Widevine test content).
 # No paid or copyrighted TV channels are included.
 #
 #EXTINF:-1 tvg-id="demo.live" tvg-chno="1" group-title="Demo Sports",Demo Live 24/7 (Unified Streaming)
@@ -13,8 +13,8 @@ https://cph-p2p-msl.akamaized.net/hls/live/2000341/test/master.m3u8
 https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8
 #EXTINF:-1 tvg-id="demo.news" tvg-chno="4" group-title="Demo Entertainment",Demo Adaptive HLS (Mux)
 https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8
-#EXTINF:-1 tvg-id="demo.movies" tvg-chno="5" group-title="Demo Entertainment",Sintel - HLS (Bitmovin)
-https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8
+#EXTINF:-1 tvg-id="demo.movies" tvg-chno="5" group-title="Demo Entertainment",Bip-Bop 16x9 - HLS (Apple)
+https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_16x9/bipbop_16x9_variant.m3u8
 #EXTINF:-1 tvg-id="demo.docs" tvg-chno="6" group-title="Demo Entertainment",Big Buck Bunny - MPEG-DASH (Akamai)
 https://dash.akamaized.net/akamai/bbb_30fps/bbb_30fps.mpd
 #EXTINF:-1 tvg-chno="7" group-title="Demo Entertainment",Tears of Steel - HLS (Unified Streaming)

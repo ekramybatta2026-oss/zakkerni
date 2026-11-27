@@ -337,7 +337,7 @@ class PlayerViewModel @Inject constructor(
     }
 
     private fun label(type: Int, f: Format): String {
-        val lang = f.language?.takeIf { it != "und" }?.let { Locale(it).displayLanguage }
+        val lang = f.language?.takeIf { it != "und" }?.let { Locale.forLanguageTag(it).displayLanguage }
         return when (type) {
             C.TRACK_TYPE_VIDEO -> buildString {
                 append(if (f.height > 0) "${f.height}p" else "?")
