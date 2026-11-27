@@ -37,6 +37,7 @@ class PlayerActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+        if (BuildConfig.DEBUG) android.util.Log.d("KeyDebug", "PlayerActivity onCreate restored=${savedInstanceState != null}")
         WindowCompat.getInsetsController(window, window.decorView).apply {
             hide(WindowInsetsCompat.Type.systemBars())
             systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
@@ -50,7 +51,10 @@ class PlayerActivity : AppCompatActivity() {
                 PlayerScreen(
                     viewModel = viewModel,
                     inPip = inPip,
-                    onBack = { finish() },
+                    onBack = {
+                        if (BuildConfig.DEBUG) android.util.Log.d("KeyDebug", "PlayerActivity finish()")
+                        finish()
+                    },
                     onExternal = ::openExternal,
                 )
             }
@@ -62,6 +66,11 @@ class PlayerActivity : AppCompatActivity() {
         val handled = super.dispatchKeyEvent(event)
         if (BuildConfig.DEBUG) android.util.Log.d("KeyDebug", "${javaClass.simpleName} ${android.view.KeyEvent.keyCodeToString(event.keyCode)} action=${event.action} handled=$handled")
         return handled
+    }
+
+    override fun onDestroy() {
+        if (BuildConfig.DEBUG) android.util.Log.d("KeyDebug", "PlayerActivity onDestroy finishing=$isFinishing")
+        super.onDestroy()
     }
 
     override fun onUserLeaveHint() {

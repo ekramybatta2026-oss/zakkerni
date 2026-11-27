@@ -1,6 +1,8 @@
 package com.ultimateiptv.sports.player
 
 import android.app.Activity
+import android.util.Log
+import com.ultimateiptv.sports.BuildConfig
 import android.content.Context
 import android.media.AudioManager
 import android.view.ViewGroup
@@ -144,10 +146,13 @@ fun PlayerScreen(viewModel: PlayerViewModel, inPip: Boolean, onBack: () -> Unit,
             .onPreviewKeyEvent { e ->
                 // BACK is handled explicitly (remote controls): channel list -> info bar -> leave the player.
                 if (e.key == Key.Back && !tracksOpen) {
-                    if (e.type == KeyEventType.KeyUp) when {
-                        listOpen -> listOpen = false
-                        overlay -> overlay = false
-                        else -> onBack()
+                    if (e.type == KeyEventType.KeyUp) {
+                        if (BuildConfig.DEBUG) Log.d("KeyDebug", "player BACK listOpen=$listOpen overlay=$overlay")
+                        when {
+                            listOpen -> listOpen = false
+                            overlay -> overlay = false
+                            else -> onBack()
+                        }
                     }
                     return@onPreviewKeyEvent true
                 }
