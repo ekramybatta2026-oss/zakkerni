@@ -35,6 +35,7 @@ class M3uFormatException(message: String) : Exception(message)
  */
 object M3uParser {
 
+    private val BOM = Char(0xFEFF).toString()
     private val ATTR_REGEX = Regex("""([A-Za-z0-9_\-]+)\s*=\s*"([^"]*)"""")
     private val STREAM_SCHEMES = listOf("http://", "https://", "rtmp://", "rtmps://", "rtsp://", "udp://", "rtp://", "file://", "content://", "asset://")
 
@@ -63,7 +64,7 @@ object M3uParser {
 
         while (true) {
             val raw = br.readLine() ?: break
-            val line = raw.trim().removePrefix("﻿")
+            val line = raw.trim().removePrefix(BOM)
             if (line.isEmpty()) continue
             nonEmptyLines++
             when {

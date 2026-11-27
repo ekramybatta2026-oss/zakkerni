@@ -69,7 +69,7 @@ class M3uParserTest {
 
     @Test
     fun handlesBomAndCrlf() {
-        val (_, entries) = M3uParser.parseAll("﻿#EXTM3U\r\n#EXTINF:-1,A\r\nhttp://x/a\r\n")
+        val (_, entries) = M3uParser.parseAll("\uFEFF#EXTM3U\r\n#EXTINF:-1,A\r\nhttp://x/a\r\n")
         assertEquals(1, entries.size)
         assertEquals("A", entries[0].name)
         assertTrue(entries[0].url == "http://x/a")

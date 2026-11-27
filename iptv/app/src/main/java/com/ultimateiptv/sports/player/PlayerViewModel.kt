@@ -3,6 +3,8 @@ package com.ultimateiptv.sports.player
 import android.app.Application
 import android.net.ConnectivityManager
 import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import androidx.annotation.OptIn
 import androidx.core.content.getSystemService
 import androidx.lifecycle.AndroidViewModel
@@ -146,7 +148,10 @@ class PlayerViewModel @Inject constructor(
     init {
         player.addListener(listener)
         player.playWhenReady = true
-        runCatching { app.getSystemService<ConnectivityManager>()?.registerDefaultNetworkCallback(networkCallback) }
+        runCatching {
+            val request = NetworkRequest.Builder().addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET).build()
+            app.getSystemService<ConnectivityManager>()?.registerNetworkCallback(request, networkCallback)
+        }
         val startUid = savedState.get<String>(PlayerActivity.EXTRA_UID)
         viewModelScope.launch {
             uids = channels.uidsFor(context).ifEmpty { listOfNotNull(startUid) }
