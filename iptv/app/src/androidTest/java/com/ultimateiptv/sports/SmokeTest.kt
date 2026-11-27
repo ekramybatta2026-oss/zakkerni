@@ -10,6 +10,9 @@ import androidx.compose.ui.test.performClick
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import android.view.KeyEvent
+import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry
+import androidx.test.runner.lifecycle.Stage
+import com.ultimateiptv.sports.player.PlayerActivity
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Rule
@@ -68,8 +71,15 @@ class SmokeTest {
         // Back to the app, then check the Arabic (RTL) interface.
         val inst = InstrumentationRegistry.getInstrumentation()
         // BACK hides the overlay first (if shown), then closes the player: press until the main screen is back.
-        repeat(3) {
-            if (rule.onAllNodes(hasText("Live TV")).fetchSemanticsNodes().isNotEmpty()) return@repeat
+        fun playerOnTop(): Boolean {
+            var top = false
+            inst.runOnMainSync {
+                top = ActivityLifecycleMonitorRegistry.getInstance().getActivitiesInStage(Stage.RESUMED).any { it is PlayerActivity }
+            }
+            return top
+        }
+        var tries = 0
+        while (playerOnTop() && tries++ < 4) {
             inst.sendKeyDownUpSync(KeyEvent.KEYCODE_BACK)
             Thread.sleep(1500)
         }
