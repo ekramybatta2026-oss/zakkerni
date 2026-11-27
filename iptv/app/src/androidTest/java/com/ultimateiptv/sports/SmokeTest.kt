@@ -90,7 +90,12 @@ class SmokeTest {
             inst.sendKeyDownUpSync(KeyEvent.KEYCODE_BACK)
             Thread.sleep(1500)
         }
-        waitFor(hasText("Live TV"), 15_000)
+        try {
+            waitFor(hasText("Live TV"), 15_000)
+        } catch (e: Throwable) {
+            shot("99_after_back_failure")
+            throw e
+        }
         rule.runOnUiThread { AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("ar")) }
         waitFor(hasText("المباريات"), 15_000)
         rule.onAllNodes(hasText("الرئيسية")).onFirst().performClick()
