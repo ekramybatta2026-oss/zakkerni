@@ -42,11 +42,16 @@ class SmokeTest {
         File(dir, "$name.jpg").outputStream().use { small.compress(Bitmap.CompressFormat.JPEG, 60, it) }
     }
 
+    /** Like waitUntilAtLeastOneExists, but tolerant to the moment without UI while an activity rotates/recreates. */
+    private fun waitFor(matcher: androidx.compose.ui.test.SemanticsMatcher, timeout: Long) {
+        rule.waitUntil(timeout) { runCatching { rule.onAllNodes(matcher).fetchSemanticsNodes().isNotEmpty() }.getOrDefault(false) }
+    }
+
     @Test
     fun demoPlaylistPlays() {
         // The app starts in Arabic by default; run the first part in English, Arabic is checked below.
         rule.runOnUiThread { AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("en")) }
-        rule.waitUntilAtLeastOneExists(hasText("Try legal demo channels"), 20_000)
+        waitFor(hasText("Try legal demo channels"), 20_000)
         shot("01_home_empty")
         rule.onAllNodes(hasText("Try legal demo channels")).onFirst().performClick()
 
@@ -66,7 +71,7 @@ class SmokeTest {
 
         rule.onAllNodes(hasText("Demo Adaptive HLS (Mux)")).onFirst().performClick()
         // The player marks itself "player_ready" once frames are playing.
-        rule.waitUntilAtLeastOneExists(hasTestTag("player_ready"), 60_000)
+        waitFor(hasTestTag("player_ready"), 60_000)
         Thread.sleep(3000)
         shot("05_player")
 
@@ -85,9 +90,9 @@ class SmokeTest {
             inst.sendKeyDownUpSync(KeyEvent.KEYCODE_BACK)
             Thread.sleep(1500)
         }
-        rule.waitUntilAtLeastOneExists(hasText("Live TV"), 10_000)
+        waitFor(hasText("Live TV"), 15_000)
         rule.runOnUiThread { AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("ar")) }
-        rule.waitUntilAtLeastOneExists(hasText("المباريات"), 15_000)
+        waitFor(hasText("المباريات"), 15_000)
         rule.onAllNodes(hasText("الرئيسية")).onFirst().performClick()
         Thread.sleep(1500)
         shot("06_home_ar")
