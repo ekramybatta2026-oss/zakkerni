@@ -9,7 +9,7 @@ import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.performClick
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
-import androidx.test.espresso.Espresso
+import android.view.KeyEvent
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Rule
@@ -66,8 +66,10 @@ class SmokeTest {
         shot("05_player")
 
         // Back to the app, then check the Arabic (RTL) interface.
-        Espresso.pressBackUnconditionally()
-        Espresso.pressBackUnconditionally()
+        val inst = InstrumentationRegistry.getInstrumentation()
+        inst.sendKeyDownUpSync(KeyEvent.KEYCODE_BACK) // hide player overlay
+        Thread.sleep(500)
+        inst.sendKeyDownUpSync(KeyEvent.KEYCODE_BACK) // close player
         rule.waitUntilAtLeastOneExists(hasText("Live TV"), 10_000)
         rule.runOnUiThread { AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("ar")) }
         rule.waitUntilAtLeastOneExists(hasText("المباريات"), 15_000)
