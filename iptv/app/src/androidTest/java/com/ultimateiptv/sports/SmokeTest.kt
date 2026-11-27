@@ -67,9 +67,12 @@ class SmokeTest {
 
         // Back to the app, then check the Arabic (RTL) interface.
         val inst = InstrumentationRegistry.getInstrumentation()
-        inst.sendKeyDownUpSync(KeyEvent.KEYCODE_BACK) // hide player overlay
-        Thread.sleep(500)
-        inst.sendKeyDownUpSync(KeyEvent.KEYCODE_BACK) // close player
+        // BACK hides the overlay first (if shown), then closes the player: press until the main screen is back.
+        repeat(3) {
+            if (rule.onAllNodes(hasText("Live TV")).fetchSemanticsNodes().isNotEmpty()) return@repeat
+            inst.sendKeyDownUpSync(KeyEvent.KEYCODE_BACK)
+            Thread.sleep(1500)
+        }
         rule.waitUntilAtLeastOneExists(hasText("Live TV"), 10_000)
         rule.runOnUiThread { AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("ar")) }
         rule.waitUntilAtLeastOneExists(hasText("المباريات"), 15_000)
