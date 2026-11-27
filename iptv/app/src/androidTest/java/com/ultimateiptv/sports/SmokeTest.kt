@@ -28,7 +28,7 @@ class SmokeTest {
         val inst = InstrumentationRegistry.getInstrumentation()
         inst.waitForIdleSync()
         val bmp = inst.uiAutomation.takeScreenshot() ?: return
-        val dir = inst.targetContext.getExternalFilesDir("screenshots") ?: return
+        val dir = File(inst.targetContext.filesDir, "screenshots").apply { mkdirs() }
         File(dir, "$name.png").outputStream().use { bmp.compress(Bitmap.CompressFormat.PNG, 90, it) }
         // Small preview copy (printed into the CI log for review).
         val w = 400
