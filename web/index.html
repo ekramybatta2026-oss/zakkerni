@@ -2676,11 +2676,12 @@ async function qPageCanvas(n, W = 1080, full = false) {
     }
   });
   // footer: page badge on the outer side, app name on the other
-  const bw = Math.round(W * 0.3), bh = Math.round(bw * badge.height / badge.width), by = H - footH / 2 - bh / 2 - (full ? W * 0.0 : 0);
+  const bw = Math.round(W * 0.16), bh = Math.round(bw * badge.height / badge.width), by = H - footH / 2 - bh / 2 - (full ? W * 0.0 : 0);
   const bx = n % 2 ? W - pad - bw : pad;
-  ctx.filter = QC.f; ctx.drawImage(badge, bx, by, bw, bh); ctx.filter = 'none';
-  ctx.fillStyle = QC.num; ctx.font = `700 ${Math.round(bh * 0.42)}px Cairo`; ctx.textAlign = 'center'; ctx.direction = 'rtl';
-  ctx.fillText(nd(n), bx + bw / 2, by + bh * 0.66);
+  ctx.save(); ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(bx, by, bw, bh, bw * 7 / 62); else ctx.rect(bx, by, bw, bh); ctx.clip();
+  ctx.filter = QC.f; ctx.drawImage(badge, bx, by, bw, bh); ctx.filter = 'none'; ctx.restore();
+  ctx.fillStyle = QC.num; ctx.font = `700 ${Math.round(bh * 0.5)}px Cairo`; ctx.textAlign = 'center'; ctx.direction = 'rtl';
+  ctx.fillText(nd(n), bx + bw / 2, by + bh * 0.68);
   ctx.fillStyle = QC.head; ctx.font = `600 ${Math.round(W * 0.026)}px Cairo`;
   ctx.fillText('ذَكِّرني', n % 2 ? pad + W * 0.08 : W - pad - W * 0.08, by + bh * 0.66);
   return cv;
