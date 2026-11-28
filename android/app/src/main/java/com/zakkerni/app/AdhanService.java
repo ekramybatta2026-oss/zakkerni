@@ -52,7 +52,9 @@ public class AdhanService extends Service {
         curName = name; curTime = time; running = true;
 
         AdhanScheduler.createChannels(this);
-        boolean full = AdhanScheduler.prefs(this).getBoolean(AdhanScheduler.KEY_FULL, true);
+        // auto: full screen when locked, banner when in use · always: full screen both ways · banner: never full screen
+        String mode = AdhanScheduler.prefs(this).getString("fullmode", AdhanScheduler.prefs(this).getBoolean(AdhanScheduler.KEY_FULL, true) ? "auto" : "banner");
+        boolean full = !"banner".equals(mode);
 
         Intent fs = new Intent(this, AdhanActivity.class)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_USER_ACTION);
@@ -74,6 +76,12 @@ public class AdhanService extends Service {
                 .addAction(new Notification.Action.Builder(null, "إيقاف الأذان", stop).build());
         if (full) b.setFullScreenIntent(fullPi, true); // locked: full screen; in use: heads-up banner
         Notification n = b.build();
+        if ("always".equals(mode)) {
+            try {
+                android.app.KeyguardManager km = (android.app.KeyguardManager) getSystemService(KEYGUARD_SERVICE);
+                if (km == null || !km.isKeyguardLocked()) startActivity(fs);   // phone in use: open the full screen too
+            } catch (Exception ignored) { }
+        }
 
         if (Build.VERSION.SDK_INT >= 29) startForeground(NOTIF_ID, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
         else startForeground(NOTIF_ID, n);

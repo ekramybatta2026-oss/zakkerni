@@ -1651,7 +1651,7 @@ function scheduleNative() {
     if (p.k === 'sunrise') return;
     list.push({ t: p.at.getTime(), n: p.name, s: fmtTime(p.at), a: !!(S.prayer.on && p.adhan && S.prayer.per[p.k]), f: voiceFile(p.k) });
   });
-  try { AndroidBridge.setAdhanSettings && AndroidBridge.setAdhanSettings(JSON.stringify({ dig: S.settings.digits || 'ar', tz: city().tz, vol: S.prayer.vol, pre: S.prayer.pre, silent: S.prayer.silent ? 1 : 0, sil: S.prayer.sil, silmode: S.prayer.silmode || 'silent', sdelay: S.prayer.sdelay ?? 5, full: S.prayer.full, city: city().name })); } catch (e) {}
+  try { AndroidBridge.setAdhanSettings && AndroidBridge.setAdhanSettings(JSON.stringify({ dig: S.settings.digits || 'ar', tz: city().tz, vol: S.prayer.vol, pre: S.prayer.pre, silent: S.prayer.silent ? 1 : 0, sil: S.prayer.sil, silmode: S.prayer.silmode || 'silent', fullmode: S.prayer.fullmode || (S.prayer.full === false ? 'banner' : 'auto'), sdelay: S.prayer.sdelay ?? 5, full: S.prayer.full, city: city().name })); } catch (e) {}
   try { AndroidBridge.scheduleAdhans(JSON.stringify(list), !!S.prayer.pin, city().name); } catch (e) {}
   try { const C = city(); if (AndroidBridge.setLocation && C.lat != null) AndroidBridge.setLocation(+C.lat, +C.lng); } catch (e) {}
 }
@@ -1736,7 +1736,7 @@ function renderAdhan() {
       ${S.prayer.silent ? `<div class="set-row"><div class="ic2">${ico('vib')}</div><div class="lbl"><b>يتحوّل الجوال إلى</b><small>بعد الأذان طوال مدة الصامت</small></div><select class="sel" id="pSilM">${opts([['silent', 'صامت'], ['vibrate', 'اهتزاز']], S.prayer.silmode || 'silent')}</select></div>` : ''}
       ${S.prayer.silent ? `<div class="set-row"><div class="ic2">${ico('timer')}</div><div class="lbl"><b>بداية الصامت</b><small>بعد دخول وقت الأذان</small></div><select class="sel" id="pSilD">${opts([[0, 'مع الأذان مباشرة'], [5, 'بعد ٥ دقائق'], [10, 'بعد ١٠ دقائق'], [15, 'بعد ١٥ دقيقة'], [20, 'بعد ٢٠ دقيقة']].map(([v, l]) => [v, nd(l)]), S.prayer.sdelay ?? 5)}</select></div>
       ${[['fajr', 'الفجر'], ['dhuhr', 'الظهر'], ['asr', 'العصر'], ['maghrib', 'المغرب'], ['isha', 'العشاء']].map(([k, n]) => `<div class="set-row sub"><div class="lbl"><b>مدة الصامت — ${n}</b></div><select class="sel" data-sil="${k}">${opts([0, 10, 15, 20, 25, 30, 40, 45, 60, 90].map(m => [m, m ? nd(m + (m === 10 ? ' دقائق' : ' دقيقة')) : 'بدون']), S.prayer.sil[k])}</select></div>`).join('')}` : ''}
-      <div class="set-row"><div class="ic2">${ico('mosque')}</div><div class="lbl"><b>شاشة كاملة عند الأذان</b><small>والجوال مقفول؛ وإن كان مفتوحًا يظهر شريط علوي فقط</small></div><button class="switch ${S.prayer.full ? 'on' : ''}" id="pFull" aria-label="شاشة كاملة"></button></div>
+      <div class="set-row"><div class="ic2">${ico('mosque')}</div><div class="lbl"><b>طريقة ظهور الأذان</b></div><select class="sel" id="pFullM">${opts([['auto', 'تلقائي'], ['always', 'شاشة كاملة دائمًا'], ['banner', 'شريط علوي فقط']], S.prayer.fullmode || (S.prayer.full === false ? 'banner' : 'auto'))}</select></div>
       <div class="set-row col"><div class="lbl"><b>خلفية شاشة الأذان</b><small>اختر لونًا أو صورة من جهازك</small></div>
         <div class="abg">${ABG.map(([k, n, css]) => `<button data-abg="${k}" class="${adhanBg() === k ? 'on' : ''}"><i style="${css}">${k === 'custom' ? '＋' : ''}</i>${n}</button>`).join('')}</div>
         <button class="btn" id="abgPrev">${ico('play')} معاينة الشاشة</button></div>` : ''}
@@ -1772,7 +1772,7 @@ function renderAdhan() {
     renderAdhan(); toast('تم تغيير خلفية شاشة الأذان');
   });
   const ap = $('#abgPrev'); if (ap) ap.onclick = () => { try { AndroidBridge.previewAdhanScreen(); } catch (e) {} };
-  const pf = $('#pFull'); if (pf) pf.onclick = () => { S.prayer.full = !S.prayer.full; save(); renderAdhan(); };
+  const pfm = $('#pFullM'); if (pfm) pfm.onchange = () => { S.prayer.fullmode = pfm.value; S.prayer.full = pfm.value !== 'banner'; save(); scheduleNative(); toast(pfm.value === 'auto' ? 'شاشة كاملة والجوال مقفول، وشريط علوي وهو مفتوح' : pfm.value === 'always' ? 'شاشة كاملة دائمًا' : 'شريط علوي فقط'); };
   $('#pVoice').onchange = (e) => { S.prayer.voice = e.target.value; save(); stopAdhan(); setVoiceSrc(); renderAdhan(); };
   const pp = $('#pPin'); if (pp) pp.onclick = () => { S.prayer.pin = !S.prayer.pin; save(); renderAdhan(); };
   $('#pOn').onclick = () => { S.prayer.on = !S.prayer.on; save(); renderAdhan(); };

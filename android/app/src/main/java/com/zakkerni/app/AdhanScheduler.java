@@ -62,6 +62,7 @@ final class AdhanScheduler {
                     .putString("silmap", o.optJSONObject("sil") != null ? o.optJSONObject("sil").toString() : "")
                     .putString("silmode", o.optString("silmode", "silent"))
                     .putBoolean(KEY_FULL, o.optBoolean("full", true))
+                    .putString("fullmode", o.optString("fullmode", o.optBoolean("full", true) ? "auto" : "banner"))
                     .putString(KEY_CITY, o.optString("city", prefs(c).getString(KEY_CITY, "")))
                     .putString("dig", o.optString("dig", "ar"))
                     .putString("tz", o.optString("tz", ""))
