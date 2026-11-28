@@ -32,6 +32,7 @@ public class AdhanReceiver extends BroadcastReceiver {
             if (late > (pre ? 3 : 10) * 60_000L) AdhanLog.add(c, "تم تجاهله لأنه تأخّر كثيرًا");
             // the system delivered this alarm late (phone asleep under a battery manager): never play a stale adhan
             if (late > (pre ? 3 : 10) * 60_000L) {
+                if (!pre) AdhanScheduler.scheduleSilence(c, name, intent.getLongExtra("at", System.currentTimeMillis())); // still silence the phone for the rest of the prayer time
                 AdhanScheduler.updatePinned(c);
                 AdhanScheduler.scheduleNext(c);
                 return;
@@ -39,7 +40,7 @@ public class AdhanReceiver extends BroadcastReceiver {
             if (pre) {
                 AdhanScheduler.showPre(c, name, intent.getStringExtra("time"));
             } else {
-                AdhanScheduler.scheduleSilence(c, name); // silent mode N minutes after the prayer time
+                AdhanScheduler.scheduleSilence(c, name, intent.getLongExtra("at", System.currentTimeMillis())); // silent mode N minutes after the prayer time
             }
             if (!pre && intent.getBooleanExtra("adhan", true)) {
                 Intent s = new Intent(c, AdhanService.class)

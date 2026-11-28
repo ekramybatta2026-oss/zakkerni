@@ -190,18 +190,24 @@ final class AdhanScheduler {
         return old > 1 ? old : def;
     }
 
-    static void scheduleSilence(Context c, String name) {
-        if (prefs(c).getInt(KEY_SILENT, 0) <= 0) return;
+    static void scheduleSilence(Context c, String name) { scheduleSilence(c, name, System.currentTimeMillis()); }
+
+    /** Silence starts `delay` minutes after the prayer time `at` and lasts the prayer's minutes (even if the adhan alarm arrived late). */
+    static void scheduleSilence(Context c, String name, long at) {
+        if (prefs(c).getInt(KEY_SILENT, 0) <= 0) { AdhanLog.add(c, "الصامت مطفأ في الإعدادات"); return; }
         int mins = silenceFor(c, name);
-        if (mins <= 0) return;
-        prefs(c).edit().putInt("sil_now", mins).apply();
+        if (mins <= 0) { AdhanLog.add(c, "لا صامت لصلاة " + name); return; }
         int delay = prefs(c).getInt(KEY_SILENT_DELAY, 5);
-        if (delay <= 0) { applySilence(c); return; }
+        long start = at + delay * 60_000L, end = start + mins * 60_000L, now = System.currentTimeMillis();
+        if (now >= end) { AdhanLog.add(c, "فاتت مدة الصامت لصلاة " + name); return; }
+        prefs(c).edit().putInt("sil_now", (int) Math.max(1, Math.min(mins, (end - Math.max(now, start)) / 60_000L))).putLong("sil_end", end).apply();
+        if (start <= now + 5_000) { applySilence(c); return; }
         AlarmManager am = (AlarmManager) c.getSystemService(Context.ALARM_SERVICE);
         if (am == null) return;
         PendingIntent pi = PendingIntent.getBroadcast(c, 1004, new Intent(c, AdhanReceiver.class).setAction(ACTION_SILENCE),
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-        setAlarm(am, System.currentTimeMillis() + delay * 60_000L, pi);
+        setClock(c, am, start, pi);   // alarm-clock alarms are not deferred by vivo while the phone sleeps (e.g. at Fajr)
+        AdhanLog.add(c, "سيُفعَّل الصامت " + AdhanLog.hm(start) + " لمدة " + mins + " دقيقة");
     }
 
     /** Silent mode for the user-chosen minutes, then restore. Needs Do-Not-Disturb access. */
@@ -226,7 +232,7 @@ final class AdhanScheduler {
         if (am == null) return;
         Intent r = new Intent(c, AdhanReceiver.class).setAction(ACTION_RESTORE);
         PendingIntent pi = PendingIntent.getBroadcast(c, 1002, r, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-        setAlarm(am, System.currentTimeMillis() + min * 60_000L, pi);
+        setClock(c, am, System.currentTimeMillis() + min * 60_000L, pi);
     }
 
     /** Soft chime + short buzz when the phone goes silent (falling tone) or back to ringing (rising tone). */
