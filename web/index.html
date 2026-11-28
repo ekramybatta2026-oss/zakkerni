@@ -1575,28 +1575,45 @@ function city() {
   const f = cityById(S.prayer.fallback || 'riyadh'); return { ...f, id: 'auto', auto: true, pending: true };
 }
 function distKm(a, b, c, d) { const R = 6371, r = Math.PI / 180, x = Math.sin((c - a) * r / 2) ** 2 + Math.cos(a * r) * Math.cos(c * r) * Math.sin((d - b) * r / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(x)); }
-let locating = false;
-function locate(manual) {
-  if (!navigator.geolocation) { if (manual) toast('الجهاز لا يدعم تحديد الموقع'); return; }
-  if (locating) return; locating = true; if (manual) toast('جارٍ تحديد موقعك…');
-  try {
-    navigator.geolocation.getCurrentPosition((pos) => {
-      locating = false;
-      const lat = +pos.coords.latitude.toFixed(4), lng = +pos.coords.longitude.toFixed(4);
-      let near = null, best = 1e9;
-      CITIES.forEach(c => { const dd = distKm(lat, lng, c.lat, c.lng); if (dd < best) { best = dd; near = c; } });
-      let tz = 'UTC'; try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; } catch (e) {}
-      const method = near && best < 400 ? near.method : (tz === 'Asia/Riyadh' ? 'umm' : tz === 'Africa/Cairo' ? 'egypt' : 'mwl');
-      S.prayer.loc = { lat, lng, tz, method, name: near && best < 40 ? near.name : 'موقعي الحالي', ts: Date.now() };
-      S.prayer.city = 'auto'; save();
-      if (manual) toast(`تم تحديد موقعك: ${S.prayer.loc.name}`);
-      if (current === 'adhan') renderAdhan(); updateClock(); scheduleNative();
-    }, (err) => {
-      locating = false;
-      if (manual) toast(err && err.code === 1 ? 'لم يُسمح بالوصول للموقع — اختر المدينة يدويًا' : 'تعذّر تحديد الموقع — اختر المدينة يدويًا');
-    }, { enableHighAccuracy: false, timeout: 12000, maximumAge: manual ? 0 : 6 * 3600e3 });
-  } catch (e) { locating = false; if (manual) toast('تعذّر تحديد الموقع — اختر المدينة يدويًا'); }
+let locating = false, locManual = false, locTimer = 0;
+function applyLoc(lat, lng, acc, geoName) {
+  locating = false; clearTimeout(locTimer);
+  lat = +(+lat).toFixed(4); lng = +(+lng).toFixed(4);
+  let near = null, best = 1e9;
+  CITIES.forEach(c => { const dd = distKm(lat, lng, c.lat, c.lng); if (dd < best) { best = dd; near = c; } });
+  let tz = 'UTC'; try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; } catch (e) {}
+  const method = near && best < 400 ? near.method : (tz === 'Asia/Riyadh' ? 'umm' : tz === 'Africa/Cairo' ? 'egypt' : 'mwl');
+  const name = (geoName && geoName.trim()) || (near && best < 40 ? near.name : 'موقعي الحالي');
+  const prev = S.prayer.loc;
+  S.prayer.loc = { lat, lng, tz, method, name, acc: acc > 0 ? Math.round(acc) : null, ts: Date.now() };
+  S.prayer.city = 'auto'; save();
+  if (locManual) toast(`تم تحديد موقعك: ${name}`);
+  else if (prev && prev.name !== name) toast(`تم تحديث موقعك: ${name}`);
+  if (current === 'adhan') renderAdhan(); updateClock(); scheduleNative();
+  try { wxLoad(true).catch(() => {}); } catch (e) {}
 }
+window.onNativeLoc = (lat, lng, acc, name) => applyLoc(lat, lng, acc, name);
+window.onNativeLocFail = (why) => {
+  locating = false; clearTimeout(locTimer);
+  if (!locManual) return;
+  if (why === 'off') { toast('خدمة الموقع مقفولة في الجوال — فعّلها ثم حاول مرة أخرى'); try { AndroidBridge.openLocationSettings(); } catch (e) {} }
+  else if (why === 'perm') toast('لم يُسمح بالوصول للموقع — اسمح به من إعدادات التطبيق أو اختر المدينة يدويًا');
+  else toast('تعذّر تحديد الموقع الآن — حاول بعد قليل أو اختر المدينة يدويًا');
+};
+function locate(manual) {
+  if (locating) return; locating = true; locManual = !!manual;
+  if (manual) toast('جارٍ تحديد موقعك…');
+  clearTimeout(locTimer); locTimer = setTimeout(() => { if (locating) window.onNativeLocFail('timeout'); }, 25000);
+  if (window.AndroidBridge && AndroidBridge.requestLocation) { try { AndroidBridge.requestLocation(); return; } catch (e) {} }
+  if (!navigator.geolocation) { locating = false; if (manual) toast('الجهاز لا يدعم تحديد الموقع'); return; }
+  try {
+    navigator.geolocation.getCurrentPosition((pos) => applyLoc(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy, ''),
+      (err) => window.onNativeLocFail(err && err.code === 1 ? 'perm' : 'timeout'),
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: manual ? 0 : 30 * 60e3 });
+  } catch (e) { window.onNativeLocFail('timeout'); }
+}
+/* keep the automatic location fresh: on start and whenever the app comes back after 2 hours */
+function autoLocateIfStale() { if (S.prayer.city === 'auto' && (!S.prayer.loc || Date.now() - (S.prayer.loc.ts || 0) > 2 * 3600e3)) locate(false); }
 const method = () => S.prayer.method || city().method;
 function cityYMD(c, addDays = 0) {
   const d = new Date(Date.now() + addDays * 864e5);
@@ -1657,7 +1674,7 @@ function scheduleNative() {
 }
 function dayCheck() { if (S.date !== todayKey()) { rollDay(); if (current !== 'quran') go(current, false); } }
 setInterval(dayCheck, 60000);
-window.onNativeResume = () => { dayCheck(); scheduleNative(); if (current === 'adhan') renderAdhan(); };
+window.onNativeResume = () => { dayCheck(); autoLocateIfStale(); scheduleNative(); if (current === 'adhan') renderAdhan(); };
 function checkAdhan() {
   if (NATIVE) return; // Android plays the adhan itself (works with the app closed)
   if (!S.prayer.on) return;
@@ -3016,6 +3033,7 @@ load(); applySettings();
 try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => S.settings.theme === 'auto' && applySettings()); } catch (e) {}
 window.onSystemTheme = () => { if (S.settings.theme === 'auto') applySettings(); };
 if (S.prayer.city === 'auto') setTimeout(() => locate(false), 1500);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) autoLocateIfStale(); });
 setTimeout(scheduleNative, 800);
 // installable web app (iPhone / any browser)
 if (!NATIVE && 'serviceWorker' in navigator && location.protocol === 'https:') { try { navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {} }

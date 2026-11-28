@@ -171,6 +171,77 @@ public class MainActivity extends Activity implements SensorEventListener {
         }
     }
 
+    static final int REQ_LOC_NATIVE = 7703;
+
+    /** Native location (more reliable than WebView geolocation on vivo): fresh fix + Arabic city name → JS. */
+    void nativeLocate() {
+        if (!hasLocation()) {
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, REQ_LOC_NATIVE);
+            return;
+        }
+        android.location.LocationManager lm = (android.location.LocationManager) getSystemService(LOCATION_SERVICE);
+        if (lm == null) { locFail("nolm"); return; }
+        boolean net = false, gps = false;
+        try { net = lm.isProviderEnabled(android.location.LocationManager.NETWORK_PROVIDER); } catch (Exception ignored) { }
+        try { gps = lm.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER); } catch (Exception ignored) { }
+        if (!net && !gps) { locFail("off"); return; }
+        final boolean[] done = {false};
+        final android.os.Handler h = new android.os.Handler(android.os.Looper.getMainLooper());
+        java.util.function.Consumer<android.location.Location> got = (l) -> {
+            if (done[0]) return;
+            if (l == null) return;
+            done[0] = true; deliverLoc(l);
+        };
+        try {
+            if (Build.VERSION.SDK_INT >= 30) {
+                if (net) lm.getCurrentLocation(android.location.LocationManager.NETWORK_PROVIDER, null, getMainExecutor(), got::accept);
+                if (gps) lm.getCurrentLocation(android.location.LocationManager.GPS_PROVIDER, null, getMainExecutor(), got::accept);
+            } else {
+                android.location.LocationListener ll = new android.location.LocationListener() {
+                    @Override public void onLocationChanged(android.location.Location l) { got.accept(l); try { lm.removeUpdates(this); } catch (Exception ignored) { } }
+                    @Override public void onStatusChanged(String p, int s, Bundle b) { }
+                    @Override public void onProviderEnabled(String p) { }
+                    @Override public void onProviderDisabled(String p) { }
+                };
+                if (net) lm.requestSingleUpdate(android.location.LocationManager.NETWORK_PROVIDER, ll, null);
+                if (gps) lm.requestSingleUpdate(android.location.LocationManager.GPS_PROVIDER, ll, null);
+            }
+        } catch (SecurityException e) { locFail("perm"); return; }
+        // no fresh fix in 12 s: use the newest last-known position
+        h.postDelayed(() -> {
+            if (done[0]) return;
+            android.location.Location best = null;
+            for (String p : new String[]{"network", "gps", "passive", "fused"}) {
+                try { android.location.Location l = lm.getLastKnownLocation(p); if (l != null && (best == null || l.getTime() > best.getTime())) best = l; } catch (Exception ignored) { }
+            }
+            done[0] = true;
+            if (best != null) deliverLoc(best); else locFail("timeout");
+        }, 12000);
+    }
+
+    private void deliverLoc(android.location.Location l) {
+        final double lat = l.getLatitude(), lng = l.getLongitude();
+        final float acc = l.hasAccuracy() ? l.getAccuracy() : -1;
+        new Thread(() -> {
+            String name = "";
+            try {
+                if (android.location.Geocoder.isPresent()) {
+                    java.util.List<android.location.Address> a = new android.location.Geocoder(this, new java.util.Locale("ar")).getFromLocation(lat, lng, 1);
+                    if (a != null && !a.isEmpty()) {
+                        android.location.Address x = a.get(0);
+                        name = x.getLocality() != null ? x.getLocality() : x.getSubAdminArea() != null ? x.getSubAdminArea() : x.getAdminArea() != null ? x.getAdminArea() : "";
+                    }
+                }
+            } catch (Exception ignored) { }
+            final String n = name.replace("'", "").replace("\\", "");
+            runOnUiThread(() -> { if (web != null) web.evaluateJavascript("window.onNativeLoc && window.onNativeLoc(" + lat + "," + lng + "," + acc + ",'" + n + "')", null); });
+        }).start();
+    }
+
+    private void locFail(String why) {
+        if (web != null) web.evaluateJavascript("window.onNativeLocFail && window.onNativeLocFail('" + why + "')", null);
+    }
+
     private boolean hasLocation() {
         return checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
                 || checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
@@ -183,6 +254,7 @@ public class MainActivity extends Activity implements SensorEventListener {
             boolean ok = grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED;
             web.evaluateJavascript("window.onAudioPermission && window.onAudioPermission(" + ok + ")", null);
         }
+        if (requestCode == REQ_LOC_NATIVE) { if (hasLocation()) nativeLocate(); else locFail("perm"); }
         if (requestCode == REQ_GEO && geoCallback != null) {
             geoCallback.invoke(geoOrigin, hasLocation(), false);
             geoCallback = null;

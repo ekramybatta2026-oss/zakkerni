@@ -217,6 +217,15 @@ public class Bridge {
 
     /** Share a PNG rendered by the page (data: URL) through the system share sheet. */
     @JavascriptInterface
+    public void requestLocation() { MainActivity a = MainActivity.current; if (a != null) a.runOnUiThread(a::nativeLocate); }
+
+    @JavascriptInterface
+    public void openLocationSettings() {
+        Context a = MainActivity.current != null ? MainActivity.current : ctx;
+        try { a.startActivity(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); } catch (Exception ignored) { }
+    }
+
+    @JavascriptInterface
     public void keepScreenOn(boolean on) {
         MainActivity a = MainActivity.current;
         if (a != null) a.runOnUiThread(() -> {
