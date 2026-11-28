@@ -6,3 +6,4 @@ local.properties
 .idea/
 
 !android/sideload-signing.jks
+!iptv/sideload-signing.jks

@@ -1,0 +1,169 @@
+name: Build Ultimate IPTV
+
+on:
+  push:
+    branches: [main, 'claude/**']
+    paths: ['iptv/**', '.github/workflows/iptv.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: iptv-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: iptv
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Android SDK (platform 36)
+        run: |
+          SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}"
+          SM=$(ls -d "$SDK"/cmdline-tools/*/bin/sdkmanager | sort -V | tail -1)
+          yes | "$SM" --licenses > /dev/null || true
+          "$SM" "platforms;android-36" "build-tools;36.0.0" | tail -2
+          echo "ANDROID_HOME=$SDK" >> "$GITHUB_ENV"
+          echo "sdk.dir=$SDK" > local.properties
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Restore release key (optional)
+        env:
+          IPTV_KS_B64: ${{ secrets.IPTV_KS_B64 }}
+        run: |
+          if [ -n "$IPTV_KS_B64" ]; then
+            echo "$IPTV_KS_B64" | base64 -d > "$RUNNER_TEMP/iptv-release.jks"
+            echo "IPTV_KS_FILE=$RUNNER_TEMP/iptv-release.jks" >> "$GITHUB_ENV"
+          else
+            echo "No IPTV_KS_B64 secret: release is signed with the sideload key."
+          fi
+
+      - name: Unit tests
+        run: ./gradlew testDebugUnitTest --stacktrace
+
+      - name: Lint
+        run: |
+          ./gradlew lintDebug || { grep -E "Error:" -A3 app/build/intermediates/lint_intermediate_text_report/debug/lintReportDebug/lint-results-debug.txt | head -300; exit 1; }
+
+      - name: Build debug + release APK and AAB
+        env:
+          IPTV_KS_PASS: ${{ secrets.IPTV_KS_PASS }}
+          IPTV_KS_ALIAS: ${{ secrets.IPTV_KS_ALIAS }}
+        run: ./gradlew assembleDebug assembleRelease bundleRelease assembleDebugAndroidTest
+
+      - name: Collect outputs
+        if: always()
+        run: |
+          mkdir -p out
+          cp app/build/outputs/apk/release/app-release.apk out/UltimateIPTV.apk || true
+          cp app/build/outputs/bundle/release/app-release.aab out/UltimateIPTV.aab || true
+          cp app/build/outputs/apk/debug/app-debug.apk out/UltimateIPTV-debug.apk || true
+          cp -r app/build/reports out/reports || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ultimate-iptv
+          path: iptv/out/
+
+      - name: Publish release
+        if: github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: iptv-v1.0.${{ github.run_number }}
+          name: Ultimate IPTV 1.0.${{ github.run_number }}
+          make_latest: false
+          files: |
+            iptv/out/UltimateIPTV.apk
+            iptv/out/UltimateIPTV.aab
+
+  # Downloads every built-in club crest into one labelled sheet, for review of the club <-> crest mapping.
+  crests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: iptv
+    steps:
+      - uses: actions/checkout@v4
+      - name: Club crest contact sheet
+        run: |
+          pip install --quiet pillow
+          python3 tools/crest_sheet.py app/src/main/java/com/ultimateiptv/sports/data/sports/Teams.kt
+
+  # End-to-end test on an Android emulator: demo playlist -> Live TV -> real HLS playback.
+  emulator:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: iptv
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Android SDK (platform 36)
+        run: |
+          SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}"
+          SM=$(ls -d "$SDK"/cmdline-tools/*/bin/sdkmanager | sort -V | tail -1)
+          yes | "$SM" --licenses > /dev/null || true
+          "$SM" "platforms;android-36" "build-tools;36.0.0" | tail -2
+          echo "sdk.dir=$SDK" > local.properties
+
+      - name: Check that the public demo streams are reachable
+        run: |
+          grep -E '^https?://' app/src/main/assets/demo/demo_playlist.m3u | while read -r u; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$u" || true)
+            echo "$code  $u"
+          done
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Build test APKs
+        run: ./gradlew assembleDebug assembleDebugAndroidTest
+
+      - name: Run instrumented tests on emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          arch: x86_64
+          target: google_apis
+          profile: pixel_5
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          working-directory: iptv
+          script: |
+            ./gradlew connectedDebugAndroidTest -Pandroid.injected.androidTest.leaveApksInstalledAfterRun=true || touch tests_failed
+            mkdir -p out/screens && for n in $(adb shell run-as com.ultimateiptv.sports.debug ls files/screenshots | tr -d '\r'); do adb exec-out run-as com.ultimateiptv.sports.debug cat files/screenshots/$n > out/screens/$n; done || true
+            adb logcat -d > out/logcat.txt || true
+            for f in out/screens/*.jpg; do echo "SHOT_BEGIN $(basename $f)"; base64 -w0 "$f"; echo; echo "SHOT_END"; done || true
+            if [ -f tests_failed ]; then grep -E "AndroidRuntime|PlaybackException|SmokeTest|KeyDebug|FATAL|E TestRunner: [a-z]" out/logcat.txt | tail -80; exit 1; fi
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: emulator-results
+          path: |
+            iptv/out/screens
+            iptv/out/logcat.txt
+            iptv/app/build/reports/androidTests
